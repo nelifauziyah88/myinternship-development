@@ -1,0 +1,384 @@
+body {
+  background-color: #ffffff;
+  font-family: "Poppins", sans-serif !important;
+  color: #333;
+}
+
+.navbar-nav .nav-link {
+  font-family: "Poppins", sans-serif !important;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #000 !important;
+  padding: 0.5rem 1rem;
+  transition: color 0.3s;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #364b99 !important;
+}
+
+.btn-login {
+  background-color: #364b99;
+  color: #fff;
+  border-radius: 20px;
+  padding: 8px 24px;
+  font-family: "Poppins", sans-serif !important;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn-login:hover {
+  background-color: #2a3977;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.hero {
+  padding: 80px 0;
+}
+
+.hero h1 {
+  font-weight: 700;
+  font-size: 2.2rem;
+  line-height: 1.4;
+}
+
+.hero h1 span {
+  color: #364b99;
+}
+
+.hero p {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #555;
+}
+
+.hero .btn-outline {
+  border: 2px solid #364b99;
+  color: #364b99;
+  border-radius: 30px;
+  padding: 10px 24px;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+.hero .btn-outline:hover {
+  background-color: #364b99;
+  color: #fff;
+}
+
+.why-section {
+  background-color: #edf8fe;
+  padding: 40px 0;
+}
+
+.why-title {
+  color: #364b99;
+  font-weight: 600;
+  margin-bottom: 30px;
+  font-size: 1.5rem;
+}
+
+.why-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: 0.3s;
+}
+
+.why-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 6px 14px rgba(0, 0, 0, 0.1);
+}
+
+.why-box h6 {
+  font-weight: 600;
+  color: #364b99;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+
+.why-box p {
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: #555;
+  margin: 0;
+}
+
+/* About MyInternship */
+.about-section h2 {
+    font-size: 2rem;
+}
+
+.about-section p {
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.6;
+  text-align: justify;
+  /* rata kanan-kiri */
+}
+
+/* Kotak statistik */
+.stat-box {
+  border-radius: 12px;
+  text-align: center;
+  /* teks tengah */
+  padding: 25px 15px;
+  transition: 0.3s;
+  cursor: pointer;
+  background: #fff;
+  color: #333;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.about-title {
+  color: #364b99;
+}
+
+.stat-box h3 {
+  font-weight: 700;
+  color: #364b99;
+  margin-bottom: 10px;
+}
+
+.stat-box p {
+  font-size: 0.95rem;
+  margin: 0;
+  color: #555;
+}
+
+/* Hover: kotak biru, teks putih */
+.stat-box:hover {
+  background-color: #364b99;
+  color: #fff;
+  transform: translateY(-6px);
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.stat-box:hover h3,
+.stat-box:hover p {
+  color: #fff;
+  /* teks ikut putih */
+}
+
+.features h2 {
+  color: #364b99;
+  font-weight: 700;
+  margin-bottom: 15px;
+  font-size: 2rem;
+}
+
+.features p {
+  color: #555;
+  font-size: 0.95rem;
+}
+
+/* Icon bulat tengah */
+.features .circle-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: #364b99;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.features .circle-icon img {
+  width: 35px;
+  height: auto;
+}
+
+/* Kotak kecil bawah */
+.features .feature-box {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 25px 15px;
+  text-align: center;
+  background: #fff;
+  transition: 0.3s;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+}
+
+/* Hover kotak jadi warna #EDF8FE */
+.features .feature-box:hover {
+  background: #edf8fe;
+  color: #333; /* teks tetap gelap, biar kebaca */
+  transform: translateY(-6px);
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.features .feature-box h6 {
+  font-weight: 600;
+  color: #364b99; /* biru default */
+  margin-top: 12px;
+  margin-bottom: 10px;
+  transition: color 0.3s;
+}
+
+.features .feature-box p {
+  color: #555;
+  transition: color 0.3s;
+}
+
+/* Saat di klik (active state) teks berubah putih */
+.features .feature-box:active,
+.features .feature-box:active h6,
+.features .feature-box:active p {
+  color: #fff !important;
+  background: #364b99; /* bisa tambahin efek bg biru saat klik */
+}
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f9f9f9;
+  color: #333;
+}
+
+.faq-section {
+  max-width: 900px;
+  margin: 60px auto;
+  padding: 0 20px;
+}
+
+.faq-section h2 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: #364b99;
+  font-weight: 700;
+}
+
+.faq-section p {
+  text-align: center;
+  color: #555;
+  margin-bottom: 40px;
+}
+
+.faq-item {
+  background: #edf8fe;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  padding: 20px 25px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.faq-item:hover {
+  transform: translateY(-3px);
+}
+
+.faq-question {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.faq-question span {
+  font-size: 1.5rem;
+  margin-right: 10px;
+  color: #3498db;
+}
+
+.faq-answer {
+  margin-top: 10px;
+  color: #555;
+  line-height: 1.6;
+  display: none;
+}
+
+.faq-item.active .faq-answer {
+  display: block;
+}
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+footer {
+  background: #1e272e;
+  color: #d2dae2;
+  padding: 60px 80px 30px;
+}
+
+.footer-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 40px;
+  margin-bottom: 30px;
+}
+
+.footer-col h2 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #fff;
+  border-left: 4px solid #364b99;
+  padding-left: 10px;
+}
+
+.footer-col p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #dcdde1;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.contact-item i {
+  color: #364b99;
+  font-size: 16px;
+}
+
+/* Social icons */
+.socials {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.socials a {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid #364b99;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #364b99;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.socials a:hover {
+  background: #364b99;
+  color: #fff;
+  box-shadow: 0 0 12px #364b99;
+  transform: scale(1.1);
+}
+
+/* Copyright */
+.copyright {
+  text-align: center;
+  border-top: 1px solid #444;
+  padding-top: 20px;
+  font-size: 13px;
+  color: #aaa;
+}

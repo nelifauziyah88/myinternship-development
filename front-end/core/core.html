@@ -1,0 +1,568 @@
+<link rel='stylesheet' href='./core/component/sweetalert2.min.css'>
+<script defer src='./core/component/sweetalert2.min.js'></script>
+<script defer src='./core/component/soloalert.js'></script>
+
+
+
+<!-- Javascript Function -->
+<script type="text/javascript">
+	function copyToClipboard(text) {
+		var tempInput = document.createElement("input");
+		document.body.appendChild(tempInput);
+		tempInput.value = text;
+		tempInput.select();
+
+		document.execCommand("copy");
+
+		document.body.removeChild(tempInput);
+
+		alert("Text copied to clipboard: " + text);
+
+	}
+
+	function submitFormAjax(formSelector, method, successCallback, errorCallback = handleFormError) {
+		$(formSelector).on('submit', function (e) {
+			e.preventDefault();
+
+			// Menambahkan spinner pada tombol submit
+			let submitBtn = $(this).find('[type="submit"]');
+			let submitBtnHtml = submitBtn.html();
+
+			// Menonaktifkan tombol submit
+			submitBtn.prop('disabled', true);
+
+			// Menambahkan spinner pada tombol submit
+			submitBtn.html('<i class="fa fa-spinner fa-spin mr-1"></i> Loading');
+
+
+			// Menyinkronkan konten CKEditor ke elemen textarea untuk semua editor CKEditor (jika tersedia)
+			if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances) {
+				for (const editorName in CKEDITOR.instances) {
+					if (CKEDITOR.instances.hasOwnProperty(editorName)) {
+						CKEDITOR.instances[editorName].updateElement();
+					}
+				}
+			}
+
+
+
+			let data = $(formSelector).serialize();
+
+			$.ajax({
+				url: $(this).attr('action'),
+				type: method,
+				dataType: 'json',
+				data: data,
+
+				success: function (response, xhr, status, error) {
+					// console.log(response);
+					if (typeof successCallback === 'function') {
+						successCallback(response);
+					}
+
+					$.ajax({
+						url: 'index.php?request=validation_reset',
+						type: 'GET',
+
+					});
+
+				},
+
+				error: function (response, xhr, status, error) {
+					// console.log(response);
+
+					if (typeof errorCallback === 'function') {
+						errorCallback(formSelector, response);
+					}
+
+
+
+					$.ajax({
+						url: 'index.php?request=validation_reset',
+						type: 'GET',
+
+					});
+				},
+
+				complete: function () {
+
+					// Mengembalikan inner HTML tombol submit ke kondisi awal
+					submitBtn.html(submitBtnHtml);
+					// Mengaktifkan kembali tombol submit
+					submitBtn.prop('disabled', false);
+
+
+					$.ajax({
+						url: 'index.php?request=validation_reset',
+						type: 'GET',
+
+					});
+				}
+			});
+		});
+	}
+
+	function handleFormError(formSelector, response) {
+		if (response.status == 400) {
+
+			$.each(response.responseJSON.validation, function (key, value) {
+
+				if (value != '') {
+
+					// let inputElem1 = $(formSelector).find('input[name="' + key + '"]');
+
+					let inputElem1 = $(formSelector).find('input[name="' + key + '"], select[name="' + key +
+						'"], textarea[name="' + key + '"]');
+
+
+					if (inputElem1.length > 0) {
+
+						let feedbackElem = inputElem1.siblings('.invalid-feedback');
+						if (feedbackElem.length == 0) {
+							inputElem1.after('<small class="invalid-feedback"></small>');
+							feedbackElem = inputElem1.siblings('.invalid-feedback');
+						}
+						feedbackElem.text(value);
+					}
+
+
+				}
+			});
+
+			let errorData = response.responseJSON;
+			$.each(errorData.error, function (key, value) {
+				// let inputElem = $('input[name="' + key + '"]');
+
+				// let inputElem = $(formSelector).find('input[name="' + key + '"]');
+
+				let inputElem = $(formSelector).find('input[name="' + key + '"], select[name="' + key +
+					'"], textarea[name="' + key + '"]');
+
+
+				if (inputElem.length > 0) {
+					inputElem.removeClass().addClass('form-control ' + value);
+				}
+
+			});
+
+		}
+
+		getNotificationForm(formSelector);
+	}
+
+
+	function getNotificationForm(formSelector) {
+
+		$.ajax({
+			url: 'index.php?request=validation_get',
+			type: 'GET',
+
+			success: function (response, xhr, status, error) {
+				console.log('Getting form notification');
+
+				$('body').append(response);
+
+			},
+
+			error: function (xhr, status, error) {
+				console.log('Failed Getting form notification');
+
+			}
+
+		});
+
+		return true;
+	}
+
+	function resetForm(formSelector) {
+		$(formSelector).removeClass('was-validated');
+
+		// console.log('Resetting form');
+
+		$(formSelector).find('.border-danger').removeClass('border-danger');
+		$(formSelector).find('.is-invalid').removeClass('is-invalid');
+
+		$(formSelector).find('.is-valid').removeClass('is-valid');
+		$(formSelector).find('.border-success').removeClass('border-success');
+		$(formSelector).trigger('reset');
+
+		$.ajax({
+			url: 'index.php?request=validation_reset',
+			type: 'GET',
+
+		});
+
+		return true;
+	}
+
+
+	function resetFormAjax(formSelector2) {
+		$(formSelector2).find('[type="reset"]').on('click', function (e) {
+			e.preventDefault();
+
+			// Menambahkan spinner pada tombol submit
+			let submitBtn = $(formSelector2).find('[type="submit"]');
+			let resetBtn = $(formSelector2).find('[type="reset"]');
+			let resetBtnHtml = resetBtn.html();
+
+			// Menonaktifkan tombol submit
+			resetBtn.prop('disabled', true);
+			submitBtn.prop('disabled', true);
+
+			// Menambahkan spinner pada tombol submit
+			resetBtn.html('<i class="fa fa-spinner fa-spin mr-1"></i> Loading');
+
+
+			$(formSelector2).find('was-validated').removeClass('was-validated');
+
+			$(formSelector2).find('.border-danger').removeClass('border-danger');
+			$(formSelector2).find('.is-invalid').removeClass('is-invalid');
+
+			$(formSelector2).find('.is-valid').removeClass('is-valid');
+			$(formSelector2).find('.border-success').removeClass('border-success');
+			$(formSelector2).trigger('reset');
+
+
+			$.ajax({
+				url: 'index.php?request=validation_reset',
+				type: 'GET',
+
+				complete: function () {
+
+					resetBtn.html(resetBtnHtml);
+					// Mengaktifkan kembali tombol submit
+					resetBtn.prop('disabled', false);
+					submitBtn.prop('disabled', false);
+
+				}
+
+			});
+
+
+
+
+		});
+	}
+
+	function logout_confirm() {
+
+		let _token = $('meta[name="csrf-token"]').attr('content');
+
+		swal.fire({
+			title: 'Logout Confirmation',
+			text: 'Are you sure you want end current session ?',
+			icon: 'question',
+			showCancelButton: true,
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "Yes, I'm sure !",
+		}).then((result) => {
+			/* Read more about isConfirmed, isDenied below */
+			if (result.isConfirmed) {
+				// AJAX
+				$.ajax({
+					url: "index.php?request=logout",
+					// type: "GET",
+					type: "POST",
+					data: {
+						'token': _token
+					},
+
+					success: function () {
+						setTimeout(function () {
+							localStorage.setItem('first', null);
+							localStorage.setItem('first_chime', null);
+							localStorage.setItem('next_chime', null);
+							window.location.href = 'index.php';
+						}, 200);
+					},
+				});
+
+			}
+		})
+
+	}
+
+
+
+	var Base64 = {
+		_keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+		encode: function (e) {
+			var t = "";
+			var n, r, i, s, o, u, a;
+			var f = 0;
+			e = Base64._utf8_encode(e);
+			while (f < e.length) {
+				n = e.charCodeAt(f++);
+				r = e.charCodeAt(f++);
+				i = e.charCodeAt(f++);
+				s = n >> 2;
+				o = (n & 3) << 4 | r >> 4;
+				u = (r & 15) << 2 | i >> 6;
+				a = i & 63;
+				if (isNaN(r)) {
+					u = a = 64
+				} else if (isNaN(i)) {
+					a = 64
+				}
+				t = t + this._keyStr.charAt(s) + this._keyStr.charAt(o) + this._keyStr.charAt(u) + this._keyStr
+					.charAt(a)
+			}
+			return t
+		},
+		decode: function (e) {
+			var t = "";
+			var n, r, i;
+			var s, o, u, a;
+			var f = 0;
+			e = e.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+			while (f < e.length) {
+				s = this._keyStr.indexOf(e.charAt(f++));
+				o = this._keyStr.indexOf(e.charAt(f++));
+				u = this._keyStr.indexOf(e.charAt(f++));
+				a = this._keyStr.indexOf(e.charAt(f++));
+				n = s << 2 | o >> 4;
+				r = (o & 15) << 4 | u >> 2;
+				i = (u & 3) << 6 | a;
+				t = t + String.fromCharCode(n);
+				if (u != 64) {
+					t = t + String.fromCharCode(r)
+				}
+				if (a != 64) {
+					t = t + String.fromCharCode(i)
+				}
+			}
+			t = Base64._utf8_decode(t);
+			return t
+		},
+		_utf8_encode: function (e) {
+			e = e.replace(/\r\n/g, "\n");
+			var t = "";
+			for (var n = 0; n < e.length; n++) {
+				var r = e.charCodeAt(n);
+				if (r < 128) {
+					t += String.fromCharCode(r)
+				} else if (r > 127 && r < 2048) {
+					t += String.fromCharCode(r >> 6 | 192);
+					t += String.fromCharCode(r & 63 | 128)
+				} else {
+					t += String.fromCharCode(r >> 12 | 224);
+					t += String.fromCharCode(r >> 6 & 63 | 128);
+					t += String.fromCharCode(r & 63 | 128)
+				}
+			}
+			return t
+		},
+		_utf8_decode: function (e) {
+			var t = "";
+			var n = 0;
+			var r = c1 = c2 = 0;
+			while (n < e.length) {
+				r = e.charCodeAt(n);
+				if (r < 128) {
+					t += String.fromCharCode(r);
+					n++
+				} else if (r > 191 && r < 224) {
+					c2 = e.charCodeAt(n + 1);
+					t += String.fromCharCode((r & 31) << 6 | c2 & 63);
+					n += 2
+				} else {
+					c2 = e.charCodeAt(n + 1);
+					c3 = e.charCodeAt(n + 2);
+					t += String.fromCharCode((r & 15) << 12 | (c2 & 63) << 6 | c3 & 63);
+					n += 3
+				}
+			}
+			return t
+		}
+	}
+
+
+
+	function konfirmasi(notif, lokasi) {
+
+		var x = confirm(notif);
+
+		if (x === true) {
+			window.location.href = lokasi;
+		}
+
+	}
+
+
+	function cek_upload($id_input_file, $maksimal_file) {
+
+		var file_upload = document.getElementById($id_input_file);
+
+		if (file_upload.files[0].type != "application/pdf") {
+			alert('File harus berupa pdf !');
+			file_upload.value = "";
+		}
+
+		if (file_upload.files[0].size > $maksimal_file * 1024 * 1024) {
+			alert('Maksimal ukuran file adalah ' + $maksimal_file + ' MB !');
+
+			file_upload.value = "";
+		}
+
+	}
+
+
+	function spinner() {
+
+		
+		// var icon_spinner = event.target.childNodes[0];
+		var icon_spinner = event.target.querySelector('i');
+
+		var icon_old = icon_spinner.className;
+		var spinner = "fas fa-spinner fa-spin mr-1";
+
+		// console.log(icon_spinner);
+
+		icon_spinner.className = '';
+		icon_spinner.className = spinner;
+
+		setTimeout(function () {
+			icon_spinner.className = '';
+			icon_spinner.className = icon_old;
+
+		}, 2000);
+
+	}
+
+	function parseSize(size) {
+		const units = {
+			B: 1,
+			KB: 1024,
+			MB: 1024 * 1024,
+			GB: 1024 * 1024 * 1024,
+			TB: 1024 * 1024 * 1024 * 1024
+		};
+
+		if (!isNaN(size) && (function (x) {
+				return (x | 0) === x;
+			})(parseFloat(size))) {
+
+			return parseInt(size);
+
+		} else {
+
+			const pattern = /^(\d+(?:\.\d+)?)\s*([BKMGT]B)$/i;
+			const matches = size.match(pattern);
+
+			if (matches && matches.length === 3) {
+				const value = parseFloat(matches[1]);
+				const unit = matches[2].toUpperCase();
+
+				if (!isNaN(value) && units[unit]) {
+					return value * units[unit];
+				}
+			}
+
+
+			return null;
+		}
+	}
+
+
+	function validateFile(fileInput, maxSize, allowedTypes = '') {
+		const file = fileInput.files[0];
+
+		if (allowedTypes !== '') {
+			var allowedTypes = allowedTypes.split(',').map(type => type.trim());
+		} else {
+			var allowedTypes = fileInput.accept.split(',').map(type => type.trim());
+		}
+
+		const fileType = file.type;
+		const fileSize = file.size;
+
+
+		const maxBytes = parseSize(maxSize);
+
+
+		// Memeriksa ukuran file
+		if (!maxBytes || fileSize > maxBytes) {
+
+			// console.log(fileSize);
+			// console.log(maxSize);
+
+			setTimeout(function () {
+				swal.fire({
+					// title: 'Ukuran file terlalu besar',
+					title: 'File size exceeded limit',
+					text: `Maximum size : ${maxSize}`,
+					icon: 'error',
+					timer: 3000,
+					showConfirmButton: true
+				});
+			}, 10);
+
+			// Mengatur ulang nilai elemen input file
+			fileInput.value = '';
+
+			return false;
+		}
+
+		if (!allowedTypes.includes(fileType)) {
+			console.log( allowedTypes );
+			setTimeout(function () {
+				swal.fire({
+					// title: 'Tipe file tidak diizinkan',
+					title: 'Choosen file is not supported',
+					// text: 'Choose : ',
+					icon: 'error',
+					timer: 2000,
+					showConfirmButton: true
+				});
+			}, 10);
+
+			// Mengatur ulang nilai elemen input file
+			fileInput.value = '';
+
+			return false;
+		}
+
+		return true;
+	}
+</script>
+<style>
+	.disabled2 {
+		pointer-events: none;
+	}
+
+	.not-avail {
+		text-decoration: line-through;
+		pointer-events: none;
+		color: #808080;
+	}
+
+	::-webkit-scrollbar {
+		width: 8px;
+	}
+
+	::-webkit-scrollbar-track {
+		-webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+		box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+		background: #fff;
+	}
+
+	::-webkit-scrollbar-thumb {
+		background: #6c757d;
+	}
+
+	.wrap {
+		white-space: normal !important;
+		word-wrap: break-word;
+		min-width: 140px;
+		max-width: 140px;
+		/* max-width:150px; */
+	}
+
+	.wrap2 {
+		white-space: normal !important;
+		word-wrap: break-word;
+		min-width: 170px;
+		max-width: 170px;
+		/* max-width:150px; */
+	}
+</style>

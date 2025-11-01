@@ -1,0 +1,185 @@
+<link rel='stylesheet' href='./core/component/sweetalert2.min.css'>
+<script defer src='./core/component/sweetalert2.min.js'></script>
+<script defer src='./core/component/soloalert.js'></script>
+
+
+<!-- Javascript Function -->
+<script type="text/javascript">
+	function toast(state = 'danger', title = 'Not Set', message = '', icon = 'fas fa-bell') {
+
+		if (state == 'error') {
+			state = 'danger';
+		}
+		var placementFrom = 'top';
+		var placementAlign = 'right';
+		var state = state;
+		var style = 'withicon';
+		var content = {};
+
+
+
+		if (state == 'danger') {
+			icon = 'fas fa-times';
+		} else if (state == 'success') {
+			icon = 'fas fa-check';
+		} else if (state == 'warning') {
+			icon = 'fas fa-info';
+		} else {
+			icon = 'fas fa-bell';
+		}
+
+
+		content.message = message;
+		content.title = title;
+		if (style == "withicon") {
+			content.icon = icon;
+		} else {
+			content.icon = icon;
+		}
+		$.notify(content, {
+			type: state,
+			placement: {
+				from: placementFrom,
+				align: placementAlign
+			},
+			time: 2000,
+			delay: 2500,
+		});
+
+	}
+
+	function toast2(state = 'error', title = 'Not Set', message = '', icon = 'fas fa-bell') {
+		Swal.fire({
+			toast: true,
+			icon: state,
+			title: title,
+			message: message,
+			animation: false,
+			position: 'top-right',
+			showConfirmButton: false,
+			timer: 2000,
+			timerProgressBar: true,
+			didOpen: (toast) => {
+				toast.addEventListener('mouseenter', Swal.stopTimer)
+				toast.addEventListener('mouseleave', Swal.resumeTimer)
+			}
+		})
+
+	}
+
+	function toast3(state = 'error', title = 'Not Set', message = '', timer = '3000') {
+
+		toastr.options = {
+			"closeButton": true,
+			"debug": true,
+			"newestOnTop": true,
+			"progressBar": true,
+			"positionClass": "toast-top-right",
+			"preventDuplicates": false,
+			"onclick": false,
+			"showDuration": "300",
+			"hideDuration": "1000",
+			"timeOut": "60000",
+			"extendedTimeOut": "60000",
+			"showEasing": "swing",
+			"hideEasing": "linear",
+			"showMethod": "fadeIn",
+			"hideMethod": "fadeOut",
+			"closeMethod": "fadeOut",
+		};
+
+		if (state == 'success') {
+			toastr.success(message, title, {
+				timeOut: timer
+			})
+		} else
+
+		if (state == 'warning') {
+			toastr.warning(message, title, {
+				timeOut: timer
+			})
+		} else
+
+		if (state == 'error') {
+			toastr.error(message, title, {
+				timeOut: timer
+			})
+		} else
+
+		if (state == 'info') {
+			toastr.info(message, title, {
+				timeOut: timer
+			})
+		} else {
+			toastr.info(message, title, {
+				timeOut: timer
+			})
+		}
+
+	}
+
+	function swal2(tipe = 'error', judul = 'Not Set', notifikasi = '', timer = 2000) {
+		setTimeout(function () {
+			swal.fire({
+
+				title: judul,
+				text: notifikasi,
+				//footer              :  '$time',
+				icon: tipe,
+				timer: timer,
+				showConfirmButton: true
+			});
+		}, 10);
+	}
+
+
+	function soloalert(state = 'danger', title = 'Not Set', message = '', transparency = true) {
+
+		SoloAlert.alert({
+			title: title,
+			body: message,
+			icon: state,
+			theme: 'auto',
+			useTransparency: transparency,
+		});
+
+	}
+
+	function cutealert(state = 'success', title = 'Not Set', message = '') {
+
+		cuteAlert({
+			type: state,
+			title: title,
+			message: message,
+			buttonText: "Okay"
+		})
+
+	}
+
+	function play_sound(state = 'error', timer = 100) {
+
+		// var play_audio = new Audio('./assets/sound/' +state+ '.mp3');
+		var play_audio = new Audio('./core/component/sound/' + state + '.mp3');
+
+
+		setTimeout(function () {
+			play_audio.play();
+		}, 100);
+
+		play_audio.pause();
+
+	}
+
+
+
+	function toast5(state = 'success', title = 'Not Set', message = 'Not Set', timer = 5000) {
+
+		cuteToast({
+			type: state, // or 'info', 'error', 'warning'
+			title: title,
+			message: message,
+			timer: timer
+		})
+
+	}
+</script>
