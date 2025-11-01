@@ -2,7 +2,7 @@
 
 MyInternship adalah aplikasi berbasis web yang dikembangkan untuk mendukung proses pengajuan dan pengelolaan kegiatan magang mahasiswa di Politeknik Negeri Batam. Aplikasi ini dirancang untuk mempermudah interaksi antara mahasiswa, dosen koordinator magang, perusahaan, dan CDC Admin dalam satu sistem terintegrasi.
 
-⚙ Teknologi yang Digunakan
+⚙ Teknologi yang Digunakan : 
 
 🖥 Frontend
 
@@ -22,3 +22,5 @@ PHP digunakan untuk pengolahan data sederhana dan integrasi dengan antarmuka pen
 🧠 Tujuan
 
 Proyek ini bertujuan untuk mendigitalisasi proses administrasi magang agar lebih efisien, transparan, dan terintegrasi, serta mengurangi penggunaan dokumen fisik dalam proses pengajuan surat magang.
+
+
