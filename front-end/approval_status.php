@@ -535,13 +535,17 @@ if ($id_kampus) {
             <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 
             <script>
+                // ========================================
+                // INISIALISASI SAAT HALAMAN DIMUAT
+                // ========================================
                 $(document).ready(function() {
-
-                    clock_run();
-
-                    show_calendar();
+                    clock_run(); // Jalankan fungsi jam real-time
+                    show_calendar(); // Inisialisasi kalender
                 });
 
+                // ========================================
+                // FUNGSI KALENDER
+                // ========================================
                 function show_calendar() {
                     var date = new Date();
                     var d = date.getDate();
@@ -555,9 +559,13 @@ if ($id_kampus) {
                     });
                 }
 
+                // ========================================
+                // FUNGSI JAM REAL-TIME
+                // ========================================
                 function clock_run() {
-
                     'use strict';
+
+                    // Ambil tanggal saat ini
                     let d = new Date();
                     let en_day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
                     let en_month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -566,14 +574,18 @@ if ($id_kampus) {
                     let month = en_month[d.getMonth()];
                     let year = (d.getYear() + 1900);
                     let curr_date = day + ', ' + date + ' ' + month + ' ' + year;
+
+                    // Simpan tanggal ke localStorage
                     localStorage.setItem('curr_date', curr_date);
                     let old_date = localStorage.getItem('curr_date');
 
+                    // Update tampilan tanggal jika berubah
                     if ($("#date").text() != curr_date) {
                         localStorage.setItem('curr_date', curr_date);
                         $("#date").text(curr_date);
                     }
 
+                    // Update jam setiap detik
                     setInterval(function() {
                         let d = new Date();
                         let day = en_day[d.getDay()];
@@ -582,11 +594,13 @@ if ($id_kampus) {
                         let year = (d.getYear() + 1900);
                         let date_day = day + ', ' + date + ' ' + month + ' ' + year;
 
+                        // Update tanggal jika berganti hari
                         if (date_day != old_date) {
                             localStorage.setItem('curr_date', date_day);
                             $("#date").text(date_day);
                         }
 
+                        // Format dan tampilkan jam
                         let hours = d.getHours();
                         let minutes = d.getMinutes();
                         let seconds = d.getSeconds();
@@ -600,6 +614,9 @@ if ($id_kampus) {
 
             <!-- Javascript Function -->
             <script type="text/javascript">
+                // ========================================
+                // FUNGSI COPY TEXT KE CLIPBOARD
+                // ========================================
                 function copyToClipboard(text) {
                     var tempInput = document.createElement("input");
                     document.body.appendChild(tempInput);
@@ -611,9 +628,11 @@ if ($id_kampus) {
                     document.body.removeChild(tempInput);
 
                     alert("Text copied to clipboard: " + text);
-
                 }
 
+                // ========================================
+                // FUNGSI GET NOTIFIKASI FORM
+                // ========================================
                 function getNotificationForm(formSelector) {
                     $.ajax({
                         url: 'index.php?request=validation_get',
@@ -621,7 +640,6 @@ if ($id_kampus) {
 
                         success: function(response, xhr, status, error) {
                             console.log('Getting form notification');
-
                             $('body').append(response);
                         },
 
@@ -632,10 +650,13 @@ if ($id_kampus) {
                     return true;
                 }
 
+                // ========================================
+                // FUNGSI LOGOUT DENGAN KONFIRMASI
+                // ========================================
                 function logout_confirm() {
-
                     let _token = $('meta[name="csrf-token"]').attr('content');
 
+                    // Tampilkan SweetAlert konfirmasi
                     Swal.fire({
                         title: 'Logout from your account ?',
                         text: 'Are you sure you want to end the current session?',
@@ -655,9 +676,11 @@ if ($id_kampus) {
                                 },
                                 success: function() {
                                     setTimeout(function() {
+                                        // Hapus data localStorage
                                         localStorage.removeItem('first');
                                         localStorage.removeItem('first_chime');
                                         localStorage.removeItem('next_chime');
+                                        // Redirect ke halaman login
                                         window.location.href = 'role_login.php';
                                     }, 200);
                                 },
@@ -669,31 +692,38 @@ if ($id_kampus) {
                     });
                 }
 
+                // ========================================
+                // FUNGSI KONFIRMASI SEDERHANA
+                // ========================================
                 function konfirmasi(notif, lokasi) {
-
                     var x = confirm(notif);
                     if (x === true) {
                         window.location.href = lokasi;
                     }
                 }
 
+                // ========================================
+                // FUNGSI SPINNER LOADING PADA BUTTON
+                // ========================================
                 function spinner() {
-
-                    // var icon_spinner = event.target.childNodes[0];
                     var icon_spinner = event.target.querySelector('i');
                     var icon_old = icon_spinner.className;
                     var spinner = "fas fa-spinner fa-spin mr-1";
 
-                    // console.log(icon_spinner);
+                    // Ubah icon menjadi spinner
                     icon_spinner.className = '';
                     icon_spinner.className = spinner;
 
+                    // Kembalikan icon setelah 2 detik
                     setTimeout(function() {
                         icon_spinner.className = '';
                         icon_spinner.className = icon_old;
                     }, 2000);
                 }
 
+                // ========================================
+                // INISIALISASI SELECT2 UNTUK DROPDOWN
+                // ========================================
                 $(document).ready(function() {
                     $('#companySelect').select2({
                         placeholder: "Choose Company",
@@ -702,10 +732,13 @@ if ($id_kampus) {
                     });
                 });
 
-                // Highlight menu
+                // ========================================
+                // HIGHLIGHT MENU SIDEBAR AKTIF
+                // ========================================
                 document.addEventListener("DOMContentLoaded", function() {
                     const navItems = document.querySelectorAll(".sidebar .nav-item");
 
+                    // Event listener untuk klik menu
                     navItems.forEach(item => {
                         item.addEventListener("click", function() {
                             // Hapus active dari semua nav-item
@@ -716,7 +749,7 @@ if ($id_kampus) {
                         });
                     });
 
-                    // --- BONUS: agar aktif sesuai halaman yang dibuka ---
+                    // Auto-detect halaman aktif berdasarkan URL
                     const currentPage = window.location.href;
                     navItems.forEach(item => {
                         const link = item.querySelector("a");
@@ -727,20 +760,25 @@ if ($id_kampus) {
                     });
                 });
 
-                // Script dropdown
+                // ========================================
+                // SCRIPT DROPDOWN ACTION BUTTON
+                // ========================================
                 const actionBtn = document.getElementById('actionBtn');
                 const actionMenu = document.getElementById('actionMenu');
 
+                // Toggle dropdown saat button diklik
                 actionBtn.addEventListener('click', () => {
                     actionMenu.style.display = actionMenu.style.display === 'block' ? 'none' : 'block';
                 });
 
+                // Tutup dropdown jika klik di luar area
                 window.addEventListener('click', (e) => {
                     if (!actionBtn.contains(e.target)) {
                         actionMenu.style.display = 'none';
                     }
                 });
 
+                // Toggle class untuk kolom sortable (legacy code)
                 document.querySelectorAll('th.sortable').forEach((th, index) => {
                     th.addEventListener('click', () => {
                         th.classList.toggle('asc');
@@ -751,6 +789,7 @@ if ($id_kampus) {
             </script>
         </div>
     </div>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container-fluid">
@@ -761,11 +800,14 @@ if ($id_kampus) {
     </footer>
 
     <script>
+        // ========================================
+        // MAIN SCRIPT: LOAD DATA APPROVAL STATUS
+        // ========================================
         (async function() {
-            // ambil NIM dari session PHP
+            // Ambil NIM dari session PHP
             const nim = <?= json_encode($student['nim']) ?>;
 
-            // base API untuk student
+            // Base URL API untuk student
             const API_BASE = 'http://localhost:8000/api/student';
 
             const tableBody = document.getElementById('tableBody');
@@ -774,6 +816,9 @@ if ($id_kampus) {
                 return;
             }
 
+            // ========================================
+            // FUNGSI FORMAT TANGGAL (DD/MM/YYYY)
+            // ========================================
             function formatDate(dtStr) {
                 if (!dtStr) return '-';
                 const d = new Date(dtStr);
@@ -781,13 +826,17 @@ if ($id_kampus) {
                 return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
             }
 
+            // ========================================
+            // FUNGSI LOAD DATA APPROVAL DARI API
+            // ========================================
             async function loadApproval() {
                 try {
+                    // Fetch data dari backend
                     const res = await fetch(`${API_BASE}/approval-status/${nim}`);
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     const json = await res.json();
 
-                    // Jika backend belum disetup untuk return JSON success:true, buat fallback
+                    // Validasi struktur JSON
                     if (!json || (!json.success && !Array.isArray(json.data))) {
                         throw new Error('Invalid JSON structure');
                     }
@@ -795,67 +844,122 @@ if ($id_kampus) {
                     const rows = json.data || [];
                     tableBody.innerHTML = '';
 
+                    // Tampilkan pesan jika tidak ada data
                     if (!rows.length) {
-                        tableBody.innerHTML = `<tr><td colspan="7" class="text-center py-3">You haven’t submitted any internship letter yet.</td></tr>`;
+                        tableBody.innerHTML = `<tr><td colspan="7" class="text-center py-3">You haven't submitted any internship letter yet.</td></tr>`;
                         return;
                     }
 
+                    // ========================================
+                    // RENDER SETIAP ROW DATA
+                    // ========================================
                     rows.forEach((r, idx) => {
                         const id = r.id_letter;
                         const dateCell = `<td class="align-middle text-center">${formatDate(r.created_at)}</td>`;
 
-                        // koor approval badge
+                        // === BADGE APPROVAL KOORDINATOR ===
                         let koorBadge = '';
-                        if (r.koor_approval === 'WAITING') koorBadge = `<span class="badge badge-warning px-3 py-2">Waiting</span>`;
-                        else if (r.koor_approval === 'ACCEPTED') koorBadge = `<span class="badge badge-success px-3 py-2">Approved</span><br><small>${formatDate(r.updated_at)}</small>`;
-                        else if (r.koor_approval === 'REJECTED') koorBadge = `<span class="badge badge-danger px-3 py-2">Rejected</span><br><small>${formatDate(r.updated_at)}</small>`;
-                        else koorBadge = '-';
+                        if (r.koor_approval === 'WAITING') {
+                            koorBadge = `<span class="badge badge-warning px-3 py-2">Waiting</span>`;
+                        } else if (r.koor_approval === 'ACCEPTED') {
+                            koorBadge = `
+                    <span class="badge badge-success px-3 py-2">Approved</span>
+                    <br><small>${formatDate(r.updated_at)}</small>`;
+                        } else if (r.koor_approval === 'REJECTED') {
+                            koorBadge = `
+                    <span class="badge badge-danger px-3 py-2">Rejected</span>
+                    <br><small>${formatDate(r.updated_at)}</small>
+                    <br><button class="btn btn-sm btn-light mt-1" onclick="showReason('${r.koor_reason || 'No reason provided'}')">
+                        <i class="fas fa-comment"></i> Show reason
+                    </button>`;
+                        } else {
+                            koorBadge = '-';
+                        }
 
-                        // cdc approval badge
+                        // === BADGE APPROVAL CDC ADMINISTRATOR ===
                         let cdcBadge = '';
-                        if (r.cdc_approval === 'WAITING') cdcBadge = `<span class="badge badge-warning px-3 py-2">Waiting</span>`;
-                        else if (r.cdc_approval === 'ACCEPTED') cdcBadge = `<span class="badge badge-success px-3 py-2">Approved</span><br><small>${formatDate(r.updated_at)}</small>`;
-                        else if (r.cdc_approval === 'REJECTED') cdcBadge = `<span class="badge badge-danger px-3 py-2">Rejected</span><br><small>${formatDate(r.updated_at)}</small>`;
-                        else cdcBadge = '-';
+                        if (r.koor_approval === 'REJECTED') {
+                            // Jika koor rejected, CDC otomatis rejected tanpa tombol reason
+                            cdcBadge = `
+                    <span class="badge badge-danger px-3 py-2">Rejected</span>
+                    <br><small>-</small>`;
+                        } else if (r.cdc_approval === 'WAITING') {
+                            cdcBadge = `<span class="badge badge-warning px-3 py-2">Waiting</span>`;
+                        } else if (r.cdc_approval === 'ACCEPTED') {
+                            cdcBadge = `
+                    <span class="badge badge-success px-3 py-2">Approved</span>
+                    <br><small>${formatDate(r.updated_at)}</small>`;
+                        } else if (r.cdc_approval === 'REJECTED') {
+                            cdcBadge = `
+                    <span class="badge badge-danger px-3 py-2">Rejected</span>
+                    <br><small>${formatDate(r.updated_at)}</small>
+                    <br><button class="btn btn-sm btn-light mt-1" onclick="showReason('${r.cdc_reason || 'No reason provided'}')">
+                        <i class="fas fa-comment"></i> Show reason
+                    </button>`;
+                        } else {
+                            cdcBadge = '-';
+                        }
 
-                        // final status
+                        // === BADGE STATUS AKHIR ===
                         let statusBadge = '';
-                        if (r.status === 'WAITING') statusBadge = `<span class="badge badge-warning px-3 py-2">Waiting</span>`;
-                        else if (r.status === 'ACCEPTED') statusBadge = `<span class="badge badge-success px-3 py-2">Approved</span>`;
-                        else if (r.status === 'REJECTED') statusBadge = `<span class="badge badge-danger px-3 py-2">Rejected</span>`;
-                        else statusBadge = '-';
+                        if (r.status === 'WAITING') {
+                            statusBadge = `<span class="badge badge-warning px-3 py-2">Waiting</span>`;
+                        } else if (r.status === 'ACCEPTED') {
+                            statusBadge = `<span class="badge badge-success px-3 py-2">Completed</span>`;
+                        } else if (r.status === 'REJECTED') {
+                            statusBadge = `<span class="badge badge-danger px-3 py-2">Rejected</span>`;
+                        } else {
+                            statusBadge = '-';
+                        }
 
-                        // download button (disabled until ACCEPTED)
+                        // === TOMBOL DOWNLOAD ===
+                        // Button disabled jika status bukan ACCEPTED
                         const downloadDisabled = (r.status !== 'ACCEPTED') ? 'disabled' : '';
-                        const downloadBtn = `<button class="btn btn-sm btn-download" data-id="${id}" data-lang="${r.language || 'ID'}" ${downloadDisabled}
-                    style="background:#E9ECEF;color:#212529;min-width:130px;border:none;box-shadow:0 3px 6px rgba(0,0,0,0.15);">
+                        const downloadBtn = `
+                <button class="btn btn-sm btn-download"
+                        data-id="${id}"
+                        data-lang="${r.language || 'ID'}"
+                        ${downloadDisabled}
+                        style="background:#E9ECEF;color:#212529;min-width:130px;border:none;box-shadow:0 3px 6px rgba(0,0,0,0.15);">
                     <i class="fa fa-download"></i> Download
                 </button>`;
 
-                        // action button (disabled until ACCEPTED)
+                        // === ACTION BUTTON ===
                         const actionDisabled = (r.status !== 'ACCEPTED') ? 'disabled' : '';
-                        const dropdownIcon = (r.status === 'ACCEPTED') ? '<i class="fa fa-caret-down ml-1"></i>' : '';
-                        const actionBtn = `
-                    <div class="action-wrapper">
-                        <button class="btn btn-secondary btn-sm btn-action" data-id="${id}" ${actionDisabled}>
-                            Action ${dropdownIcon}
-                        </button>
-                    </div>`;
+                        const actionDropdown = (r.status === 'ACCEPTED') ? `
+    <div class="dropdown">
+        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="actionDropdown${id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Action
+        </button>
+        <div class="dropdown-menu" aria-labelledby="actionDropdown${id}">
+            <a class="dropdown-item" href="accepted_by_company.php?id=${id}">
+                <i class="fa fa-check text-success mr-2"></i>Accepted by Company
+            </a>
+            <a class="dropdown-item" href="rejected_by_company.php?id=${id}">
+                <i class="fa fa-times text-danger mr-2"></i>Rejected by Company
+            </a>
+        </div>
+    </div>
+` : `
+    <button class="btn btn-secondary btn-sm" disabled>Action</button>
+`;
 
+                        // === RENDER ROW ===
                         const tr = document.createElement('tr');
                         tr.setAttribute('data-id', id);
                         tr.innerHTML = `
-                    <td class="align-middle text-center">${idx + 1}</td>
-                    ${dateCell}
-                    <td class="align-middle text-center">${koorBadge}</td>
-                    <td class="align-middle text-center">${cdcBadge}</td>
-                    <td class="align-middle text-center">${statusBadge}</td>
-                    <td class="align-middle text-center">${downloadBtn}</td>
-                    <td class="align-middle text-center">${actionBtn}</td>
-                `;
+    <td class="align-middle text-center">${idx + 1}</td>
+    ${dateCell}
+    <td class="align-middle text-center">${koorBadge}</td>
+    <td class="align-middle text-center">${cdcBadge}</td>
+    <td class="align-middle text-center">${statusBadge}</td>
+    <td class="align-middle text-center">${downloadBtn}</td>
+    <td class="align-middle text-center">${actionDropdown}</td>
+`;
                         tableBody.appendChild(tr);
                     });
 
+                    // Attach event listeners setelah render
                     attachListeners();
                 } catch (err) {
                     console.error('Error loading data:', err);
@@ -863,21 +967,28 @@ if ($id_kampus) {
                 }
             }
 
+            // ========================================
+            // FUNGSI ATTACH EVENT LISTENERS
+            // ========================================
             function attachListeners() {
+                // Event listener untuk tombol Download
                 document.querySelectorAll('.btn-download').forEach(btn => {
                     btn.addEventListener('click', () => {
                         if (btn.disabled) return;
                         const id = btn.dataset.id;
                         const lang = btn.dataset.lang || 'ID';
+                        // Redirect ke endpoint download
                         window.location.href = `${API_BASE}/letter/${id}/download?lang=${lang}`;
                     });
                 });
 
-                // action button handler
+                // Event listener untuk tombol Action
                 document.querySelectorAll('.btn-action').forEach(btn => {
                     btn.addEventListener('click', async () => {
                         if (btn.disabled) return;
                         const id = btn.dataset.id;
+
+                        // Prompt user untuk input status acceptance
                         const choose = prompt('Type ACCEPTED for "Accepted by company" or REJECTED for "Rejected by company"')?.toUpperCase();
                         if (!['ACCEPTED', 'REJECTED'].includes(choose)) {
                             alert('Invalid choice or cancelled.');
@@ -885,6 +996,7 @@ if ($id_kampus) {
                         }
 
                         try {
+                            // Kirim PUT request ke API
                             const res = await fetch(`${API_BASE}/acceptance/${id}`, {
                                 method: 'PUT',
                                 headers: {
@@ -896,7 +1008,9 @@ if ($id_kampus) {
                             });
                             const json = await res.json();
                             if (!json.success) throw new Error(json.error || 'Failed to save');
+
                             alert('Action saved successfully.');
+                            // Reload data setelah berhasil
                             await loadApproval();
                         } catch (err) {
                             console.error(err);
@@ -906,7 +1020,83 @@ if ($id_kampus) {
                 });
             }
 
-            // initial load
+            // ========================================
+            // FUNGSI SORT TABLE BERDASARKAN TANGGAL
+            // ========================================
+            let sortOrder = 'desc'; // Default: terbaru di atas
+
+            window.sortTable = function() {
+                const tbody = document.getElementById('tableBody');
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+
+                // Skip jika tidak ada data atau hanya ada pesan error/kosong
+                if (rows.length <= 1 || rows[0].children.length < 2) {
+                    return;
+                }
+
+                // Toggle sort order (asc <-> desc)
+                sortOrder = (sortOrder === 'asc') ? 'desc' : 'asc';
+
+                // Update icon sort di header
+                const icon = document.getElementById('sortIcon');
+                if (sortOrder === 'asc') {
+                    icon.className = 'fas fa-sort-up'; // Icon panah atas
+                } else {
+                    icon.className = 'fas fa-sort-down'; // Icon panah bawah
+                }
+
+                // Sort rows berdasarkan kolom Date (index 1)
+                rows.sort((a, b) => {
+                    const dateA = a.children[1].textContent.trim();
+                    const dateB = b.children[1].textContent.trim();
+
+                    // Fungsi convert DD/MM/YYYY ke timestamp
+                    const parseDate = (dateStr) => {
+                        if (dateStr === '-' || !dateStr) return 0;
+                        const parts = dateStr.split('/');
+                        if (parts.length !== 3) return 0;
+                        // parts[2] = year, parts[1] = month, parts[0] = day
+                        return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+                    };
+
+                    const timeA = parseDate(dateA);
+                    const timeB = parseDate(dateB);
+
+                    // Sort ascending atau descending
+                    if (sortOrder === 'asc') {
+                        return timeA - timeB; // Lama ke baru
+                    } else {
+                        return timeB - timeA; // Baru ke lama
+                    }
+                });
+
+                // Re-render table dengan urutan baru
+                tbody.innerHTML = '';
+                rows.forEach((row, idx) => {
+                    // Update nomor urut
+                    row.children[0].textContent = idx + 1;
+                    tbody.appendChild(row);
+                });
+
+                // Re-attach event listeners setelah sorting
+                attachListeners();
+            };
+
+            // ========================================
+            // FUNGSI SHOW REASON PENOLAKAN (SWEETALERT)
+            // ========================================
+            window.showReason = function(reason) {
+                Swal.fire({
+                    title: "Rejection Reason",
+                    text: reason,
+                    icon: "info",
+                    confirmButtonText: "OK"
+                });
+            };
+
+            // ========================================
+            // INITIAL LOAD DATA SAAT HALAMAN DIBUKA
+            // ========================================
             await loadApproval();
 
         })();

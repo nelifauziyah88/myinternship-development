@@ -509,7 +509,7 @@ if (!$id_letter) {
           }
         });
 
-        const res = await fetch(`${apiBase}/lecturer/submissions/edit/${id}`, {
+        const res = await fetch(`${apiBase}/cdc/submissions/edit/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json'

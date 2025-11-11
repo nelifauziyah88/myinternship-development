@@ -24,7 +24,8 @@ $periode    = $start_date . ' - ' . $end_date;
 
 $year = date('Y');
 $letterNumber = $letter['letter_number'] ?? '___';
-$nomorFormatted = "{$letterNumber}/WDI/PL29/VIII/{$year}";
+$monthRoman = $_GET['month_roman'] ?? 'VIII'; // Ambil dari query parameter
+$nomorFormatted = "{$letterNumber}/WDI/PL29/{$monthRoman}/{$year}";
 
 $company_name = $letter['company_name'] ?? ($company['name'] ?? '');
 $company_addr = $letter['company_address'] ?? ($company['address'] ?? '');
@@ -547,7 +548,7 @@ $stempel = "assets/img/ttd.png";
                 <tr>
                     <td>No</td>
                     <td>:</td>
-                    <td><?= htmlspecialchars($nomorFormatted) ?>/WDI/PL29/VIII/2025</td>
+                    <td><?= htmlspecialchars($nomorFormatted) ?></td>
                 </tr>
                 <tr>
                     <td>Attachment</td>

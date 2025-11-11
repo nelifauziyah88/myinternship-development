@@ -544,6 +544,7 @@ if ($id_kampus) {
                         </div>
                     </div>
 
+                    <!-- Table Section -->
                     <div class="col-md-12">
                         <div class="card full-height">
                             <div class="card-body">
@@ -600,37 +601,64 @@ if ($id_kampus) {
         </div>
 
         <script>
+            // ========================================
+            // KONFIGURASI AWAL
+            // ========================================
+            // Mendapatkan ID dosen dari PHP
             const lecturerId = "<?php echo $nim_nik_unit; ?>";
+            // Mendapatkan nama user saat ini dari PHP
+            const currentUserName = <?= json_encode($user['name'] ?? "-") ?>;
+            // Base URL untuk API endpoint
             const apiBase = "http://localhost:8000/api";
 
+            // ========================================
+            // EVENT LISTENER - LOAD SUBMISSIONS SAAT HALAMAN SIAP
+            // ========================================
             document.addEventListener("DOMContentLoaded", loadSubmissions);
 
+            // ========================================
+            // FUNGSI UTAMA - LOAD DATA SUBMISSIONS
+            // ========================================
             async function loadSubmissions() {
+                // Dapatkan element tbody
                 const body = document.getElementById("tableBody");
+                // Tampilkan loading state
                 body.innerHTML = "<tr><td colspan='8'>Loading...</td></tr>";
 
                 try {
+                    // Fetch data submissions dari API
                     const res = await fetch(`${apiBase}/lecturer/submissions/${lecturerId}`);
                     const json = await res.json();
 
+                    // Validasi response - cek jika tidak ada data
                     if (!json.success || !json.data || json.data.length === 0) {
                         body.innerHTML = "<tr><td colspan='8' class='text-center text-muted'>No data found.</td></tr>";
                         return;
                     }
 
+                    // Reset table body jika ada data
                     body.innerHTML = "";
 
+                    // ========================================
+                    // LOOP DATA - RENDER SETIAP SUBMISSION
+                    // ========================================
                     json.data.forEach((item, index) => {
+                        // Format tanggal submission
                         const date = new Date(item.created_at).toLocaleDateString("en-GB");
 
+                        // Helper function untuk format waktu
                         const formatTime = (t) => {
                             if (!t) return "-";
                             const d = new Date(t);
                             return d.toLocaleDateString("en-GB");
                         };
 
-                        // === KOOR APPROVAL ===
+                        // ========================================
+                        // RENDER KOLOM COORDINATOR APPROVAL
+                        // ========================================
                         let coordinatorHtml = "";
+
+                        // Status: WAITING - tampilkan dropdown approve/reject
                         if (item.koor_approval === "WAITING") {
                             coordinatorHtml = `
           <div class="dropdown text-center">
@@ -641,52 +669,73 @@ if ($id_kampus) {
               <a class="dropdown-item text-success" href="#" onclick="updateApproval(${item.id_letter}, 'ACCEPTED', this)">
                 <i class="fas fa-check text-success"></i> Approve
               </a>
-              <a class="dropdown-item text-danger" href="#" onclick="updateApproval(${item.id_letter}, 'REJECTED', this)">
+              <a class="dropdown-item text-danger" href="#" onclick="promptReject(${item.id_letter}, 'REJECTED', this)">
                 <i class="fas fa-times text-danger"></i> Reject
               </a>
             </div>
           </div>`;
-                        } else if (item.koor_approval === "ACCEPTED") {
+                        }
+                        // Status: ACCEPTED - tampilkan badge approved dengan timestamp
+                        else if (item.koor_approval === "ACCEPTED") {
                             coordinatorHtml = `
           <div class="text-center">
             <span class="badge approved">Approved</span>
             <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
           </div>`;
-                        } else if (item.koor_approval === "REJECTED") {
-                            coordinatorHtml = `
-          <div class="text-center">
-            <span class="badge rejected">Rejected</span>
-            <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
-          </div>`;
+                        }
+                        // Status: REJECTED - tampilkan badge rejected dengan tombol show reason
+                        else if (item.koor_approval === "REJECTED") {
+                            coordinatorHtml = `<div class="text-center">
+         <span class='badge rejected'>Rejected</span>
+         <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
+         <button class="btn btn-sm btn-light mt-1" onclick="viewReason(${item.id_letter})" title="Show reason">
+           <i class="fas fa-comment"></i> Show reason
+         </button>
+       </div>`;
                         }
 
-                        // === CDC APPROVAL ===
+                        // ========================================
+                        // RENDER KOLOM CDC APPROVAL
+                        // ========================================
                         let cdcHtml = "";
+
+                        // Jika coordinator belum approve, CDC tidak bisa approve (tampilkan -)
                         if (item.koor_approval === "WAITING") {
-                            // Jika koor belum approve → CDC tidak bisa bertindak
-                            cdcHtml = `<span class="badge-empty">-</span>`;
-                        } else if (item.cdc_approval === "WAITING" && item.koor_approval === "ACCEPTED") {
+                            cdcHtml = `-`;
+                        }
+                        // Jika coordinator sudah approve, CDC masih waiting
+                        else if (item.cdc_approval === "WAITING" && item.koor_approval === "ACCEPTED") {
                             cdcHtml = `<span class="badge waiting">Waiting</span>`;
-                        } else if (item.cdc_approval === "ACCEPTED") {
+                        }
+                        // Status CDC: ACCEPTED
+                        else if (item.cdc_approval === "ACCEPTED") {
                             cdcHtml = `
           <div class="text-center">
             <span class="badge approved">Approved</span>
             <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
           </div>`;
-                        } else if (item.cdc_approval === "REJECTED") {
+                        }
+                        // Status CDC: REJECTED
+                        else if (item.cdc_approval === "REJECTED") {
                             cdcHtml = `
           <div class="text-center">
             <span class="badge rejected">Rejected</span>
             <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
           </div>`;
-                        } else {
-                            cdcHtml = `<span class="badge-empty">-</span>`;
+                        }
+                        // Default: tampilkan -
+                        else {
+                            cdcHtml = `-`;
                         }
 
-                        // === HASIL / RESULT ===
+                        // ========================================
+                        // KOLOM HASIL (PLACEHOLDER)
+                        // ========================================
                         const result = "-";
 
-                        // === ROW ===
+                        // ========================================
+                        // RENDER TABLE ROW
+                        // ========================================
                         body.innerHTML += `
         <tr>
           <td class="text-center">${index + 1}</td>
@@ -704,12 +753,17 @@ if ($id_kampus) {
         </tr>`;
                     });
                 } catch (err) {
+                    // Handle error saat fetch data
                     console.error(err);
                     body.innerHTML = "<tr><td colspan='8' class='text-danger'>Error loading data.</td></tr>";
                 }
             }
 
+            // ========================================
+            // FUNGSI UPDATE APPROVAL STATUS
+            // ========================================
             async function updateApproval(id, status, el) {
+                // Tampilkan konfirmasi SweetAlert
                 const confirm = await Swal.fire({
                     title: "Confirm?",
                     text: `You are about to mark this submission as ${status}`,
@@ -717,9 +771,12 @@ if ($id_kampus) {
                     showCancelButton: true,
                     confirmButtonText: "Yes, confirm"
                 });
+
+                // Jika user cancel, hentikan proses
                 if (!confirm.isConfirmed) return;
 
                 try {
+                    // Kirim request update approval ke API
                     const res = await fetch(`${apiBase}/lecturer/approval`, {
                         method: "POST",
                         headers: {
@@ -733,23 +790,29 @@ if ($id_kampus) {
 
                     const json = await res.json();
 
+                    // Handle response dari API
                     if (json.success) {
+                        // Jika sukses, tampilkan notifikasi dan reload data
                         Swal.fire("Success!", json.message, "success");
                         loadSubmissions();
                     } else {
+                        // Jika gagal, tampilkan pesan error
                         Swal.fire("Error", json.message, "error");
                     }
                 } catch (err) {
+                    // Handle error saat fetch
                     Swal.fire("Error", err.message, "error");
                 }
             }
 
+            // ========================================
+            // FUNGSI NAVIGATE KE DETAIL SUBMISSION
+            // ========================================
             function viewDetail(id) {
-                window.location.href = `detail_submission.php?id=${id}`;
+                // Redirect ke halaman detail dengan parameter id
+                window.location.href = `detail_submissions_koor.php?id=${id}`;
             }
         </script>
-
-
 
         <script src="https://code.jquery.com/jquery-3.7.0.min.js"
             integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
@@ -778,14 +841,23 @@ if ($id_kampus) {
         <!-- Atlantis JS -->
         <script src="./assets/js/atlantis.min.js"></script>
 
+        <!-- Sweet Alert -->
+        <script src="./assets/js/core/bootstrap.min.js"></script>
+        <script src="./assets/js/atlantis.min.js"></script>
+        <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+
         <script>
+            // ============================================================
+            // JQUERY INITIALIZATION - Clock & Calendar
+            // ============================================================
             $(document).ready(function() {
-
                 clock_run();
-
                 show_calendar();
             });
 
+            /**
+             * Initialize and display calendar widget
+             */
             function show_calendar() {
                 var date = new Date();
                 var d = date.getDate();
@@ -799,8 +871,11 @@ if ($id_kampus) {
                 });
             }
 
+            /**
+             * Run real-time clock display
+             * Updates date and time every second
+             */
             function clock_run() {
-
                 'use strict';
                 let d = new Date();
                 let en_day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -813,11 +888,13 @@ if ($id_kampus) {
                 localStorage.setItem('curr_date', curr_date);
                 let old_date = localStorage.getItem('curr_date');
 
+                // Update date if changed
                 if ($("#date").text() != curr_date) {
                     localStorage.setItem('curr_date', curr_date);
                     $("#date").text(curr_date);
                 }
 
+                // Update clock every second
                 setInterval(function() {
                     let d = new Date();
                     let day = en_day[d.getDay()];
@@ -826,11 +903,13 @@ if ($id_kampus) {
                     let year = (d.getYear() + 1900);
                     let date_day = day + ', ' + date + ' ' + month + ' ' + year;
 
+                    // Update date if it changed
                     if (date_day != old_date) {
                         localStorage.setItem('curr_date', date_day);
                         $("#date").text(date_day);
                     }
 
+                    // Format and update time
                     let hours = d.getHours();
                     let minutes = d.getMinutes();
                     let seconds = d.getSeconds();
@@ -842,8 +921,14 @@ if ($id_kampus) {
             }
         </script>
 
-        <!-- Javascript Function -->
         <script type="text/javascript">
+            // ============================================================
+            // UTILITY FUNCTIONS
+            // ============================================================
+            /**
+             * Copy text to clipboard
+             * @param {string} text - Text to copy
+             */
             function copyToClipboard(text) {
                 var tempInput = document.createElement("input");
                 document.body.appendChild(tempInput);
@@ -855,9 +940,12 @@ if ($id_kampus) {
                 document.body.removeChild(tempInput);
 
                 alert("Text copied to clipboard: " + text);
-
             }
 
+            /**
+             * Get notification form via AJAX
+             * @param {string} formSelector - Form selector (not used in current implementation)
+             */
             function getNotificationForm(formSelector) {
                 $.ajax({
                     url: 'index.php?request=validation_get',
@@ -865,7 +953,6 @@ if ($id_kampus) {
 
                     success: function(response, xhr, status, error) {
                         console.log('Getting form notification');
-
                         $('body').append(response);
                     },
 
@@ -876,8 +963,10 @@ if ($id_kampus) {
                 return true;
             }
 
+            /**
+             * Logout confirmation and session cleanup
+             */
             function logout_confirm() {
-
                 let _token = $('meta[name="csrf-token"]').attr('content');
 
                 Swal.fire({
@@ -899,6 +988,7 @@ if ($id_kampus) {
                             },
                             success: function() {
                                 setTimeout(function() {
+                                    // Clear localStorage
                                     localStorage.removeItem('first');
                                     localStorage.removeItem('first_chime');
                                     localStorage.removeItem('next_chime');
@@ -913,35 +1003,52 @@ if ($id_kampus) {
                 });
             }
 
+            /**
+             * Show native browser confirmation dialog
+             * @param {string} notif - Notification message
+             * @param {string} lokasi - URL to redirect if confirmed
+             */
             function konfirmasi(notif, lokasi) {
-
                 var x = confirm(notif);
                 if (x === true) {
                     window.location.href = lokasi;
                 }
             }
 
+            /**
+             * Show spinner animation on button icon
+             */
             function spinner() {
-                // var icon_spinner = event.target.childNodes[0];
                 var icon_spinner = event.target.querySelector('i');
                 var icon_old = icon_spinner.className;
                 var spinner = "fas fa-spinner fa-spin mr-1";
-                // console.log(icon_spinner);
+
                 icon_spinner.className = '';
                 icon_spinner.className = spinner;
+
                 setTimeout(function() {
                     icon_spinner.className = '';
                     icon_spinner.className = icon_old;
                 }, 2000);
             }
 
-            // Script Filter All
-            // Variabel global untuk menyimpan semua data
-            let allSubmissions = [];
-            let sortAscending = true;
+            // ============================================================
+            // GLOBAL VARIABLES FOR FILTERING & SORTING
+            // ============================================================
+            let allSubmissions = []; // Store all submission data
+            let sortAscending = true; // Track sort direction
 
+            // ============================================================
+            // DATA LOADING & RENDERING
+            // ============================================================
+
+            // Initialize on page load
             document.addEventListener("DOMContentLoaded", loadSubmissions);
 
+            /**
+             * Load all submissions data from API
+             * Stores data globally for filtering and sorting
+             */
             async function loadSubmissions() {
                 const body = document.getElementById("tableBody");
                 body.innerHTML = "<tr><td colspan='8'>Loading...</td></tr>";
@@ -950,16 +1057,17 @@ if ($id_kampus) {
                     const res = await fetch(`${apiBase}/lecturer/submissions/${lecturerId}`);
                     const json = await res.json();
 
+                    // Handle empty or failed response
                     if (!json.success || !json.data || json.data.length === 0) {
                         body.innerHTML = "<tr><td colspan='8' class='text-center text-muted'>No data found.</td></tr>";
                         allSubmissions = [];
                         return;
                     }
 
-                    // Simpan semua data ke variabel global
+                    // Store data globally for filtering/sorting
                     allSubmissions = json.data;
 
-                    // Render data pertama kali
+                    // Render table with all data
                     renderTable(allSubmissions);
 
                 } catch (err) {
@@ -969,9 +1077,14 @@ if ($id_kampus) {
                 }
             }
 
+            /**
+             * Render table rows from data array
+             * @param {Array} data - Array of submission objects
+             */
             function renderTable(data) {
                 const body = document.getElementById("tableBody");
 
+                // Handle empty data
                 if (!data || data.length === 0) {
                     body.innerHTML = "<tr><td colspan='8' class='text-center text-muted'>No data found.</td></tr>";
                     return;
@@ -979,18 +1092,21 @@ if ($id_kampus) {
 
                 body.innerHTML = "";
 
+                // Helper function to format timestamp
+                const formatTime = (t) => {
+                    if (!t) return "-";
+                    const d = new Date(t);
+                    return d.toLocaleDateString("en-GB");
+                };
+
+                // Loop through each submission
                 data.forEach((item, index) => {
                     const date = new Date(item.created_at).toLocaleDateString("en-GB");
 
-                    const formatTime = (t) => {
-                        if (!t) return "-";
-                        const d = new Date(t);
-                        return d.toLocaleDateString("en-GB");
-                    };
-
-                    // === KOOR APPROVAL ===
+                    // === BUILD COORDINATOR APPROVAL COLUMN ===
                     let coordinatorHtml = "";
                     if (item.koor_approval === "WAITING") {
+                        // Show action dropdown
                         coordinatorHtml = `
                 <div class="dropdown text-center">
                     <button class="btn btn-warning btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
@@ -1000,29 +1116,35 @@ if ($id_kampus) {
                         <a class="dropdown-item text-success" href="#" onclick="updateApproval(${item.id_letter}, 'ACCEPTED', this)">
                             <i class="fas fa-check text-success"></i> Approve
                         </a>
-                        <a class="dropdown-item text-danger" href="#" onclick="updateApproval(${item.id_letter}, 'REJECTED', this)">
+                        <a class="dropdown-item text-danger" href="#" onclick="promptReject(${item.id_letter}, 'REJECTED', this)">
                             <i class="fas fa-times text-danger"></i> Reject
                         </a>
                     </div>
                 </div>`;
                     } else if (item.koor_approval === "ACCEPTED") {
+                        // Show approved status
                         coordinatorHtml = `
                 <div class="text-center">
                     <span class="badge approved">Approved</span>
                     <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
                 </div>`;
                     } else if (item.koor_approval === "REJECTED") {
+                        // Show rejected status with reason button
                         coordinatorHtml = `
                 <div class="text-center">
-                    <span class="badge rejected">Rejected</span>
+                    <span class='badge rejected'>Rejected</span>
                     <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
+                    <button class="btn btn-sm btn-light mt-1" onclick="viewReason(${item.id_letter})" title="Show reason">
+                        <i class="fas fa-comment"></i> Show reason
+                    </button>
                 </div>`;
                     }
 
-                    // === CDC APPROVAL ===
+                    // === BUILD CDC APPROVAL COLUMN ===
                     let cdcHtml = "";
                     if (item.koor_approval === "WAITING") {
-                        cdcHtml = `<span class="badge-empty">-</span>`;
+                        // CDC can't process if coordinator hasn't approved
+                        cdcHtml = `-`;
                     } else if (item.cdc_approval === "WAITING" && item.koor_approval === "ACCEPTED") {
                         cdcHtml = `<span class="badge waiting">Waiting</span>`;
                     } else if (item.cdc_approval === "ACCEPTED") {
@@ -1035,16 +1157,16 @@ if ($id_kampus) {
                         cdcHtml = `
                 <div class="text-center">
                     <span class="badge rejected">Rejected</span>
-                    <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
+                    <div class="text-muted" style="font-size:12px;margin-top:2px;">-</div>
                 </div>`;
                     } else {
-                        cdcHtml = `<span class="badge-empty">-</span>`;
+                        cdcHtml = `-`;
                     }
 
-                    // === HASIL / RESULT ===
+                    // === RESULT COLUMN (placeholder) ===
                     const result = "-";
 
-                    // === ROW ===
+                    // === BUILD TABLE ROW ===
                     body.innerHTML += `
             <tr>
                 <td class="text-center">${index + 1}</td>
@@ -1063,7 +1185,14 @@ if ($id_kampus) {
                 });
             }
 
-            // Fungsi untuk filter data
+            // ============================================================
+            // FILTERING & SORTING FUNCTIONS
+            // ============================================================
+
+            /**
+             * Apply filters to submission data
+             * Called when any filter input changes
+             */
             function applyFilter() {
                 const studentName = document.getElementById("filter_student_name").value.toLowerCase().trim();
                 const coordinatorStatus = document.getElementById("filter_coordinator").value.toLowerCase();
@@ -1101,9 +1230,8 @@ if ($id_kampus) {
                     // Filter by Company Result
                     let matchCompany = true;
                     if (companyResult) {
-                        // CEK DULU apakah field company_result ada di database
+                        // Check if company_result field exists
                         if (item.company_result && item.company_result !== "-") {
-                            // Jika ada data company_result, baru filter
                             if (companyResult === "accepted") {
                                 matchCompany = item.company_result === "ACCEPTED";
                             } else if (companyResult === "waiting") {
@@ -1112,7 +1240,7 @@ if ($id_kampus) {
                                 matchCompany = item.company_result === "REJECTED";
                             }
                         } else {
-                            // Jika masih "-" atau null, anggap tidak match
+                            // No company result data, don't match
                             matchCompany = false;
                         }
                     }
@@ -1120,10 +1248,14 @@ if ($id_kampus) {
                     return matchName && matchCoordinator && matchCDC && matchCompany;
                 });
 
+                // Re-render table with filtered data
                 renderTable(filteredData);
             }
 
-            // Fungsi sorting berdasarkan tanggal
+            /**
+             * Sort table by date
+             * Toggle between ascending and descending
+             */
             function sortTable() {
                 sortAscending = !sortAscending;
 
@@ -1136,9 +1268,20 @@ if ($id_kampus) {
                     allSubmissions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 }
 
-                applyFilter(); // Re-apply filter setelah sorting
+                // Re-apply filters after sorting
+                applyFilter();
             }
 
+            // ============================================================
+            // APPROVAL ACTIONS
+            // ============================================================
+
+            /**
+             * Update approval status (Approve action)
+             * @param {number} id - Letter ID
+             * @param {string} status - New status
+             * @param {HTMLElement} el - Clicked element
+             */
             async function updateApproval(id, status, el) {
                 const confirm = await Swal.fire({
                     title: "Confirm?",
@@ -1147,6 +1290,7 @@ if ($id_kampus) {
                     showCancelButton: true,
                     confirmButtonText: "Yes, confirm"
                 });
+
                 if (!confirm.isConfirmed) return;
 
                 try {
@@ -1157,10 +1301,12 @@ if ($id_kampus) {
                         },
                         body: JSON.stringify({
                             id_letter: id,
-                            status
+                            status,
+                            user_id: lecturerId,
+                            user_name: currentUserName,
+                            comment: null
                         })
                     });
-
                     const json = await res.json();
 
                     if (json.success) {
@@ -1174,14 +1320,206 @@ if ($id_kampus) {
                 }
             }
 
+            /**
+             * Prompt for rejection reason
+             * @param {number} id - Letter ID
+             * @param {HTMLElement} el - Clicked element
+             */
+            async function promptReject(id, el) {
+                const {
+                    value: reason,
+                    isConfirmed
+                } = await Swal.fire({
+                    title: "Why are you rejecting?",
+                    text: "Please provide your reason for rejecting this submission.",
+                    input: "textarea",
+                    inputPlaceholder: "Write the reason here...",
+                    inputAttributes: {
+                        'aria-label': 'Reason for rejection'
+                    },
+                    showCancelButton: true,
+                    cancelButtonText: "Cancel",
+                    confirmButtonText: "Submit",
+                    preConfirm: (value) => {
+                        if (!value || !value.trim()) {
+                            Swal.showValidationMessage("Reason is required.");
+                            return false;
+                        }
+                        return value.trim();
+                    }
+                });
+
+                if (!isConfirmed) return;
+
+                // Show confirmation before submitting
+                await confirmThenApprove(id, "REJECTED", reason);
+            }
+
+            /**
+             * Confirm approval action then execute
+             * @param {number} id - Letter ID
+             * @param {string} status - Approval status
+             * @param {string|null} comment - Optional comment
+             */
+            async function confirmThenApprove(id, status, comment = null) {
+                const confirm = await Swal.fire({
+                    title: "Confirm?",
+                    text: `You are about to mark this submission as ${status}`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes, confirm"
+                });
+
+                if (!confirm.isConfirmed) return;
+
+                await performApprovalRequest(id, status, comment);
+            }
+
+            /**
+             * Perform approval request to API
+             * @param {number} id - Letter ID
+             * @param {string} status - Approval status
+             * @param {string|null} comment - Optional comment
+             */
+            async function performApprovalRequest(id, status, comment = null) {
+                try {
+                    const res = await fetch(`${apiBase}/lecturer/approval`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            id_letter: id,
+                            status,
+                            user_id: lecturerId,
+                            user_name: currentUserName,
+                            comment
+                        })
+                    });
+                    const json = await res.json();
+
+                    if (json.success) {
+                        Swal.fire("Success!", json.message, "success");
+                        loadSubmissions();
+                    } else {
+                        Swal.fire("Error", json.message, "error");
+                    }
+                } catch (err) {
+                    Swal.fire("Error", err.message, "error");
+                }
+            }
+
+            // ============================================================
+            // REJECTION REASON MANAGEMENT
+            // ============================================================
+
+            /**
+             * View rejection reason with edit option
+             * @param {number} id_letter - Letter ID
+             */
+            async function viewReason(id_letter) {
+                try {
+                    const res = await fetch(`${apiBase}/lecturer/reason/${id_letter}`);
+                    if (!res.ok) {
+                        const j = await res.json().catch(() => ({
+                            message: 'Unknown error'
+                        }));
+                        return Swal.fire("Error", j.message || "Reason not found", "error");
+                    }
+                    const json = await res.json();
+                    const reason = json.comment || "-";
+
+                    const result = await Swal.fire({
+                        title: "Rejection reason",
+                        html: `<div style="text-align:left; white-space:pre-wrap;">${escapeHtml(reason)}</div>`,
+                        showCancelButton: true,
+                        showDenyButton: true,
+                        cancelButtonText: "Cancel",
+                        denyButtonText: "Edit",
+                        confirmButtonText: "Close"
+                    });
+
+                    if (result.isDenied) {
+                        editReason(id_letter, reason);
+                    }
+                } catch (err) {
+                    Swal.fire("Error", err.message, "error");
+                }
+            }
+
+            /**
+             * Edit rejection reason
+             * @param {number} id_letter - Letter ID
+             * @param {string} current - Current reason
+             */
+            async function editReason(id_letter, current) {
+                const {
+                    value: newReason,
+                    isConfirmed
+                } = await Swal.fire({
+                    title: "Edit rejection reason",
+                    input: "textarea",
+                    inputValue: current || "",
+                    inputPlaceholder: "Write the reason here...",
+                    showCancelButton: true,
+                    cancelButtonText: "Cancel",
+                    confirmButtonText: "Save",
+                    preConfirm: (value) => {
+                        if (!value || !value.trim()) {
+                            Swal.showValidationMessage("Reason is required.");
+                            return false;
+                        }
+                        return value.trim();
+                    }
+                });
+
+                if (!isConfirmed) return;
+
+                try {
+                    const res = await fetch(`${apiBase}/lecturer/history/${id_letter}/edit`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            comment: newReason
+                        })
+                    });
+                    const json = await res.json();
+                    if (json.success) {
+                        Swal.fire("Success", json.message, "success");
+                        loadSubmissions();
+                    } else {
+                        Swal.fire("Error", json.message, "error");
+                    }
+                } catch (err) {
+                    Swal.fire("Error", err.message, "error");
+                }
+            }
+
+            /**
+             * Escape HTML to prevent XSS
+             * @param {string} str - String to escape
+             * @returns {string} Escaped string
+             */
+            function escapeHtml(str) {
+                if (!str) return "";
+                return String(str)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            /**
+             * Navigate to detail page
+             * @param {number} id - Letter ID
+             */
             function viewDetail(id) {
                 window.location.href = `detail_submissions_koor.php?id=${id}`;
             }
         </script>
-
-        <script src="./assets/js/core/bootstrap.min.js"></script>
-        <script src="./assets/js/atlantis.min.js"></script>
-        <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 </body>
 
 </html>

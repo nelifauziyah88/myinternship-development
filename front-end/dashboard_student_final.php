@@ -690,7 +690,7 @@ if ($id_kampus) {
                                                     class="avatar-img rounded"></div>
                                             <div class="u-text">
                                                 <h5><?= htmlspecialchars($user['name']) ?></h5>
-                                                <p class="text-muted">Mahasiswa</p>
+                                                <p class="text-muted">Student at : <br><?= htmlspecialchars($nama_kampus) ?></p>
                                                 <a href="index.php?page=industry_profile"
                                                     class="btn btn-xs btn-secondary btn-sm">View Profile</a>
                                             </div>
@@ -727,9 +727,7 @@ if ($id_kampus) {
                                 <span>
                                     <span class="wrap2"><?= htmlspecialchars($user['name']) ?></span>
                                     <span class="user-level">NIM: <?= htmlspecialchars($user['nim']) ?></span>
-                                    <span class="user-level">
-                                        Student at <br> Politeknik Negeri Batam
-                                    </span>
+                                    <span class="user-level wrap2">Student at: <br><?= htmlspecialchars($nama_kampus) ?></span>
                                 </span>
                             </a>
                             <div class="clearfix"></div>
@@ -893,6 +891,15 @@ if ($id_kampus) {
                 </div>
             </div>
 
+            <!-- Footer -->
+            <footer class="footer">
+                <div class="container-fluid">
+                    <div class="copyright ml-auto">
+                        2025, made with <i class="fa fa-heart heart text-danger"></i> by PBLIFPagi3A-3
+                    </div>
+                </div>
+            </footer>
+
             <script src="https://code.jquery.com/jquery-3.7.0.min.js"
                 integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
 
@@ -926,9 +933,14 @@ if ($id_kampus) {
             <!-- JS Dependencies -->
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-            <script>
-                function logout_confirm() {
+            <!-- SweetAlert2 Library -->
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+            <script>
+                // ============================================
+                // LOGOUT & UTILITY FUNCTIONS
+                // ============================================
+                function logout_confirm() {
                     let _token = $('meta[name="csrf-token"]').attr('content');
 
                     Swal.fire({
@@ -941,7 +953,6 @@ if ($id_kampus) {
                         cancelButtonText: "Cancel"
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // AJAX logout ke PHP
                             $.ajax({
                                 url: "session_logout.php",
                                 type: "POST",
@@ -950,6 +961,7 @@ if ($id_kampus) {
                                 },
                                 success: function() {
                                     setTimeout(function() {
+                                        // Note: Avoid localStorage in production if possible
                                         localStorage.removeItem('first');
                                         localStorage.removeItem('first_chime');
                                         localStorage.removeItem('next_chime');
@@ -964,28 +976,54 @@ if ($id_kampus) {
                     });
                 }
 
-                $(document).ready(function() {
-
-                    clock_run();
-
-                    show_calendar();
-                });
-
-                function show_calendar() {
-                    var date = new Date();
-                    var d = date.getDate();
-                    var m = date.getMonth();
-                    var y = date.getFullYear();
-                    var className = Array('fc-primary', 'fc-danger', 'fc-black', 'fc-success', 'fc-info', 'fc-warning', 'fc-danger-solid', 'fc-warning-solid', 'fc-success-solid', 'fc-black-solid', 'fc-success-solid', 'fc-primary-solid');
-
-                    $calendar = $('#calendar');
-                    $calendar.fullCalendar({
-                        fixedWeekCount: false, // Set false agar jumlah minggu yang ditampilkan menyesuaikan dengan bulan aktif
-                    });
+                function copyToClipboard(text) {
+                    var tempInput = document.createElement("input");
+                    document.body.appendChild(tempInput);
+                    tempInput.value = text;
+                    tempInput.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(tempInput);
+                    alert("Text copied to clipboard: " + text);
                 }
 
-                function clock_run() {
+                function getNotificationForm(formSelector) {
+                    $.ajax({
+                        url: 'index.php?request=validation_get',
+                        type: 'GET',
+                        success: function(response) {
+                            console.log('Getting form notification');
+                            $('body').append(response);
+                        },
+                        error: function() {
+                            console.log('Failed Getting form notification');
+                        }
+                    });
+                    return true;
+                }
 
+                function konfirmasi(notif, lokasi) {
+                    var x = confirm(notif);
+                    if (x === true) {
+                        window.location.href = lokasi;
+                    }
+                }
+
+                function spinner() {
+                    var icon_spinner = event.target.querySelector('i');
+                    var icon_old = icon_spinner.className;
+                    var spinner = "fas fa-spinner fa-spin mr-1";
+
+                    icon_spinner.className = spinner;
+
+                    setTimeout(function() {
+                        icon_spinner.className = icon_old;
+                    }, 2000);
+                }
+
+                // ============================================
+                // CLOCK & CALENDAR FUNCTIONS
+                // ============================================
+                function clock_run() {
                     'use strict';
                     let d = new Date();
                     let en_day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -1019,107 +1057,84 @@ if ($id_kampus) {
                         let hours = d.getHours();
                         let minutes = d.getMinutes();
                         let seconds = d.getSeconds();
-                        let time = ((hours < 10 ? "0" : "") + hours) + ' : ' + ((minutes < 10 ? "0" : "") + minutes) + ' : ' + ((seconds < 10 ? "0" : "") + seconds);
+                        let time = ((hours < 10 ? "0" : "") + hours) + ' : ' +
+                            ((minutes < 10 ? "0" : "") + minutes) + ' : ' +
+                            ((seconds < 10 ? "0" : "") + seconds);
 
                         $("#clock").text(time);
                         $("#clock2").text(time);
                     }, 1000);
                 }
-            </script>
 
-            <!-- Javascript Function -->
-            <script type="text/javascript">
-                function copyToClipboard(text) {
-                    var tempInput = document.createElement("input");
-                    document.body.appendChild(tempInput);
-                    tempInput.value = text;
-                    tempInput.select();
+                function show_calendar() {
+                    var date = new Date();
+                    var d = date.getDate();
+                    var m = date.getMonth();
+                    var y = date.getFullYear();
 
-                    document.execCommand("copy");
-
-                    document.body.removeChild(tempInput);
-
-                    alert("Text copied to clipboard: " + text);
-
+                    var $calendar = $('#calendar');
+                    $calendar.fullCalendar({
+                        fixedWeekCount: false
+                    });
                 }
 
-                function getNotificationForm(formSelector) {
-                    $.ajax({
-                        url: 'index.php?request=validation_get',
-                        type: 'GET',
+                // ============================================
+                // SIDEBAR NAVIGATION HIGHLIGHT
+                // ============================================
+                function initSidebarHighlight() {
+                    const navItems = document.querySelectorAll(".sidebar .nav-item");
 
-                        success: function(response, xhr, status, error) {
-                            console.log('Getting form notification');
+                    navItems.forEach(item => {
+                        item.addEventListener("click", function() {
+                            navItems.forEach(i => i.classList.remove("active"));
+                            this.classList.add("active");
+                        });
+                    });
 
-                            $('body').append(response);
-                        },
-
-                        error: function(xhr, status, error) {
-                            console.log('Failed Getting form notification');
+                    // Set active based on current page
+                    const currentPage = window.location.href;
+                    navItems.forEach(item => {
+                        const link = item.querySelector("a");
+                        if (link && currentPage.includes(link.getAttribute("href"))) {
+                            navItems.forEach(i => i.classList.remove("active"));
+                            item.classList.add("active");
                         }
                     });
-                    return true;
                 }
 
-                function konfirmasi(notif, lokasi) {
-
-                    var x = confirm(notif);
-                    if (x === true) {
-                        window.location.href = lokasi;
-                    }
-                }
-
-                function spinner() {
-
-                    // var icon_spinner = event.target.childNodes[0];
-                    var icon_spinner = event.target.querySelector('i');
-                    var icon_old = icon_spinner.className;
-                    var spinner = "fas fa-spinner fa-spin mr-1";
-
-                    // console.log(icon_spinner);
-                    icon_spinner.className = '';
-                    icon_spinner.className = spinner;
-
-                    setTimeout(function() {
-                        icon_spinner.className = '';
-                        icon_spinner.className = icon_old;
-                    }, 2000);
-                }
-
-                // === Department Data (from your first file) ===
-                const allLabels = [
-                    '— Business Management —', 'D4 Applied Business Administration', 'D3 Accounting', 'D4 Managerial Accounting', 'D2 Goods Distribution', 'D4 International Trade Logistics',
-                    '— Mechanical Engineering —', 'D3 Mechanical Engineering', 'Professional Engineer Program', 'D3 Aircraft Maintenance Engineering', 'D4 Ship Construction Engineering', 'D4 Welding and Fabrication Engineering Technology',
-                    '— Electrical Engineering —', 'D3 Manufacturing Electronics Engineering', 'D4 Electrical Engineering Technology', 'D3 Instrumentation Engineering', 'D4 Mechatronic Engineering', 'D2 Automation Engineering', 'D4 Robotics Engineering', 'D4 Energy Generation Engineering Technology',
-                    '— Informatics Engineering —', 'D3 Informatics Engineering', 'D3 Geomatics Technology', 'D4 Animation', 'D4 Multimedia Engineering Technology', 'D4 Cyber Security Engineering', 'D4 Software Development Engineering'
-                ];
-                const allValues = [null, 7, 6, 5, 7, 6, null, 5, 6, 7, 4, 5, null, 6, 7, 5, 6, 7, 6, 5, null, 5, 7, 6, 7, 5, 6];
-
+                // ============================================
+                // DEPARTMENT DASHBOARD DATA
+                // ============================================
                 const departmentsData = {
-                    'Business Management': {
-                        programs: ['D4 Applied Business Administration', 'D3 Accounting', 'D4 Managerial Accounting', 'D2 Goods Distribution', 'D4 International Trade Logistics'],
-                        responseTime: [7, 6, 5, 7, 6],
+                    'Informatics Engineering': {
+                        programs: [
+                            'D3 Informatics Engineering',
+                            'D3 Geomatics Technology',
+                            'D4 Animation',
+                            'D4 Multimedia Engineering Technology',
+                            'D4 Cyber Security Engineering',
+                            'D4 Software Development Engineering'
+                        ],
+                        responseTime: [5, 7, 6, 7, 5, 6],
                         acceptanceRates: [
+                            [90, 10],
                             [85, 15],
-                            [78, 22],
+                            [88, 12],
                             [82, 18],
-                            [75, 25],
-                            [88, 12]
-                        ]
-                    },
-                    'Mechanical Engineering': {
-                        programs: ['D3 Mechanical Engineering', 'Professional Engineer Program', 'D3 Aircraft Maintenance Engineering', 'D4 Ship Construction Engineering', 'D4 Welding and Fabrication Engineering Technology'],
-                        responseTime: [5, 6, 7, 4, 5],
-                        acceptanceRates: [
-                            [75, 25],
-                            [80, 20],
-                            [70, 30],
-                            [85, 15],
-                            [72, 28]
+                            [92, 8],
+                            [87, 13]
                         ]
                     },
                     'Electrical Engineering': {
-                        programs: ['D3 Manufacturing Electronics Engineering', 'D4 Electrical Engineering Technology', 'D3 Instrumentation Engineering', 'D4 Mechatronic Engineering', 'D2 Automation Engineering', 'D4 Robotics Engineering', 'D4 Energy Generation Engineering Technology'],
+                        programs: [
+                            'D3 Manufacturing Electronics Engineering',
+                            'D4 Electrical Engineering Technology',
+                            'D3 Instrumentation Engineering',
+                            'D4 Mechatronic Engineering',
+                            'D2 Automation Engineering',
+                            'D4 Robotics Engineering',
+                            'D4 Energy Generation Engineering Technology'
+                        ],
                         responseTime: [6, 7, 5, 6, 7, 6, 5],
                         acceptanceRates: [
                             [65, 35],
@@ -1131,67 +1146,95 @@ if ($id_kampus) {
                             [73, 27]
                         ]
                     },
-                    'Informatics Engineering': {
-                        programs: ['D3 Informatics Engineering', 'D3 Geomatics Technology', 'D4 Animation', 'D4 Multimedia Engineering Technology', 'D4 Cyber Security Engineering', 'D4 Software Development Engineering'],
-                        responseTime: [5, 7, 6, 7, 5, 6],
+                    'Mechanical Engineering': {
+                        programs: [
+                            'D3 Mechanical Engineering',
+                            'Professional Engineer Program',
+                            'D3 Aircraft Maintenance Engineering',
+                            'D4 Ship Construction Engineering',
+                            'D4 Welding and Fabrication Engineering Technology'
+                        ],
+                        responseTime: [5, 6, 7, 4, 5],
                         acceptanceRates: [
-                            [90, 10],
+                            [75, 25],
+                            [80, 20],
+                            [70, 30],
                             [85, 15],
-                            [88, 12],
+                            [72, 28]
+                        ]
+                    },
+                    'Business Management': {
+                        programs: [
+                            'D4 Applied Business Administration',
+                            'D3 Accounting',
+                            'D4 Managerial Accounting',
+                            'D2 Goods Distribution',
+                            'D4 International Trade Logistics'
+                        ],
+                        responseTime: [7, 6, 5, 7, 6],
+                        acceptanceRates: [
+                            [85, 15],
+                            [78, 22],
                             [82, 18],
-                            [92, 8],
-                            [87, 13]
+                            [75, 25],
+                            [88, 12]
                         ]
                     }
                 };
 
-                const pieDataAllDepartments = [{
-                        name: 'Business Management Department',
-                        data: [82, 18]
-                    },
-                    {
-                        name: 'Mechanical Engineering Department',
-                        data: [76, 24]
-                    },
-                    {
-                        name: 'Electrical Engineering Department',
-                        data: [70, 30]
-                    },
-                    {
-                        name: 'Informatics Engineering Department',
-                        data: [87, 13]
-                    }
+                const departments = [
+                    'Informatics Engineering',
+                    'Electrical Engineering',
+                    'Mechanical Engineering',
+                    'Business Management'
                 ];
 
-                const departments = ['Business Management', 'Mechanical Engineering', 'Electrical Engineering', 'Informatics Engineering'];
                 let currentDeptIndex = 0;
                 let responseChart = null;
                 let pieCharts = [];
 
-                // ===== Chart Functions =====
+                // ============================================
+                // BAR CHART - Response Time
+                // ============================================
                 function createResponseChart(labels, data) {
                     const canvas = document.getElementById('responseChart');
+                    if (!canvas) return;
+
                     const ctx = canvas.getContext('2d');
 
-                    // Destroy chart lama
+                    // Destroy previous chart
                     if (responseChart) {
-                        responseChart.destroy();
+                        try {
+                            responseChart.destroy();
+                        } catch (e) {}
                         responseChart = null;
                     }
 
-                    // Reset canvas completely
+                    // Reset canvas
                     canvas.removeAttribute('style');
                     canvas.removeAttribute('width');
                     canvas.removeAttribute('height');
 
-                    // Calculate new height
-                    const chartHeight = labels.length * 35;
+                    // Calculate height based on number of labels - LEBIH BESAR
+                    const barHeight = 100; // Dari 35px jadi 100px per bar
+                    const chartHeight = labels.length * barHeight;
 
-                    // Set canvas dimensions
-                    canvas.width = canvas.parentElement.offsetWidth;
+                    // Get container width
+                    const containerWidth = canvas.parentElement.offsetWidth;
+
+                    canvas.width = containerWidth;
                     canvas.height = chartHeight;
                     canvas.style.width = '100%';
                     canvas.style.height = chartHeight + 'px';
+
+                    // Tambahkan scroll container jika belum ada
+                    let scrollContainer = canvas.parentElement;
+                    if (!scrollContainer.classList.contains('chart-scroll-container')) {
+                        scrollContainer.style.maxHeight = '500px'; // Max height untuk scroll
+                        scrollContainer.style.overflowY = 'auto';
+                        scrollContainer.style.overflowX = 'hidden';
+                        scrollContainer.classList.add('chart-scroll-container');
+                    }
 
                     responseChart = new Chart(ctx, {
                         type: 'bar',
@@ -1200,9 +1243,9 @@ if ($id_kampus) {
                             datasets: [{
                                 label: 'Average Response Time (Days)',
                                 data: data,
-                                backgroundColor: data.map(v => v === null ? 'rgba(0,0,0,0)' : '#4e73df'),
+                                backgroundColor: '#4e73df',
                                 borderRadius: 5,
-                                barThickness: 20
+                                barThickness: 60 // Dari 20px jadi 30px (bar lebih tebal)
                             }]
                         },
                         options: {
@@ -1217,7 +1260,7 @@ if ($id_kampus) {
                                         stepSize: 1,
                                         font: {
                                             size: 11
-                                        }
+                                        } // Font tetap kecil
                                     },
                                     title: {
                                         display: true,
@@ -1233,24 +1276,10 @@ if ($id_kampus) {
                                 },
                                 y: {
                                     ticks: {
-                                        callback: function(value, index) {
-                                            const label = this.getLabelForValue(index);
-                                            if (label.startsWith('—')) {
-                                                return label;
-                                            }
-                                            return '   ' + label;
-                                        },
-                                        color: function(ctx) {
-                                            const label = ctx.tick.label;
-                                            return label.startsWith('—') ? '#2c3e50' : '#495057';
-                                        },
-                                        font: function(ctx) {
-                                            const label = ctx.tick.label;
-                                            return {
-                                                size: 11,
-                                                weight: label.startsWith('—') ? 'bold' : 'normal'
-                                            };
-                                        }
+                                        color: '#495057',
+                                        font: {
+                                            size: 11
+                                        } // Font tetap kecil
                                     },
                                     grid: {
                                         display: false
@@ -1271,12 +1300,8 @@ if ($id_kampus) {
                                         size: 11
                                     },
                                     callbacks: {
-                                        title: (context) => {
-                                            const label = context[0].label;
-                                            return label.startsWith('—') ? '' : label;
-                                        },
                                         label: (context) => {
-                                            return context.raw === null ? '' : `Response Time: ${context.formattedValue} days`;
+                                            return `Response Time: ${context.formattedValue} days`;
                                         }
                                     }
                                 }
@@ -1285,35 +1310,45 @@ if ($id_kampus) {
                     });
                 }
 
-                function updatePieCharts(pieData, isAll = false) {
-                    // Destroy old charts
-                    pieCharts.forEach(c => c.destroy());
-                    pieCharts = [];
-
+                // ============================================
+                // PIE CHARTS - Acceptance Rate
+                // ============================================
+                function updatePieCharts(pieData) {
                     const container = document.getElementById('pieContainer');
+                    if (!container) return;
+
+                    // Destroy old charts
+                    pieCharts.forEach(c => {
+                        try {
+                            c.destroy();
+                        } catch (e) {}
+                    });
+                    pieCharts = [];
                     container.innerHTML = '';
 
-                    // Update title
-                    document.getElementById('pieTitle').textContent = isAll ?
-                        'Internship Acceptance Rate by Department' :
-                        'Internship Acceptance Rate by Study Program';
-
-                    // Create pie charts
                     pieData.forEach((item, i) => {
                         const pieDiv = document.createElement('div');
-                        pieDiv.className = 'pie-item';
+                        pieDiv.className = 'pie-item mb-3';
+                        pieDiv.style.cssText = `
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            min-width: 180px;
+            flex: 1 1 45%;
+        `;
+
+                        const title = document.createElement('div');
+                        title.className = 'text-center font-weight-bold mb-2';
+                        title.style.fontSize = '13px';
+                        title.textContent = item.name;
 
                         const canvas = document.createElement('canvas');
                         canvas.id = `pie-${i}`;
+                        canvas.style.cssText = 'width: 100%; height: 140px;';
 
-                        const title = document.createElement('div');
-                        title.className = 'text-center font-weight-bold mt-2';
-                        title.style.fontSize = '13px';
-                        title.style.color = '#495057';
-                        title.textContent = item.name;
-
-                        pieDiv.appendChild(canvas);
                         pieDiv.appendChild(title);
+                        pieDiv.appendChild(canvas);
                         container.appendChild(pieDiv);
 
                         const ctx = canvas.getContext('2d');
@@ -1324,13 +1359,13 @@ if ($id_kampus) {
                                 datasets: [{
                                     data: item.data,
                                     backgroundColor: ['#28a745', '#dc3545'],
-                                    borderWidth: 2,
-                                    borderColor: '#fff'
+                                    borderColor: '#fff',
+                                    borderWidth: 2
                                 }]
                             },
                             options: {
                                 responsive: true,
-                                maintainAspectRatio: true,
+                                maintainAspectRatio: false,
                                 plugins: {
                                     legend: {
                                         display: false
@@ -1345,411 +1380,162 @@ if ($id_kampus) {
                                             size: 11
                                         },
                                         callbacks: {
-                                            label: (context) => {
-                                                return `${context.label}: ${context.formattedValue}%`;
+                                            label: (ctx) => {
+                                                return `${ctx.label}: ${ctx.formattedValue}%`;
                                             }
                                         }
                                     }
                                 }
                             }
                         });
+
                         pieCharts.push(chart);
                     });
                 }
 
+                // ============================================
+                // NAVIGATION & UPDATE FUNCTIONS
+                // ============================================
                 function navigateDepartment(dir) {
                     currentDeptIndex += dir;
                     if (currentDeptIndex < 0) currentDeptIndex = 0;
                     if (currentDeptIndex >= departments.length) currentDeptIndex = departments.length - 1;
+
                     updateDashboard();
                     updateNavButtons();
+
+                    // Smooth scroll to charts
+                    const chartRow = document.querySelector('#responseChart')?.closest('.row');
+                    if (chartRow) {
+                        chartRow.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
                 }
 
                 function updateNavButtons() {
-                    document.getElementById('prevBtn').disabled = currentDeptIndex === 0;
-                    document.getElementById('nextBtn').disabled = currentDeptIndex === departments.length - 1;
+                    const prevBtn = document.getElementById('prevBtn');
+                    const nextBtn = document.getElementById('nextBtn');
+
+                    if (prevBtn) prevBtn.disabled = currentDeptIndex === 0;
+                    if (nextBtn) nextBtn.disabled = currentDeptIndex === departments.length - 1;
                 }
 
                 function updateDashboard() {
                     const dept = departments[currentDeptIndex];
-                    {
-                        const data = departmentsData[dept];
-                        document.getElementById('currentDept').textContent = dept + ' Department';
+                    const data = departmentsData[dept];
+
+                    // Update title
+                    const currentDeptEl = document.getElementById('currentDept');
+                    if (currentDeptEl) {
+                        currentDeptEl.textContent = dept + ' Department';
+                    }
+
+                    // Update charts
+                    if (data) {
                         createResponseChart(data.programs, data.responseTime);
+
                         const pies = data.programs.map((p, i) => ({
                             name: p,
                             data: data.acceptanceRates[i]
                         }));
-                        updatePieCharts(pies, false);
+                        updatePieCharts(pies);
+
+                        // Update pie title
+                        const pieTitle = document.getElementById('pieTitle');
+                        if (pieTitle) {
+                            pieTitle.textContent = 'Internship Acceptance Rate — ' + dept;
+                        }
                     }
-                    const data = departmentsData[dept];
-                    document.getElementById('currentDept').textContent = dept + ' Department';
-                    createResponseChart(data.programs, data.responseTime);
-                    const pies = data.programs.map((p, i) => ({
-                        name: p,
-                        data: data.acceptanceRates[i]
-                    }));
-                    updatePieCharts(pies, false);
-                }
                 }
 
                 function filterByYear() {
                     updateDashboard();
                 }
 
+                // ============================================
+                // NAVIGATION UI SETUP (Top Right/Left Position)
+                // ============================================
+                function setupNavigationUI() {
+                    // Cari elemen currentDept yang sudah ada di HTML
+                    let currentDeptElement = document.getElementById('currentDept');
+
+                    if (!currentDeptElement) {
+                        console.warn('Element #currentDept tidak ditemukan di HTML');
+                        return;
+                    }
+
+                    // Cari parent container (department-nav)
+                    let deptNavContainer = currentDeptElement.parentElement;
+
+                    // Atur parent container dengan gap yang pas
+                    deptNavContainer.className = 'department-nav d-flex align-items-center';
+                    deptNavContainer.style.cssText = 'gap: 10px;';
+
+                    // Previous button (Left)
+                    const prevBtn = document.createElement('button');
+                    prevBtn.id = 'prevBtn';
+                    prevBtn.className = 'btn btn-outline-primary';
+                    prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                    prevBtn.title = 'Previous Department';
+                    prevBtn.style.cssText = 'width: 45px; height: 45px; padding: 0;';
+
+                    // Next button (Right)
+                    const nextBtn = document.createElement('button');
+                    nextBtn.id = 'nextBtn';
+                    nextBtn.className = 'btn btn-outline-primary';
+                    nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                    nextBtn.title = 'Next Department';
+                    nextBtn.style.cssText = 'width: 45px; height: 45px; padding: 0;';
+
+                    // Update style currentDept - kotak lebih pendek
+                    currentDeptElement.className = 'current-dept font-weight-bold text-dark bg-light px-4 py-2 rounded text-center';
+                    currentDeptElement.style.cssText = 'min-width: 350px; max-width: 450px; margin: 0;';
+
+                    // Masukkan button ke kiri dan kanan dari currentDept
+                    deptNavContainer.insertBefore(prevBtn, currentDeptElement);
+                    deptNavContainer.appendChild(nextBtn);
+
+                    // Event listeners
+                    prevBtn.addEventListener('click', () => navigateDepartment(-1));
+                    nextBtn.addEventListener('click', () => navigateDepartment(1));
+                }
+
+                // ============================================
+                // BROWSER CACHE & HISTORY MANAGEMENT
+                // ============================================
+                function setupBrowserSecurity() {
+                    // Block browser cache on back button
+                    window.addEventListener("pageshow", function(event) {
+                        if (event.persisted) {
+                            window.location.reload();
+                        }
+                    });
+
+                    // Prevent back button navigation
+                    window.history.pushState(null, "", window.location.href);
+                    window.onpopstate = function() {
+                        window.history.pushState(null, "", window.location.href);
+                    };
+                }
+
+                // ============================================
+                // INITIALIZATION
+                // ============================================
+                $(document).ready(function() {
+                    clock_run();
+                    show_calendar();
+                });
+
                 document.addEventListener('DOMContentLoaded', function() {
+                    initSidebarHighlight();
+                    setupNavigationUI();
                     updateDashboard();
                     updateNavButtons();
-                });
-
-                // Highlight menu
-                document.addEventListener("DOMContentLoaded", function() {
-                    const navItems = document.querySelectorAll(".sidebar .nav-item");
-
-                    navItems.forEach(item => {
-                        item.addEventListener("click", function() {
-                            // Hapus active dari semua nav-item
-                            navItems.forEach(i => i.classList.remove("active"));
-
-                            // Tambahkan active ke item yang diklik
-                            this.classList.add("active");
-                        });
-                    });
-
-                    // --- BONUS: agar aktif sesuai halaman yang dibuka ---
-                    const currentPage = window.location.href;
-                    navItems.forEach(item => {
-                        const link = item.querySelector("a");
-                        if (link && currentPage.includes(link.getAttribute("href"))) {
-                            navItems.forEach(i => i.classList.remove("active"));
-                            item.classList.add("active");
-                        }
-                    });
+                    setupBrowserSecurity();
                 });
             </script>
-            <!-- Footer -->
-            <footer class="footer">
-                <div class="container-fluid">
-                    <div class="copyright ml-auto">
-                        2025, made with <i class="fa fa-heart heart text-danger"></i> by PBLIFPagi3A-3
-                    </div>
-                </div>
-            </footer>
-        </div>
-    </div>
-
-    <!-- START: Replaced chart logic — one department at a time with Next/Prev navigation -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // ===== Data Tiap Jurusan =====
-            const departmentsData = {
-                'Informatics Engineering': {
-                    programs: ['D3 Informatics Engineering', 'D3 Geomatics Technology', 'D4 Animation', 'D4 Multimedia Engineering Technology', 'D4 Cyber Security Engineering', 'D4 Software Development Engineering'],
-                    responseTime: [5, 7, 6, 7, 5, 6],
-                    acceptanceRates: [
-                        [90, 10],
-                        [85, 15],
-                        [88, 12],
-                        [82, 18],
-                        [92, 8],
-                        [87, 13]
-                    ]
-                },
-                'Electrical Engineering': {
-                    programs: ['D3 Manufacturing Electronics Engineering', 'D4 Electrical Engineering Technology', 'D3 Instrumentation Engineering', 'D4 Mechatronic Engineering', 'D2 Automation Engineering', 'D4 Robotics Engineering', 'D4 Energy Generation Engineering Technology'],
-                    responseTime: [6, 7, 5, 6, 7, 6, 5],
-                    acceptanceRates: [
-                        [65, 35],
-                        [70, 30],
-                        [68, 32],
-                        [75, 25],
-                        [62, 38],
-                        [80, 20],
-                        [73, 27]
-                    ]
-                },
-                'Mechanical Engineering': {
-                    programs: ['D3 Mechanical Engineering', 'Professional Engineer Program', 'D3 Aircraft Maintenance Engineering', 'D4 Ship Construction Engineering', 'D4 Welding and Fabrication Engineering Technology'],
-                    responseTime: [5, 6, 7, 4, 5],
-                    acceptanceRates: [
-                        [75, 25],
-                        [80, 20],
-                        [70, 30],
-                        [85, 15],
-                        [72, 28]
-                    ]
-                },
-                'Business Management': {
-                    programs: ['D4 Applied Business Administration', 'D3 Accounting', 'D4 Managerial Accounting', 'D2 Goods Distribution', 'D4 International Trade Logistics'],
-                    responseTime: [7, 6, 5, 7, 6],
-                    acceptanceRates: [
-                        [85, 15],
-                        [78, 22],
-                        [82, 18],
-                        [75, 25],
-                        [88, 12]
-                    ]
-                }
-            };
-
-            // ordered departments as requested
-            const departments = ['Informatics Engineering', 'Electrical Engineering', 'Mechanical Engineering', 'Business Management'];
-            let currentDeptIndex = 0;
-            let responseChart = null;
-            let pieCharts = [];
-
-            // helper: format date or labels - unused but kept for parity
-            function formatDate(d) {
-                return d;
-            }
-
-            // Create / recreate the horizontal bar chart (response time)
-            function createResponseChart(labels, data) {
-                const canvas = document.getElementById('responseChart');
-                if (!canvas) return;
-                const ctx = canvas.getContext('2d');
-
-                // destroy if exists
-                if (responseChart) {
-                    try {
-                        responseChart.destroy();
-                    } catch (e) {}
-                    responseChart = null;
-                }
-
-                // set canvas height based on number of labels
-                canvas.style.height = (labels.length * 35) + 'px';
-                canvas.height = labels.length * 35;
-
-                responseChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Average Response Time (Days)',
-                            data: data,
-                            backgroundColor: '#4e73df',
-                            borderRadius: 5,
-                            barThickness: 18
-                        }]
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: {
-                                beginAtZero: true,
-                                max: 7,
-                                ticks: {
-                                    stepSize: 1
-                                }
-                            },
-                            y: {
-                                ticks: {
-                                    color: '#333'
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(ctx) {
-                                        return 'Response Time: ' + ctx.formattedValue + ' days';
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            // create pie charts for programs of the current department
-            function updatePieCharts(pieData) {
-                const container = document.getElementById('pieContainer');
-                if (!container) return;
-
-                // destroy old charts
-                if (pieCharts && pieCharts.length) {
-                    pieCharts.forEach(c => {
-                        try {
-                            c.destroy();
-                        } catch (e) {}
-                    });
-                    pieCharts = [];
-                }
-                container.innerHTML = '';
-
-                pieData.forEach((item, i) => {
-                    const pieDiv = document.createElement('div');
-                    pieDiv.className = 'pie-item mb-3';
-                    pieDiv.style.background = '#fff';
-                    pieDiv.style.padding = '10px';
-                    pieDiv.style.borderRadius = '8px';
-                    pieDiv.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)';
-                    pieDiv.style.minWidth = '180px';
-                    pieDiv.style.flex = '1 1 45%'; // responsive two per row
-
-                    const title = document.createElement('div');
-                    title.className = 'text-center font-weight-bold mb-2';
-                    title.style.fontSize = '13px';
-                    title.textContent = item.name;
-
-                    const canvas = document.createElement('canvas');
-                    canvas.id = 'pie-' + i;
-                    canvas.style.width = '100%';
-                    canvas.style.height = '140px';
-
-                    pieDiv.appendChild(title);
-                    pieDiv.appendChild(canvas);
-                    container.appendChild(pieDiv);
-
-                    const ctx = canvas.getContext('2d');
-                    const chart = new Chart(ctx, {
-                        type: 'pie',
-                        data: {
-                            labels: ['Accepted', 'Rejected'],
-                            datasets: [{
-                                data: item.data,
-                                backgroundColor: ['#28a745', '#dc3545'],
-                                borderColor: '#fff',
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(ctx) {
-                                            return ctx.label + ': ' + ctx.formattedValue + '%';
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-
-                    pieCharts.push(chart);
-                });
-            }
-
-            // main update: set title, create left chart and right pies
-            function updateDashboard() {
-                const dept = departments[currentDeptIndex];
-                const data = departmentsData[dept];
-                const currentDeptEl = document.getElementById('currentDept');
-                if (currentDeptEl) currentDeptEl.textContent = dept + ' Department Dashboard';
-
-                if (data) {
-                    createResponseChart(data.programs, data.responseTime);
-
-                    const pies = data.programs.map((p, i) => ({
-                        name: p,
-                        data: data.acceptanceRates[i]
-                    }));
-                    updatePieCharts(pies);
-
-                    // update pie title
-                    const pieTitle = document.getElementById('pieTitle');
-                    if (pieTitle) pieTitle.textContent = 'Internship Acceptance Rate — ' + dept;
-                }
-
-                updateNavButtons();
-            }
-
-            function navigateDepartment(dir) {
-                currentDeptIndex += dir;
-                if (currentDeptIndex < 0) currentDeptIndex = 0;
-                if (currentDeptIndex >= departments.length) currentDeptIndex = departments.length - 1;
-                updateDashboard();
-                // scroll into view the charts area for better UX
-                const chartRow = document.querySelector('#responseChart')?.closest('.row') || document.querySelector('.row');
-                if (chartRow) chartRow.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-
-            // append navigation controls below the charts row (centered)
-            function ensureNavControls() {
-                // find a good anchor: the row that contains responseChart
-                const canvas = document.getElementById('responseChart');
-                let anchorRow = canvas ? canvas.closest('.row') : null;
-
-                if (!anchorRow) {
-                    // fallback: find the first .row on page that contains pieContainer or responseChart
-                    anchorRow = document.querySelector('div.row');
-                }
-
-                if (!anchorRow) return;
-
-                // check if nav already exists
-                if (document.getElementById('deptNavWrap')) return;
-
-                const navWrap = document.createElement('div');
-                navWrap.id = 'deptNavWrap';
-                navWrap.className = 'text-center mt-3';
-                navWrap.style.width = '100%';
-
-                const prevBtn = document.createElement('button');
-                prevBtn.id = 'prevBtn';
-                prevBtn.className = 'btn btn-outline-primary mr-2';
-                prevBtn.textContent = '← Previous';
-
-                const label = document.createElement('span');
-                label.id = 'currentDept';
-                label.className = 'font-weight-bold mx-3';
-                label.textContent = '';
-
-                const nextBtn = document.createElement('button');
-                nextBtn.id = 'nextBtn';
-                nextBtn.className = 'btn btn-outline-primary ml-2';
-                nextBtn.textContent = 'Next →';
-
-                navWrap.appendChild(prevBtn);
-                navWrap.appendChild(label);
-                navWrap.appendChild(nextBtn);
-
-                // insert after the anchorRow
-                anchorRow.parentNode.insertBefore(navWrap, anchorRow.nextSibling);
-
-                prevBtn.addEventListener('click', () => navigateDepartment(-1));
-                nextBtn.addEventListener('click', () => navigateDepartment(1));
-            }
-
-            // init
-            ensureNavControls();
-            updateDashboard();
-        });
-    </script>
-    <!-- END: Replaced chart logic -->
-
-    <!-- Tambahkan library SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <script>
-        // Blokir browser cache saat user tekan tombol back
-        window.addEventListener("pageshow", function(event) {
-            if (event.persisted) {
-                // Jika halaman dibuka dari cache browser (misal setelah logout)
-                window.location.reload(); // paksa reload agar session check jalan lagi
-            }
-        });
-
-        // Cegah user pakai tombol back untuk kembali ke dashboard
-        window.history.pushState(null, "", window.location.href);
-        window.onpopstate = function() {
-            window.history.pushState(null, "", window.location.href);
-        };
-    </script>
 
 </body>
 

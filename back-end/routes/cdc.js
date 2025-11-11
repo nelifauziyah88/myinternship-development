@@ -106,7 +106,7 @@ router.get("/cdc/submissions", async (req, res) => {
 // Approve/Reject submission
 router.post("/cdc/approval", async (req, res) => {
   try {
-    const { id_letter, status } = req.body;
+    const { id_letter, status, user_id, user_name, comment } = req.body;
     if (!id_letter || !status) {
       return res
         .status(400)
@@ -155,6 +155,7 @@ router.post("/cdc/approval", async (req, res) => {
         });
     }
 
+    // Determine update SQL for internship_letter
     if (s === "ACCEPTED") {
       await db.query(
         `UPDATE internship_letter
@@ -175,37 +176,98 @@ router.post("/cdc/approval", async (req, res) => {
       );
     }
 
+    // --- Insert into internship_letter_history ---
+    let approved_by = "CDC ADMINISTRATOR";
+    let user_id_val = "-";
+    let user_name_val = "-";
+
+    try {
+      const actor = req.user || req.session?.user || null;
+      if (actor) {
+        if (actor.role && actor.role.toLowerCase().includes("cdc")) {
+          const [urows] = await db.query(`SELECT id_upkpk, name FROM upkpk WHERE id_upkpk = ? LIMIT 1`, [actor.id_upkpk || actor.id]);
+          if (urows && urows.length) {
+            user_id_val = urows[0].id_upkpk || "-";
+            user_name_val = urows[0].name || "-";
+            approved_by = "CDC ADMINISTRATOR";
+          }
+        } else {
+          user_id_val = actor.id || "-";
+          user_name_val = actor.name || "-";
+        }
+      }
+    } catch (err) {
+      console.error("[CDC] user lookup error:", err);
+    }
+
+    // Insert history row
+    await db.query(
+  `INSERT INTO internship_letter_history 
+   (id_letter, approved_by, user_id, user_name, status_approval, timestamp, comment)
+   VALUES (?, 'CDC ADMINISTRATOR', ?, ?, ?, NOW(), ?)`,
+  [id_letter, user_id || "-", user_name || "-", s, comment]
+);
+
     res.json({
       success: true,
       message: `Submission has been ${s.toLowerCase()} by CDC.`,
     });
+ } catch (err) {
+  console.error("[CDC] approval error:", err);
+  return res.status(500).json({
+    success: false,
+    message: "Server error: " + err.message,
+  });
+}
+});
+
+// get latest rejected reason by CDC for a letter
+router.get("/cdc/reason/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const [rows] = await db.query(
+      `SELECT comment, timestamp, approved_by, user_name, user_id
+       FROM internship_letter_history
+       WHERE id_letter = ? AND status_approval = 'REJECTED' AND approved_by = 'CDC ADMINISTRATOR'
+       ORDER BY timestamp DESC LIMIT 1`,
+      [id]
+    );
+    if (!rows.length) return res.status(404).json({ success: false, message: "Reason not found." });
+    res.json({ success: true, comment: rows[0].comment, meta: { user_name: rows[0].user_name, timestamp: rows[0].timestamp } });
   } catch (err) {
-    console.error("[CDC] approval error:", err);
-    return res.status(500).json({ success: false, message: "Server error" });
+    console.error("[CDC] reason fetch error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-// Get study programs by kampus
-router.get('/cdc/study-programs/:id_kampus', async (req, res) => {
+// edit the latest CDC rejection reason for a letter
+router.post("/cdc/history/:id/edit", async (req, res) => {
   try {
-    const { id_kampus } = req.params;
-    
-    const [rows] = await db.query(`
-      SELECT DISTINCT 
-        ps.kode_prodi,
-        ps.prodi AS program_name,
-        ps.study_program,
-        ps.jurusan,
-        ps.major
-      FROM program_study ps
-      WHERE ps.id_kampus = ?
-      ORDER BY ps.prodi ASC
-    `, [id_kampus]);
-    
-    res.json({ success: true, data: rows });
+    const id = req.params.id;
+    const { comment } = req.body;
+    if (!comment || !comment.trim()) return res.status(400).json({ success: false, message: "Comment is required." });
+
+    // Find the latest history row to update
+    const [rows] = await db.query(
+      `SELECT id_history FROM internship_letter_history
+       WHERE id_letter = ? AND status_approval = 'REJECTED' AND approved_by = 'CDC ADMINISTRATOR'
+       ORDER BY timestamp DESC LIMIT 1`,
+      [id]
+    );
+    if (!rows.length) return res.status(404).json({ success: false, message: "History record not found." });
+
+    const id_history = rows[0].id_history;
+    await db.query(
+      `UPDATE internship_letter_history
+       SET comment = ?, timestamp = NOW()
+       WHERE id_history = ?`,
+      [comment, id_history]
+    );
+
+    res.json({ success: true, message: "Reason updated." });
   } catch (err) {
-    console.error('[CDC] Error fetching study programs:', err);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error("[CDC] history edit error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
@@ -301,6 +363,30 @@ router.get('/cdc/submissions-filtered', async (req, res) => {
     res.json({ success: true, data: rows });
   } catch (err) {
     console.error('[CDC] Error fetching submissions:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Get study programs by kampus
+router.get('/cdc/study-programs/:id_kampus', async (req, res) => {
+  try {
+    const { id_kampus } = req.params;
+    
+    const [rows] = await db.query(`
+      SELECT DISTINCT 
+        ps.kode_prodi,
+        ps.prodi AS program_name,
+        ps.study_program,
+        ps.jurusan,
+        ps.major
+      FROM program_study ps
+      WHERE ps.id_kampus = ?
+      ORDER BY ps.prodi ASC
+    `, [id_kampus]);
+    
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error('[CDC] Error fetching study programs:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

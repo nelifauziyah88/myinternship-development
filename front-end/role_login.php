@@ -16,6 +16,10 @@ if (isset($_SESSION['username'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Select Login Role - MyInternship</title>
 
+    <!-- Icon -->
+    <link rel="icon" href="./assets/img/iconM.png" type="image/x-icon" />
+    <link href="./assets/img/iconM.png" rel="apple-touch-icon" type="image/x-icon">
+
     <!-- Bootstrap 5 -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=<?php echo time(); ?>" rel="stylesheet">
 

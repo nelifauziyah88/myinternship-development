@@ -1,53 +1,64 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const puppeteer = require('puppeteer');
-const db = require('../db');
-const fs = require('fs');
+const bcrypt = require("bcryptjs");
+const puppeteer = require("puppeteer");
+const db = require("../db");
+const fs = require("fs");
 
 // Login
-router.post('/login_student', async (req, res) => {
-    try {
-        const { username, password } = req.body;
+router.post("/login_student", async (req, res) => {
+  try {
+    const { username, password } = req.body;
 
-        // Validasi input wajib diisi
-        if (!username || !password) {
-            return res.status(400).json({ success: false, message: 'Username and Password are required.' });
-        }
-
-        // Memeriksa apakah student ada di database
-        const [rows] = await db.query(
-            'SELECT * FROM student_internship WHERE username = ? OR email = ? OR nim = ?',
-            [username, username, username]
-        );
-
-        if (rows.length === 0) {
-            return res.status(401).json({ success: false, message: 'Account not found.' });
-        }
-
-        const user = rows[0];
-
-        // Memeriksa password (berdasarkan hash)
-        const validPassword = await bcrypt.compare(password, user.password);
-        if (!validPassword) {
-            return res.status(401).json({ success: false, message: 'Incorrect password.' });
-        }
-
-        // Jika berhasil
-        res.status(200).json({
-            success: true,
-            message: 'Login successfull.',
-            user: {
-                nim: user.nim,
-                name: user.name,
-                email: user.email,
-                program_study: user.program_study,
-            },
-        });
-    } catch (error) {
-        console.error('Error login student:', error);
-        res.status(500).json({ success: false, message: 'An error occured. Please try again !' });
+    // Validasi input wajib diisi
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Username and Password are required.",
+      });
     }
+
+    // Memeriksa apakah student ada di database
+    const [rows] = await db.query(
+      "SELECT * FROM student_internship WHERE username = ? OR email = ? OR nim = ?",
+      [username, username, username]
+    );
+
+    if (rows.length === 0) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Account not found." });
+    }
+
+    const user = rows[0];
+
+    // Memeriksa password (berdasarkan hash)
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Incorrect password." });
+    }
+
+    // Jika berhasil
+    res.status(200).json({
+      success: true,
+      message: "Login successfull.",
+      user: {
+        nim: user.nim,
+        name: user.name,
+        email: user.email,
+        program_study: user.program_study,
+        id_kampus: user.id_kampus,
+      },
+    });
+  } catch (error) {
+    console.error("Error login student:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occured. Please try again !",
+    });
+  }
 });
 
 /**
@@ -55,37 +66,37 @@ router.post('/login_student', async (req, res) => {
  * - Cek apakah student dengan NIM punya submission aktif
  * - "Aktif" bila salah satu kolom status/koor_approval/cdc_approval = 'WAITING'
  */
-router.get('/check-submission/:nim', async (req, res) => {
-    const { nim } = req.params;
-    try {
-        const [rows] = await db.query(
-            `SELECT id_letter, status, koor_approval, cdc_approval, acceptance_status
+router.get("/check-submission/:nim", async (req, res) => {
+  const { nim } = req.params;
+  try {
+    const [rows] = await db.query(
+      `SELECT id_letter, status, koor_approval, cdc_approval, acceptance_status
      FROM internship_letter
      WHERE nim = ?
      ORDER BY created_at DESC
      LIMIT 1`,
-            [nim]
-        );
+      [nim]
+    );
 
-        if (!rows.length) return res.json({ hasActive: false });
+    if (!rows.length) return res.json({ hasActive: false });
 
-        const r = rows[0];
-        const isActive =
-            (r.status && r.status.toUpperCase() === 'WAITING') ||
-            (r.koor_approval && r.koor_approval.toUpperCase() === 'WAITING') ||
-            (r.cdc_approval && r.cdc_approval.toUpperCase() === 'WAITING');
+    const r = rows[0];
+    const isActive =
+      (r.status && r.status.toUpperCase() === "WAITING") ||
+      (r.koor_approval && r.koor_approval.toUpperCase() === "WAITING") ||
+      (r.cdc_approval && r.cdc_approval.toUpperCase() === "WAITING");
 
-        res.json({ 
-    hasActive: !!isActive,
-    last: {
+    res.json({
+      hasActive: !!isActive,
+      last: {
         ...r,
-        acceptance_status: r.acceptance_status || '-'
-    }
-});
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Server error' });
-    }
+        acceptance_status: r.acceptance_status || "-",
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 /**
@@ -96,95 +107,102 @@ router.get('/check-submission/:nim', async (req, res) => {
  *   join program_study on program_study.kode_prodi = student_internship.program_study AND id_kampus match
  *   join lecturer on lecturer.prodi_koor = program_study.kode_prodi AND lecturer.id_kampus = program_study.id_kampus AND lecturer.is_koor = 1
  */
-router.get('/form-submission/:nim', async (req, res) => {
-    const { nim } = req.params;
-    try {
-        // ambil student basic
-        const [stuRows] = await db.query(
-            `SELECT * FROM student_internship WHERE nim = ? LIMIT 1`,
-            [nim]
-        );
-        if (!stuRows.length) return res.status(404).json({ error: 'Student not found' });
-        const student = stuRows[0];
+router.get("/form-submission/:nim", async (req, res) => {
+  const { nim } = req.params;
+  try {
+    // ambil student basic
+    const [stuRows] = await db.query(
+      `SELECT * FROM student_internship WHERE nim = ? LIMIT 1`,
+      [nim]
+    );
+    if (!stuRows.length)
+      return res.status(404).json({ error: "Student not found" });
+    const student = stuRows[0];
 
-        // ambil program_study (cocokkan kode_prodi & id_kampus)
-        const [psRows] = await db.query(
-            `SELECT * FROM program_study WHERE kode_prodi = ? AND id_kampus = ? LIMIT 1`,
-            [student.program_study, student.id_kampus]
-        );
-        const program = psRows.length ? psRows[0] : null;
-        const department = program ? program.jurusan || null : null;
+    // ambil program_study (cocokkan kode_prodi & id_kampus)
+    const [psRows] = await db.query(
+      `SELECT * FROM program_study WHERE kode_prodi = ? AND id_kampus = ? LIMIT 1`,
+      [student.program_study, student.id_kampus]
+    );
+    const program = psRows.length ? psRows[0] : null;
+    const department = program ? program.jurusan || null : null;
 
-        // ambil lecturer koordinator
-        let coordinator = null;
-        if (program) {
-            const [lecRows] = await db.query(
-                `SELECT name FROM lecturer WHERE prodi_koor = ? AND id_kampus = ? AND is_koor = 1 LIMIT 1`,
-                [program.kode_prodi, program.id_kampus]
-            );
-            if (lecRows.length) coordinator = lecRows[0].name;
-        }
-
-        res.json({
-            student: {
-                nim: student.nim,
-                name: student.name,
-                program_study: student.program_study,
-                id_kampus: student.id_kampus,
-                email: student.email || null
-            },
-            department,
-            coordinator
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Server error' });
+    // ambil lecturer koordinator
+    let coordinator = null;
+    if (program) {
+      const [lecRows] = await db.query(
+        `SELECT name FROM lecturer WHERE prodi_koor = ? AND id_kampus = ? AND is_koor = 1 LIMIT 1`,
+        [program.kode_prodi, program.id_kampus]
+      );
+      if (lecRows.length) coordinator = lecRows[0].name;
     }
+
+    res.json({
+      student: {
+        nim: student.nim,
+        name: student.name,
+        program_study: student.program_study,
+        id_kampus: student.id_kampus,
+        email: student.email || null,
+      },
+      department,
+      coordinator,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 /**
  * GET /api/student/company
- * - Return list company (id, name). 
+ * - Return list company (id, name).
  * - Optional query q for search.
  */
-router.get('/company', async (req, res) => {
-    const q = req.query.q ? `%${req.query.q}%` : null;
-    try {
-        let rows;
-        if (q) {
-            [rows] = await db.query(`SELECT id_company AS id, name FROM company WHERE name LIKE ? LIMIT 100`, [q]);
-        } else {
-            [rows] = await db.query(`SELECT id_company AS id, name FROM company LIMIT 200`);
-        }
-        res.json(rows);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Server error' });
+router.get("/company", async (req, res) => {
+  const q = req.query.q ? `%${req.query.q}%` : null;
+  try {
+    let rows;
+    if (q) {
+      [rows] = await db.query(
+        `SELECT id_company AS id, name FROM company WHERE name LIKE ? LIMIT 100`,
+        [q]
+      );
+    } else {
+      [rows] = await db.query(
+        `SELECT id_company AS id, name FROM company LIMIT 200`
+      );
     }
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 /**
  * GET /api/student/company/:id
  * - Return details company
  */
-router.get('/company/:id', async (req, res) => {
-    const id = req.params.id;
-    try {
-        const [rows] = await db.query(
-            `SELECT id_company, name, address, phone, email 
+router.get("/company/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const [rows] = await db.query(
+      `SELECT id_company, name, address, phone, email 
        FROM company 
        WHERE id_company = ? 
        LIMIT 1`,
-            [id]
-        );
+      [id]
+    );
 
-        if (!rows.length) return res.status(404).json({ error: 'Company not found' });
+    if (!rows.length)
+      return res.status(404).json({ error: "Company not found" });
 
-        res.json(rows[0]);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Server error' });
-    }
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 /**
@@ -195,147 +213,180 @@ router.get('/company/:id', async (req, res) => {
  *    - bila company_id null -> require new_company_name, new_company_contact, company_address
  *    - bila company_id present -> get company address from DB and ignore client address for safety
  */
-router.post('/form-submission', async (req, res) => {
-    try {
-        const body = req.body;
-        const nim = body.nim;
-        if (!nim) return res.status(400).json({ error: 'nim required' });
+router.post("/form-submission", async (req, res) => {
+  try {
+    const body = req.body;
+    const nim = body.nim;
+    if (!nim) return res.status(400).json({ error: "nim required" });
 
-        // check if there's an active submission
-        const [lastRows] = await db.query(
-            `SELECT id_letter, status, koor_approval, cdc_approval FROM internship_letter WHERE nim = ? ORDER BY created_at DESC LIMIT 1`,
-            [nim]
-        );
-        if (lastRows.length) {
-            const r = lastRows[0];
-            const isActive =
-                (r.status && r.status.toUpperCase() === 'WAITING') ||
-                (r.koor_approval && r.koor_approval.toUpperCase() === 'WAITING') ||
-                (r.cdc_approval && r.cdc_approval.toUpperCase() === 'WAITING');
-            if (isActive) {
-                return res.status(400).json({ error: 'You already have an active submission' });
-            }
-        }
+    // check if there's an active submission
+    const [lastRows] = await db.query(
+      `SELECT id_letter, status, koor_approval, cdc_approval FROM internship_letter WHERE nim = ? ORDER BY created_at DESC LIMIT 1`,
+      [nim]
+    );
+    if (lastRows.length) {
+      const r = lastRows[0];
+      const isActive =
+        (r.status && r.status.toUpperCase() === "WAITING") ||
+        (r.koor_approval && r.koor_approval.toUpperCase() === "WAITING") ||
+        (r.cdc_approval && r.cdc_approval.toUpperCase() === "WAITING");
+      if (isActive) {
+        return res
+          .status(400)
+          .json({ error: "You already have an active submission" });
+      }
+    }
 
-        // determine company fields
-        let id_company = body.company_id || null;
-        let company_name = body.company_name || null;
-        let company_contact = body.company_contact || null;
-        let company_address = body.company_address || null;
+    // determine company fields
+    let id_company = body.company_id || null;
+    let company_name = body.company_name || null;
+    let company_contact = body.company_contact || null;
+    let company_address = body.company_address || null;
 
-        if (!id_company) {
-            // new company -> require fields
-            if (!company_name || !company_contact || !company_address) {
-                return res.status(400).json({ error: 'new company name/contact/address required' });
-            }
-            // Store in internship_letter only
-        } else {
-            // existing company -> get address, phone, and email from DB (ignore client provided address)
-            const [cRow] = await db.query(
-                `SELECT name, address, phone, email 
+    if (!id_company) {
+      // new company -> require fields
+      if (!company_name || !company_contact || !company_address) {
+        return res
+          .status(400)
+          .json({ error: "new company name/contact/address required" });
+      }
+      // Store in internship_letter only
+    } else {
+      // existing company -> get address, phone, and email from DB (ignore client provided address)
+      const [cRow] = await db.query(
+        `SELECT name, address, phone, email 
      FROM company 
      WHERE id_company = ? 
      LIMIT 1`,
-                [id_company]
-            );
+        [id_company]
+      );
 
-            if (!cRow.length) return res.status(400).json({ error: 'Invalid company_id' });
+      if (!cRow.length)
+        return res.status(400).json({ error: "Invalid company_id" });
 
-            company_name = cRow[0].name;
-            company_address = cRow[0].address;
+      company_name = cRow[0].name;
+      company_address = cRow[0].address;
 
-            // Format contact (email prioritas)
-            const phone = cRow[0].phone || '';
-            const email = cRow[0].email || '';
-            if (phone && email) {
-                company_contact = `${phone}\n${email}`;
-            } else if (email) {
-                company_contact = email;
-            } else if (phone) {
-                company_contact = phone;
-            } else {
-                company_contact = company_contact || null;
-            }
-        }
+      // Format contact (email prioritas)
+      const phone = cRow[0].phone || "";
+      const email = cRow[0].email || "";
+      if (phone && email) {
+        company_contact = `${phone}\n${email}`;
+      } else if (email) {
+        company_contact = email;
+      } else if (phone) {
+        company_contact = phone;
+      } else {
+        company_contact = company_contact || null;
+      }
+    }
 
-        // other fields (guard defaults)
-        const start_date = body.start_date || null;
-        const end_date = body.end_date || null;
-        const semester = body.semester || null;
-        const class_type = body.class || null;
-        const email = body.email || null;
-        const phone = body.phone || null;
-        const language = body.language || null;
+    // other fields (guard defaults)
+    const start_date = body.start_date || null;
+    const end_date = body.end_date || null;
+    const semester = body.semester || null;
+    const class_type = body.class || null;
+    const email = body.email || null;
+    const phone = body.phone || null;
+    const language = body.language || null;
 
-        // server-side required validations
-        if (!class_type) return res.status(400).json({ error: 'class required' });
-        if (!semester) return res.status(400).json({ error: 'semester required' });
-        if (!start_date) return res.status(400).json({ error: 'start_date required' });
-        if (!end_date) return res.status(400).json({ error: 'end_date required' });
-        if (!email) return res.status(400).json({ error: 'email required' });
-        if (!phone) return res.status(400).json({ error: 'phone required' });
-        if (!language) return res.status(400).json({ error: 'language required' });
+    // server-side required validations
+    if (!class_type) return res.status(400).json({ error: "class required" });
+    if (!semester) return res.status(400).json({ error: "semester required" });
+    if (!start_date)
+      return res.status(400).json({ error: "start_date required" });
+    if (!end_date) return res.status(400).json({ error: "end_date required" });
+    if (!email) return res.status(400).json({ error: "email required" });
+    if (!phone) return res.status(400).json({ error: "phone required" });
+    if (!language) return res.status(400).json({ error: "language required" });
 
-        // Generate letter_number otomatis
-        const [lastLetter] = await db.query('SELECT MAX(letter_number) AS lastNum FROM internship_letter');
-        const nextNumber = (lastLetter[0].lastNum || 0) + 1;
+    // Generate letter_number otomatis
+    const [lastLetter] = await db.query(
+      "SELECT MAX(letter_number) AS lastNum FROM internship_letter"
+    );
+    const nextNumber = (lastLetter[0].lastNum || 0) + 1;
 
-        // insert into internship_letter
-        const [result] = await db.query(
-            `INSERT INTO internship_letter 
+    // insert into internship_letter
+    const [result] = await db.query(
+      `INSERT INTO internship_letter 
   (nim, id_company, start_date, end_date, status, semester, \`class\`, koor_approval, cdc_approval, company_name, company_contact, company_address, language, letter_number)
   VALUES (?, ?, ?, ?, 'WAITING', ?, ?, 'WAITING', 'WAITING', ?, ?, ?, ?, ?)`,
-            [
-                nim,
-                id_company,
-                start_date,
-                end_date,
-                semester,
-                class_type,
-                company_name,
-                company_contact,
-                company_address,
-                language,
-                nextNumber
-            ]
-        );
+      [
+        nim,
+        id_company,
+        start_date,
+        end_date,
+        semester,
+        class_type,
+        company_name,
+        company_contact,
+        company_address,
+        language,
+        nextNumber,
+      ]
+    );
 
-        res.json({ success: true, id: result.insertId });
-    } catch (err) {
-        console.error('form-submission error:', err);
-        res.status(500).json({ error: err.message });
-    }
+    res.json({ success: true, id: result.insertId });
+  } catch (err) {
+    console.error("form-submission error:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /**
  * GET /api/student/approval-status/:nim
  * Ambil semua internship_letter milik nim, urut terbaru (created_at desc)
  */
-router.get('/approval-status/:nim', async (req, res) => {
-    try {
-        const nim = req.params.nim;
-        const sql = `
-      SELECT 
-        id_letter,
-        nim,
-        koor_approval,
-        cdc_approval,
-        status,
-        acceptance_status,
-        published_date,
-        created_at,
-        updated_at,
-        language
-      FROM internship_letter
-      WHERE nim = ?
-      ORDER BY created_at DESC
-    `;
-        const [rows] = await db.query(sql, [nim]);
-        return res.json({ success: true, data: rows });
-    } catch (err) {
-        console.error('GET /approval-status error:', err);
-        return res.status(500).json({ success: false, error: 'Server error' });
-    }
+router.get("/approval-status/:nim", async (req, res) => {
+  try {
+    const nim = req.params.nim;
+
+    const sql = `
+  SELECT 
+    il.id_letter,
+    il.nim,
+    il.koor_approval,
+    il.cdc_approval,
+    il.status,
+    il.acceptance_status,
+    il.published_date,
+    il.created_at,
+    il.updated_at,
+    il.language,
+
+    -- Ambil alasan dari koor (REJECTED terakhir)
+    (
+      SELECT comment 
+      FROM internship_letter_history h 
+      WHERE h.id_letter = il.id_letter 
+        AND LOWER(h.approved_by) = 'internship coordinator'
+        AND LOWER(h.status_approval) = 'rejected'
+      ORDER BY h.id_history DESC
+      LIMIT 1
+    ) AS koor_reason,
+
+    -- Ambil alasan dari cdc (REJECTED terakhir)
+    (
+      SELECT comment 
+      FROM internship_letter_history h 
+      WHERE h.id_letter = il.id_letter 
+        AND LOWER(h.approved_by) = 'cdc administrator'
+        AND LOWER(h.status_approval) = 'rejected'
+      ORDER BY h.id_history DESC
+      LIMIT 1
+    ) AS cdc_reason
+
+  FROM internship_letter il
+  WHERE il.nim = ?
+  ORDER BY il.created_at DESC
+`;
+
+    const [rows] = await db.query(sql, [nim]);
+    return res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error("GET /approval-status error:", err);
+    return res.status(500).json({ success: false, error: "Server error" });
+  }
 });
 
 /**
@@ -344,40 +395,54 @@ router.get('/approval-status/:nim', async (req, res) => {
  * - Hanya diizinkan jika status final = 'ACCEPTED' (surat sudah bisa didownload)
  * - acceptance_status disimpan ke kolom acceptance_status
  */
-router.put('/acceptance/:id_letter', async (req, res) => {
-    try {
-        const id = req.params.id_letter;
-        const { acceptance_status } = req.body;
+router.put("/acceptance/:id_letter", async (req, res) => {
+  try {
+    const id = req.params.id_letter;
+    const { acceptance_status } = req.body;
 
-        if (!['ACCEPTED', 'REJECTED'].includes(acceptance_status)) {
-            return res.status(400).json({ success: false, error: 'Invalid acceptance_status' });
-        }
-
-        // ambil record dulu
-        const [rows] = await db.query('SELECT * FROM internship_letter WHERE id_letter = ?', [id]);
-        if (!rows || rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'Letter not found' });
-        }
-        const rec = rows[0];
-
-        // hanya boleh update acceptance_status jika status final sudah 'ACCEPTED'
-        if (rec.status !== 'ACCEPTED') {
-            return res.status(400).json({ success: false, error: 'Cannot set acceptance_status before letter is accepted (status must be ACCEPTED).' });
-        }
-
-        // update acceptance_status
-        const now = new Date();
-        await db.query(
-            'UPDATE internship_letter SET acceptance_status = ?, updated_at = ? WHERE id_letter = ?',
-            [acceptance_status, now, id]
-        );
-
-        const [updatedRows] = await db.query('SELECT * FROM internship_letter WHERE id_letter = ?', [id]);
-        return res.json({ success: true, data: updatedRows[0] });
-    } catch (err) {
-        console.error('PUT /acceptance error:', err);
-        return res.status(500).json({ success: false, error: 'Server error' });
+    if (!["ACCEPTED", "REJECTED"].includes(acceptance_status)) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid acceptance_status" });
     }
+
+    // ambil record dulu
+    const [rows] = await db.query(
+      "SELECT * FROM internship_letter WHERE id_letter = ?",
+      [id]
+    );
+    if (!rows || rows.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Letter not found" });
+    }
+    const rec = rows[0];
+
+    // hanya boleh update acceptance_status jika status final sudah 'ACCEPTED'
+    if (rec.status !== "ACCEPTED") {
+      return res.status(400).json({
+        success: false,
+        error:
+          "Cannot set acceptance_status before letter is accepted (status must be ACCEPTED).",
+      });
+    }
+
+    // update acceptance_status
+    const now = new Date();
+    await db.query(
+      "UPDATE internship_letter SET acceptance_status = ?, updated_at = ? WHERE id_letter = ?",
+      [acceptance_status, now, id]
+    );
+
+    const [updatedRows] = await db.query(
+      "SELECT * FROM internship_letter WHERE id_letter = ?",
+      [id]
+    );
+    return res.json({ success: true, data: updatedRows[0] });
+  } catch (err) {
+    console.error("PUT /acceptance error:", err);
+    return res.status(500).json({ success: false, error: "Server error" });
+  }
 });
 
 /**
@@ -385,138 +450,211 @@ router.put('/acceptance/:id_letter', async (req, res) => {
  * Ambil detail surat magang berdasarkan id_letter (termasuk data student & company)
  */
 // Ambil detail surat + student + company
-router.get('/internship_letter/:id', async (req, res) => {
-    const { id } = req.params;
-    const lang = (req.query.lang || 'ID').toUpperCase();
-    try {
-        const [letterRows] = await db.query(`SELECT * FROM internship_letter WHERE id_letter = ? LIMIT 1`, [id]);
-        if (!letterRows.length) return res.status(404).json({ error: 'Letter not found' });
-        const letter = letterRows[0];
+router.get("/internship_letter/:id", async (req, res) => {
+  const { id } = req.params;
+  const lang = (req.query.lang || "ID").toUpperCase();
+  try {
+    const [letterRows] = await db.query(
+      `SELECT * FROM internship_letter WHERE id_letter = ? LIMIT 1`,
+      [id]
+    );
+    if (!letterRows.length)
+      return res.status(404).json({ error: "Letter not found" });
+    const letter = letterRows[0];
 
-        const [stuRows] = await db.query(`
+    const [stuRows] = await db.query(
+      `
   SELECT s.nim, s.name, s.email, s.id_kampus,
          p.jenjang, p.prodi, p.study_program, p.kode_prodi
   FROM student_internship s
   LEFT JOIN program_study p ON s.program_study = p.kode_prodi
   WHERE s.nim = ? LIMIT 1
-`, [letter.nim]);
-        const student = stuRows.length ? stuRows[0] : null;
+`,
+      [letter.nim]
+    );
+    const student = stuRows.length ? stuRows[0] : null;
 
-        let company = null;
-        if (letter.id_company) {
-            const [compRows] = await db.query(`SELECT id_company, name, address, phone, email FROM company WHERE id_company = ? LIMIT 1`, [letter.id_company]);
-            company = compRows.length ? compRows[0] : null;
-        }
-
-        return res.json({
-            ...letter,
-            student,
-            company,
-            language: lang,
-            formatted: {
-                indo: {
-                    start_date: formatDateIndo(letter.start_date),
-                    end_date: formatDateIndo(letter.end_date)
-                },
-                eng: {
-                    start_date: formatDateEng(letter.start_date),
-                    end_date: formatDateEng(letter.end_date)
-                }
-            }
-        });
-    } catch (err) {
-        console.error('GET /internship_letter/:id error:', err);
-        return res.status(500).json({ error: 'Server error' });
+    let company = null;
+    if (letter.id_company) {
+      const [compRows] = await db.query(
+        `SELECT id_company, name, address, phone, email FROM company WHERE id_company = ? LIMIT 1`,
+        [letter.id_company]
+      );
+      company = compRows.length ? compRows[0] : null;
     }
+
+    return res.json({
+      ...letter,
+      student,
+      company,
+      language: lang,
+      formatted: {
+        indo: {
+          start_date: formatDateIndo(letter.start_date),
+          end_date: formatDateIndo(letter.end_date),
+        },
+        eng: {
+          start_date: formatDateEng(letter.start_date),
+          end_date: formatDateEng(letter.end_date),
+        },
+      },
+    });
+  } catch (err) {
+    console.error("GET /internship_letter/:id error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
 });
 
 // helper: format tanggal ke "13 Agustus 2025"
 function formatDateIndo(isoDateStr) {
-    if (!isoDateStr) return '';
-    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    const d = new Date(isoDateStr);
-    const dd = d.getDate();
-    const mm = monthNames[d.getMonth()];
-    const yyyy = d.getFullYear();
-    return `${dd} ${mm} ${yyyy}`;
+  if (!isoDateStr) return "";
+  const monthNames = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
+  const d = new Date(isoDateStr);
+  const dd = d.getDate();
+  const mm = monthNames[d.getMonth()];
+  const yyyy = d.getFullYear();
+  return `${dd} ${mm} ${yyyy}`;
 }
 
 // helper: format tanggal ke "October 30, 2025"
 function formatDateEng(isoDateStr) {
-    if (!isoDateStr) return '';
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'];
-    const d = new Date(isoDateStr);
-    const dd = d.getDate();
-    const mm = monthNames[d.getMonth()];
-    const yyyy = d.getFullYear();
-    return `${mm} ${dd}, ${yyyy}`;
+  if (!isoDateStr) return "";
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const d = new Date(isoDateStr);
+  const dd = d.getDate();
+  const mm = monthNames[d.getMonth()];
+  const yyyy = d.getFullYear();
+  return `${mm} ${dd}, ${yyyy}`;
 }
 
 // Route: generate & download PDF letter by id_letter
-router.get('/letter/:id/download', async (req, res) => {
-    const id = req.params.id;
-    try {
-        const [rows] = await db.query(`SELECT * FROM internship_letter WHERE id_letter = ? LIMIT 1`, [id]);
-        if (!rows.length) return res.status(404).json({ error: 'Letter not found' });
-        const letter = rows[0];
+router.get("/letter/:id/download", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const [rows] = await db.query(
+      `SELECT * FROM internship_letter WHERE id_letter = ? LIMIT 1`,
+      [id]
+    );
+    if (!rows.length)
+      return res.status(404).json({ error: "Letter not found" });
+    const letter = rows[0];
 
-        const lang = (req.query.lang || letter.language || 'ID').toUpperCase();
+    const lang = (req.query.lang || letter.language || "ID").toUpperCase();
 
-        // JOIN ke tabel program_study biar lengkap
-        const [stuRows] = await db.query(`
+    // JOIN ke tabel program_study biar lengkap
+    const [stuRows] = await db.query(
+      `
       SELECT s.nim, s.name, s.email,
              p.jenjang, p.prodi, p.study_program
       FROM student_internship s
       LEFT JOIN program_study p ON s.program_study = p.kode_prodi
       WHERE s.nim = ? LIMIT 1
-    `, [letter.nim]);
-        const student = stuRows.length ? stuRows[0] : null;
+    `,
+      [letter.nim]
+    );
+    const student = stuRows.length ? stuRows[0] : null;
 
-        let company = null;
-        if (letter.id_company) {
-            const [cRows] = await db.query(
-                `SELECT id_company, name, address FROM company WHERE id_company = ? LIMIT 1`,
-                [letter.id_company]
-            );
-            if (cRows.length) company = cRows[0];
-        }
-
-        // Buat nomor surat jika belum ada
-        const year = new Date().getFullYear();
-        let letterNumber = letter.letter_number;
-        if (!letterNumber) {
-            const [countRows] = await db.query(
-                `SELECT COUNT(*) AS cnt FROM internship_letter WHERE letter_number IS NOT NULL AND YEAR(created_at) = ?`,
-                [year]
-            );
-            const next = (countRows[0]?.cnt ?? 0) + 1;
-            await db.query(`UPDATE internship_letter SET letter_number = ? WHERE id_letter = ?`, [next, id]);
-            letterNumber = next;
-        }
-
-        // Template URL
-        const templateFile = lang === 'ENG' ? 'internship_letter_eng.php' : 'internship_letter_id.php';
-        const templateURL = `http://localhost/myinternship/front-end/${templateFile}?id_letter=${id}&lang=${lang}`;
-
-        const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-        const page = await browser.newPage();
-        await page.goto(templateURL, { waitUntil: 'networkidle0', timeout: 0 });
-        const pdfBuffer = await page.pdf({
-            format: 'A4',
-            printBackground: true,
-            margin: { top: '10mm', bottom: '10mm', left: '12mm', right: '12mm' }
-        });
-        await browser.close();
-
-        const filename = `internship_letter_${letter.nim || letter.id_letter}_${year}.pdf`;
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-        res.send(pdfBuffer);
-    } catch (err) {
-        console.error('download letter error:', err);
-        res.status(500).json({ error: 'Server error when generating PDF' });
+    let company = null;
+    if (letter.id_company) {
+      const [cRows] = await db.query(
+        `SELECT id_company, name, address FROM company WHERE id_company = ? LIMIT 1`,
+        [letter.id_company]
+      );
+      if (cRows.length) company = cRows[0];
     }
+
+    // Buat nomor surat jika belum ada
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth(); // 0-11
+    const monthRoman = getMonthRoman(month);
+
+    let letterNumber = letter.letter_number;
+    if (!letterNumber) {
+      const [countRows] = await db.query(
+        `SELECT COUNT(*) AS cnt FROM internship_letter WHERE letter_number IS NOT NULL AND YEAR(created_at) = ?`,
+        [year]
+      );
+      const next = (countRows[0]?.cnt ?? 0) + 1;
+      await db.query(
+        `UPDATE internship_letter SET letter_number = ? WHERE id_letter = ?`,
+        [next, id]
+      );
+      letterNumber = next;
+    }
+
+    // Helper function untuk konversi bulan ke romawi
+    function getMonthRoman(month) {
+      const romans = [
+        "I",
+        "II",
+        "III",
+        "IV",
+        "V",
+        "VI",
+        "VII",
+        "VIII",
+        "IX",
+        "X",
+        "XI",
+        "XII",
+      ];
+      return romans[month];
+    }
+
+    // Template URL - kirim monthRoman sebagai query parameter
+    const templateFile =
+      lang === "ENG" ? "internship_letter_eng.php" : "internship_letter_id.php";
+    const templateURL = `http://localhost/myinternship/front-end/${templateFile}?id_letter=${id}&lang=${lang}&month_roman=${monthRoman}`;
+
+    const browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+    const page = await browser.newPage();
+    await page.goto(templateURL, { waitUntil: "networkidle0", timeout: 0 });
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: { top: "10mm", bottom: "10mm", left: "12mm", right: "12mm" },
+    });
+    await browser.close();
+
+    const filename = `internship_letter_${
+      letter.nim || letter.id_letter
+    }_${year}.pdf`;
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error("download letter error:", err);
+    res.status(500).json({ error: "Server error when generating PDF" });
+  }
 });
 
 module.exports = router;

@@ -511,7 +511,6 @@ if ($id_kampus) {
                                             <select class="form-control" id="filter_company" name="company" onchange="applyFilter()">
                                                 <option value="">ALL</option>
                                                 <option value="accepted">Accepted</option>
-                                                <option value="waiting">Waiting</option>
                                                 <option value="rejected">Rejected</option>
                                             </select>
                                         </div>
@@ -576,107 +575,359 @@ if ($id_kampus) {
             </footer>
         </div>
 
+        <!--   Core JS Files   -->
+        <script src="./assets/js/core/popper.min.js"></script>
+        <script src="./assets/js/core/bootstrap.min.js"></script>
+        <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
         <script>
+            // ============================================
+            // KONFIGURASI & INISIALISASI
+            // ============================================
+
+            // Data user CDC dari PHP session
+            const currentUserId = <?= json_encode($user['id_upkpk'] ?? "-") ?>;
+            const currentUserName = <?= json_encode($user['name'] ?? "-") ?>;
+            const cdcKampusId = "<?php echo $id_kampus; ?>";
+
+            // Base URL untuk API
             const apiBase = "http://localhost:8000/api";
 
-            document.addEventListener("DOMContentLoaded", loadSubmissions);
+            let allSubmissions = [];
+            let sortAscending = true;
 
-            async function loadSubmissions() {
+
+            // ============================================
+            // EVENT LISTENER - LOAD AWAL
+            // ============================================
+
+            document.addEventListener("DOMContentLoaded", function() {
+                loadStudyPrograms(); // Load dropdown study program untuk filter
+                loadSubmissions(); // Load data submissions default (tanpa filter)
+            });
+
+
+            // ============================================
+            // FUNGSI UTAMA - LOAD DATA SUBMISSIONS
+            // ============================================
+
+            /**
+             * Load submissions dengan atau tanpa filter
+             * Fungsi ini menggabungkan loadSubmissions() dan loadSubmissionsWithFilter()
+             * 
+             * @param {boolean} useFilter - true jika menggunakan filter, false untuk load semua data
+             */
+            async function loadSubmissions(useFilter = false) {
                 const body = document.getElementById("tableBody");
-                body.innerHTML = "<tr><td colspan='8'>Loading...</td></tr>";
+                body.innerHTML = "<tr><td colspan='8' class='text-center'>Loading...</td></tr>";
 
                 try {
-                    const res = await fetch(`${apiBase}/cdc/submissions`);
+                    let apiUrl = `${apiBase}/cdc/submissions`;
+
+                    // Jika menggunakan filter, build query params
+                    if (useFilter) {
+                        const studyProgram = document.getElementById("filter_study_program").value;
+                        const studentName = document.getElementById("filter_student_name").value;
+                        const coordinator = document.getElementById("filter_coordinator").value;
+                        const cdcFilter = document.getElementById("filter_cdc").value;
+                        const company = document.getElementById("filter_company").value;
+
+                        let queryParams = new URLSearchParams();
+                        queryParams.append('id_kampus', cdcKampusId);
+
+                        if (studyProgram) queryParams.append('study_program', studyProgram);
+                        if (studentName) queryParams.append('student_name', studentName);
+                        if (coordinator) queryParams.append('coordinator', coordinator);
+                        if (cdcFilter) queryParams.append('cdc', cdcFilter);
+                        // if (company) queryParams.append('company', company);
+
+                        apiUrl = `${apiBase}/cdc/submissions-filtered?${queryParams.toString()}`;
+                    }
+
+                    // Fetch data dari API
+                    const res = await fetch(apiUrl);
                     const json = await res.json();
+
+                    // Simpan data ke variabel global
+                    allSubmissions = json.data || [];
+
+                    if (!json.success || !allSubmissions.length) {
+                        body.innerHTML = "<tr><td colspan='8' class='text-center text-muted'>No data found.</td></tr>";
+                        return;
+                    }
+
+                    // Render table
+                    renderTable(allSubmissions);
+
+                    // Validasi response
                     if (!json.success || !json.data.length) {
                         body.innerHTML = "<tr><td colspan='8' class='text-center text-muted'>No data found.</td></tr>";
                         return;
                     }
 
+                    // Render table rows
                     body.innerHTML = "";
                     json.data.forEach((item, i) => {
-                        const date = new Date(item.created_at).toLocaleDateString("en-GB");
-
-                        // Format tanggal tanpa jam
-                        const formatTime = (t) => {
-                            if (!t) return "-";
-                            const d = new Date(t);
-                            return d.toLocaleDateString("en-GB");
-                        };
-
-                        // Koordinator approval
-                        let koor = "-";
-                        if (item.koor_approval === "WAITING")
-                            koor = `<span class='badge waiting'>Waiting</span>`;
-                        else if (item.koor_approval === "ACCEPTED")
-                            koor = `<div class="text-center">
-                  <span class='badge approved'>Approved</span>
-                  <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
-                </div>`;
-                        else if (item.koor_approval === "REJECTED")
-                            koor = `<div class="text-center">
-                  <span class='badge rejected'>Rejected</span>
-                  <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
-                </div>`;
-
-                        // CDC approval
-                        let cdcHtml = "";
-                        if (item.koor_approval === "WAITING") {
-                            cdcHtml = `<span class="badge-empty">-</span>`;
-                        } else if (item.cdc_approval === "WAITING" && item.koor_approval === "ACCEPTED") {
-                            cdcHtml = `
-          <div class="dropdown text-center">
-            <button class="btn btn-warning btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
-              Waiting
-            </button>
-            <div class="dropdown-menu">
-              <a class="dropdown-item text-success" href="#" onclick="updateApproval(${item.id_letter}, 'ACCEPTED', this)">
-                <i class="fas fa-check text-success"></i> Approve
-              </a>
-              <a class="dropdown-item text-danger" href="#" onclick="updateApproval(${item.id_letter}, 'REJECTED', this)">
-                <i class="fas fa-times text-danger"></i> Reject
-              </a>
-            </div>
-          </div>`;
-                        } else if (item.cdc_approval === "ACCEPTED") {
-                            cdcHtml = `<div class="text-center">
-                     <span class="badge approved">Approved</span>
-                     <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
-                   </div>`;
-                        } else if (item.cdc_approval === "REJECTED") {
-                            cdcHtml = `<div class="text-center">
-                     <span class="badge rejected">Rejected</span>
-                     <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
-                   </div>`;
-                        } else {
-                            cdcHtml = `<span class="badge-empty">-</span>`;
-                        }
-
-                        const result = "-";
-
-                        body.innerHTML += `
-        <tr>
-          <td>${i + 1}</td>
-          <td>${date}</td>
-          <td>${item.nim}</td>
-          <td>${item.student_name}</td>
-          <td>${koor}</td>
-          <td>${cdcHtml}</td>
-          <td>${result}</td>
-          <td>
-            <button class="btn btn-info btn-sm" onclick="viewDetail(${item.id_letter})">
-              <i class="fa fa-eye"></i> Detail Submission
-            </button>
-          </td>
-        </tr>`;
+                        body.innerHTML += buildTableRow(item, i);
                     });
+
                 } catch (err) {
-                    console.error(err);
-                    body.innerHTML = "<tr><td colspan='8' class='text-danger'>Error loading data.</td></tr>";
+                    console.error("Error loading submissions:", err);
+                    body.innerHTML = "<tr><td colspan='8' class='text-danger text-center'>Error loading data.</td></tr>";
                 }
             }
 
-            async function updateApproval(id, status, el) {
+            // ============================================
+            // HELPER BARU
+            // ============================================
+            function renderTable(data) {
+                const body = document.getElementById("tableBody");
+                body.innerHTML = "";
+                data.forEach((item, i) => {
+                    body.innerHTML += buildTableRow(item, i);
+                });
+            }
+
+
+            // ============================================
+            // FUNGSI HELPER - BUILD TABLE ROW
+            // ============================================
+
+            /**
+             * Build single table row untuk submission
+             * 
+             * @param {Object} item - Data submission dari API
+             * @param {number} index - Index row untuk numbering
+             * @returns {string} HTML string untuk table row
+             */
+            function buildTableRow(item, index) {
+                const date = formatDate(item.created_at);
+                const koorHtml = buildKoordinatorBadge(item);
+                const cdcHtml = buildCDCApprovalHtml(item);
+                const resultHtml = buildResultBadge(item.status);
+
+                return `
+        <tr>
+            <td class="text-center">${index + 1}</td>
+            <td class="text-center">${date}</td>
+            <td class="text-center">${item.nim}</td>
+            <td>${item.student_name}</td>
+            <td class="text-center">${koorHtml}</td>
+            <td class="text-center">${cdcHtml}</td>
+            <td class="text-center">${resultHtml}</td>
+            <td>
+                <button class="btn btn-info btn-sm" onclick="viewDetail(${item.id_letter})">
+                    <i class="fa fa-eye"></i> Detail Submission
+                </button>
+            </td>
+        </tr>
+    `;
+            }
+
+
+            // ============================================
+            // FUNGSI HELPER - BUILD BADGE STATUS
+            // ============================================
+
+            /**
+             * Build badge untuk status approval koordinator
+             * 
+             * @param {Object} item - Data submission
+             * @returns {string} HTML string untuk badge koordinator
+             */
+            function buildKoordinatorBadge(item) {
+                const updatedDate = formatDate(item.updated_at);
+
+                switch (item.koor_approval) {
+                    case "WAITING":
+                        return `<span class='badge waiting'>Waiting</span>`;
+
+                    case "ACCEPTED":
+                        return `
+                <div class="text-center">
+                    <span class='badge approved'>Approved</span>
+                    <div class="text-muted" style="font-size:12px;margin-top:2px;">${updatedDate}</div>
+                </div>
+            `;
+
+                    case "REJECTED":
+                        return `
+                <div class="text-center">
+                    <span class='badge rejected'>Rejected</span>
+                    <div class="text-muted" style="font-size:12px;margin-top:2px;">${updatedDate}</div>
+                </div>
+            `;
+
+                    default:
+                        return "-";
+                }
+            }
+
+            /**
+             * Build HTML untuk approval CDC
+             * Logic: 
+             * - Jika koordinator REJECTED → CDC otomatis REJECTED (tanpa tanggal & tanpa reason)
+             * - Jika koordinator WAITING → CDC belum bisa action (tampil -)
+             * - Jika koordinator ACCEPTED & CDC WAITING → tampil dropdown action
+             * - Jika CDC sudah ACCEPTED/REJECTED → tampil badge dengan tanggal
+             * 
+             * @param {Object} item - Data submission
+             * @returns {string} HTML string untuk CDC approval
+             */
+            function buildCDCApprovalHtml(item) {
+                const updatedDate = formatDate(item.updated_at);
+
+                // Case 1: Koordinator REJECTED → CDC otomatis REJECTED
+                if (item.koor_approval === "REJECTED") {
+                    return `
+            <div class="text-center">
+                <span class="badge rejected">Rejected</span>
+                <div class="text-muted" style="font-size:12px;margin-top:2px;">-</div>
+            </div>
+        `;
+                }
+
+                // Case 2: Koordinator masih WAITING → CDC belum bisa action
+                if (item.koor_approval === "WAITING") {
+                    return `-`;
+                }
+
+                // Case 3: Koordinator ACCEPTED & CDC WAITING → tampil dropdown action
+                if (item.cdc_approval === "WAITING" && item.koor_approval === "ACCEPTED") {
+                    return `
+            <div class="dropdown text-center">
+                <button class="btn btn-warning btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
+                    Waiting
+                </button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item text-success" href="#" onclick="handleApproval(${item.id_letter}, 'ACCEPTED')">
+                        <i class="fas fa-check text-success"></i> Approve
+                    </a>
+                    <a class="dropdown-item text-danger" href="#" onclick="handleApproval(${item.id_letter}, 'REJECTED')">
+                        <i class="fas fa-times text-danger"></i> Reject
+                    </a>
+                </div>
+            </div>
+        `;
+                }
+
+                // Case 4: CDC sudah ACCEPTED
+                if (item.cdc_approval === "ACCEPTED") {
+                    return `
+            <div class="text-center">
+                <span class="badge approved">Approved</span>
+                <div class="text-muted" style="font-size:12px;margin-top:2px;">${updatedDate}</div>
+            </div>
+        `;
+                }
+
+                // Case 5: CDC sudah REJECTED (tampil badge + button show reason)
+                if (item.cdc_approval === "REJECTED") {
+                    return `
+            <div class="text-center">
+                <span class="badge rejected">Rejected</span>
+                <div class="text-muted" style="font-size:12px;margin-top:2px;">${updatedDate}</div>
+                <button class="btn btn-sm btn-light mt-1" onclick="viewReason(${item.id_letter})" title="Show reason">
+                    <i class="fas fa-comment"></i> Show reason
+                </button>
+            </div>
+        `;
+                }
+
+                // Default
+                return `-`;
+            }
+
+            /**
+             * Build badge untuk result company
+             * 
+             * @param {string} status - Status result (ACCEPTED/WAITING/REJECTED)
+             * @returns {string} HTML string untuk badge result
+             */
+            function buildResultBadge(status) {
+                return "-";
+            }
+
+            /**
+             * Sort table by date
+             * Toggle between ascending and descending
+             */
+            function sortTable() {
+                sortAscending = !sortAscending;
+
+                const sortIcon = document.getElementById("sortIcon");
+                if (sortAscending) {
+                    sortIcon.className = "fas fa-sort-up";
+                    allSubmissions.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                } else {
+                    sortIcon.className = "fas fa-sort-down";
+                    allSubmissions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                }
+
+                renderTable(allSubmissions);
+            }
+
+            // ============================================
+            // FUNGSI HELPER - FORMAT TANGGAL
+            // ============================================
+
+            /**
+             * Format timestamp menjadi tanggal DD/MM/YYYY
+             * 
+             * @param {string} timestamp - Timestamp dari database
+             * @returns {string} Formatted date atau "-" jika null
+             */
+            function formatDate(timestamp) {
+                if (!timestamp) return "-";
+                return new Date(timestamp).toLocaleDateString("en-GB");
+            }
+
+
+            // ============================================
+            // FUNGSI APPROVAL - HANDLE USER ACTION
+            // ============================================
+
+            /**
+             * Handle approval action (Approve/Reject)
+             * Untuk REJECTED, akan muncul textarea untuk input alasan
+             * Untuk ACCEPTED, langsung konfirmasi
+             * 
+             * @param {number} id - ID letter submission
+             * @param {string} status - Status approval (ACCEPTED/REJECTED)
+             */
+            async function handleApproval(id, status) {
+                let comment = null;
+
+                // Jika reject, minta alasan dulu
+                if (status === "REJECTED") {
+                    const {
+                        value: reason,
+                        isConfirmed
+                    } = await Swal.fire({
+                        title: "Why are you rejecting?",
+                        text: "Please provide your reason for rejecting this submission.",
+                        input: "textarea",
+                        inputPlaceholder: "Write the reason here...",
+                        inputAttributes: {
+                            'aria-label': 'Reason for rejection'
+                        },
+                        showCancelButton: true,
+                        cancelButtonText: "Cancel",
+                        confirmButtonText: "Submit",
+                        preConfirm: (value) => {
+                            if (!value || !value.trim()) {
+                                Swal.showValidationMessage("Reason is required.");
+                                return false;
+                            }
+                            return value.trim();
+                        }
+                    });
+
+                    if (!isConfirmed) return;
+                    comment = reason;
+                }
+
+                // Konfirmasi action
                 const confirm = await Swal.fire({
                     title: "Confirm?",
                     text: `You are about to mark this submission as ${status}`,
@@ -684,8 +935,21 @@ if ($id_kampus) {
                     showCancelButton: true,
                     confirmButtonText: "Yes, confirm"
                 });
+
                 if (!confirm.isConfirmed) return;
 
+                // Kirim ke API
+                await sendApprovalToAPI(id, status, comment);
+            }
+
+            /**
+             * Kirim approval ke API
+             * 
+             * @param {number} id - ID letter submission
+             * @param {string} status - Status approval (ACCEPTED/REJECTED)
+             * @param {string|null} comment - Alasan reject (optional)
+             */
+            async function sendApprovalToAPI(id, status, comment = null) {
                 try {
                     const res = await fetch(`${apiBase}/cdc/approval`, {
                         method: "POST",
@@ -694,29 +958,205 @@ if ($id_kampus) {
                         },
                         body: JSON.stringify({
                             id_letter: id,
-                            status
+                            status,
+                            user_id: currentUserId,
+                            user_name: currentUserName,
+                            comment
                         })
                     });
+
                     const json = await res.json();
 
                     if (json.success) {
                         Swal.fire("Success!", json.message, "success");
-                        loadSubmissions();
+                        loadSubmissions(); // Reload data
                     } else {
                         Swal.fire("Error", json.message, "error");
                     }
                 } catch (err) {
+                    console.error("Error sending approval:", err);
                     Swal.fire("Error", err.message, "error");
                 }
             }
 
+
+            // ============================================
+            // FUNGSI REASON - VIEW & EDIT
+            // ============================================
+
+            /**
+             * View rejection reason dengan opsi edit
+             * 
+             * @param {number} id_letter - ID letter submission
+             */
+            async function viewReason(id_letter) {
+                try {
+                    const res = await fetch(`${apiBase}/cdc/reason/${id_letter}`);
+
+                    if (!res.ok) {
+                        const j = await res.json().catch(() => ({
+                            message: 'Unknown error'
+                        }));
+                        return Swal.fire("Error", j.message || "Reason not found", "error");
+                    }
+
+                    const json = await res.json();
+                    const reason = json.comment || "-";
+
+                    // Tampilkan reason dengan opsi edit
+                    const result = await Swal.fire({
+                        title: "Rejection reason",
+                        html: `<div style="text-align:left; white-space:pre-wrap;">${escapeHtml(reason)}</div>`,
+                        showCancelButton: false,
+                        showDenyButton: true,
+                        denyButtonText: "Edit",
+                        confirmButtonText: "Close"
+                    });
+
+                    // Jika user klik Edit
+                    if (result.isDenied) {
+                        editReason(id_letter, reason);
+                    }
+                } catch (err) {
+                    console.error("Error viewing reason:", err);
+                    Swal.fire("Error", err.message, "error");
+                }
+            }
+
+            /**
+             * Edit rejection reason
+             * 
+             * @param {number} id_letter - ID letter submission
+             * @param {string} currentReason - Current reason text
+             */
+            async function editReason(id_letter, currentReason) {
+                const {
+                    value: newReason,
+                    isConfirmed
+                } = await Swal.fire({
+                    title: "Edit rejection reason",
+                    input: "textarea",
+                    inputValue: currentReason || "",
+                    inputPlaceholder: "Write the reason here...",
+                    showCancelButton: true,
+                    cancelButtonText: "Cancel",
+                    confirmButtonText: "Save",
+                    preConfirm: (value) => {
+                        if (!value || !value.trim()) {
+                            Swal.showValidationMessage("Reason is required.");
+                            return false;
+                        }
+                        return value.trim();
+                    }
+                });
+
+                if (!isConfirmed) return;
+
+                // Kirim update ke API
+                try {
+                    const res = await fetch(`${apiBase}/cdc/history/${id_letter}/edit`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            comment: newReason
+                        })
+                    });
+
+                    const json = await res.json();
+
+                    if (json.success) {
+                        Swal.fire("Success", json.message, "success");
+                        loadSubmissions(); // Reload data
+                    } else {
+                        Swal.fire("Error", json.message, "error");
+                    }
+                } catch (err) {
+                    console.error("Error editing reason:", err);
+                    Swal.fire("Error", err.message, "error");
+                }
+            }
+
+            /**
+             * Escape HTML untuk prevent XSS injection di SweetAlert
+             * 
+             * @param {string} str - String yang akan di-escape
+             * @returns {string} Escaped string
+             */
+            function escapeHtml(str) {
+                if (!str) return "";
+                return String(str)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+
+            // ============================================
+            // FUNGSI FILTER & STUDY PROGRAM
+            // ============================================
+
+            /**
+             * Load study programs untuk dropdown filter
+             * Hanya load program studi yang sesuai dengan kampus CDC
+             */
+            async function loadStudyPrograms() {
+                if (!cdcKampusId) {
+                    console.error("CDC Kampus ID tidak tersedia");
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`${apiBase}/cdc/study-programs/${cdcKampusId}`);
+                    const json = await res.json();
+
+                    if (json.success && json.data.length > 0) {
+                        const select = document.getElementById("filter_study_program");
+                        select.innerHTML = '<option value="">All Study Programs</option>';
+
+                        json.data.forEach(item => {
+                            const option = document.createElement("option");
+                            option.value = item.kode_prodi;
+                            option.textContent = `${item.kode_prodi} - ${item.program_name}`;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (err) {
+                    console.error("Error loading study programs:", err);
+                }
+            }
+
+            /**
+             * Apply filter - dipanggil saat user mengubah filter
+             * Fungsi ini akan reload submissions dengan parameter filter
+             */
+            function applyFilter() {
+                loadSubmissions(true); // true = gunakan filter
+            }
+
+
+            // ============================================
+            // FUNGSI NAVIGASI & UTILITY
+            // ============================================
+
+            /**
+             * View detail submission - redirect ke halaman detail
+             * 
+             * @param {number} id - ID letter submission
+             */
             function viewDetail(id) {
                 console.log("Opening submission detail for:", id);
                 window.location.href = `detail_submissions_cdc.php?id=${id}`;
             }
 
+            /**
+             * Logout confirmation & redirect
+             * Menghapus session PHP dan localStorage
+             */
             function logout_confirm() {
-
                 let _token = $('meta[name="csrf-token"]').attr('content');
 
                 Swal.fire({
@@ -751,178 +1191,7 @@ if ($id_kampus) {
                     }
                 });
             }
-
-            let cdcKampusId = "<?php echo $id_kampus; ?>"; // Ambil dari PHP session
-
-            // TAMBAHKAN FUNGSI INI (fungsi baru)
-            async function loadStudyPrograms() {
-                if (!cdcKampusId) {
-                    console.error("CDC Kampus ID tidak tersedia");
-                    return;
-                }
-
-                try {
-                    const res = await fetch(`${apiBase}/cdc/study-programs/${cdcKampusId}`);
-                    const json = await res.json();
-
-                    if (json.success && json.data.length > 0) {
-                        const select = document.getElementById("filter_study_program");
-                        select.innerHTML = '<option value="">All Study Programs</option>';
-
-                        json.data.forEach(item => {
-                            const option = document.createElement("option");
-                            option.value = item.kode_prodi;
-                            option.textContent = `${item.kode_prodi} - ${item.program_name}`;
-                            select.appendChild(option);
-                        });
-                    }
-                } catch (err) {
-                    console.error("Error loading study programs:", err);
-                }
-            }
-
-            // TAMBAHKAN FUNGSI INI (fungsi baru untuk filter)
-            function applyFilter() {
-                loadSubmissionsWithFilter();
-            }
-
-            // TAMBAHKAN FUNGSI INI (fungsi baru - versi loadSubmissions dengan filter)
-            async function loadSubmissionsWithFilter() {
-                const body = document.getElementById("tableBody");
-                body.innerHTML = "<tr><td colspan='8' class='text-center'>Loading...</td></tr>";
-
-                try {
-                    // Ambil nilai filter
-                    const studyProgram = document.getElementById("filter_study_program").value;
-                    const studentName = document.getElementById("filter_student_name").value;
-                    const coordinator = document.getElementById("filter_coordinator").value;
-                    const cdcFilter = document.getElementById("filter_cdc").value;
-                    const company = document.getElementById("filter_company").value;
-
-                    // Build query string
-                    let queryParams = new URLSearchParams();
-                    queryParams.append('id_kampus', cdcKampusId);
-
-                    if (studyProgram) queryParams.append('study_program', studyProgram);
-                    if (studentName) queryParams.append('student_name', studentName);
-                    if (coordinator) queryParams.append('coordinator', coordinator);
-                    if (cdcFilter) queryParams.append('cdc', cdcFilter);
-                    if (company) queryParams.append('company', company);
-
-                    // Gunakan endpoint baru dengan filter
-                    const res = await fetch(`${apiBase}/cdc/submissions-filtered?${queryParams.toString()}`);
-                    const json = await res.json();
-
-                    if (!json.success || !json.data.length) {
-                        body.innerHTML = "<tr><td colspan='8' class='text-center text-muted'>No data found.</td></tr>";
-                        return;
-                    }
-
-                    body.innerHTML = "";
-                    json.data.forEach((item, i) => {
-                        const date = new Date(item.created_at).toLocaleDateString("en-GB");
-
-                        // Format tanggal tanpa jam
-                        const formatTime = (t) => {
-                            if (!t) return "-";
-                            const d = new Date(t);
-                            return d.toLocaleDateString("en-GB");
-                        };
-
-                        // Koordinator approval
-                        let koor = "-";
-                        if (item.koor_approval === "WAITING")
-                            koor = `<span class='badge waiting'>Waiting</span>`;
-                        else if (item.koor_approval === "ACCEPTED")
-                            koor = `<div class="text-center">
-                  <span class='badge approved'>Approved</span>
-                  <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
-                </div>`;
-                        else if (item.koor_approval === "REJECTED")
-                            koor = `<div class="text-center">
-                  <span class='badge rejected'>Rejected</span>
-                  <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
-                </div>`;
-
-                        // CDC approval
-                        let cdcHtml = "";
-                        if (item.koor_approval === "WAITING") {
-                            cdcHtml = `<span class="badge-empty">-</span>`;
-                        } else if (item.cdc_approval === "WAITING" && item.koor_approval === "ACCEPTED") {
-                            cdcHtml = `
-                <div class="dropdown text-center">
-                  <button class="btn btn-warning btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
-                    Waiting
-                  </button>
-                  <div class="dropdown-menu">
-                    <a class="dropdown-item text-success" href="#" onclick="updateApproval(${item.id_letter}, 'ACCEPTED', this)">
-                      <i class="fas fa-check text-success"></i> Approve
-                    </a>
-                    <a class="dropdown-item text-danger" href="#" onclick="updateApproval(${item.id_letter}, 'REJECTED', this)">
-                      <i class="fas fa-times text-danger"></i> Reject
-                    </a>
-                  </div>
-                </div>`;
-                        } else if (item.cdc_approval === "ACCEPTED") {
-                            cdcHtml = `<div class="text-center">
-                  <span class="badge approved">Approved</span>
-                  <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
-                </div>`;
-                        } else if (item.cdc_approval === "REJECTED") {
-                            cdcHtml = `<div class="text-center">
-                  <span class="badge rejected">Rejected</span>
-                  <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
-                </div>`;
-                        } else {
-                            cdcHtml = `<span class="badge-empty">-</span>`;
-                        }
-
-                        // Company result
-                        let resultHtml = "-";
-                        if (item.status === "ACCEPTED") {
-                            resultHtml = `<span class="badge approved">Accepted</span>`;
-                        } else if (item.status === "WAITING") {
-                            resultHtml = `<span class="badge waiting">Waiting</span>`;
-                        } else if (item.status === "REJECTED") {
-                            resultHtml = `<span class="badge rejected">Rejected</span>`;
-                        }
-
-                        body.innerHTML += `
-            <tr>
-              <td>${i + 1}</td>
-              <td>${date}</td>
-              <td>${item.nim}</td>
-              <td>
-                ${item.student_name}
-              </td>
-              <td>${koor}</td>
-              <td>${cdcHtml}</td>
-              <td>${resultHtml}</td>
-              <td>
-                <button class="btn btn-info btn-sm" onclick="viewDetail(${item.id_letter})">
-                  <i class="fa fa-eye"></i> Detail Submission
-                </button>
-              </td>
-            </tr>`;
-                    });
-                } catch (err) {
-                    console.error(err);
-                    body.innerHTML = "<tr><td colspan='8' class='text-danger text-center'>Error loading data.</td></tr>";
-                }
-            }
-
-            // MODIFIKASI DOCUMENT READY YANG SUDAH ADA MENJADI:
-            // document.addEventListener("DOMContentLoaded", loadSubmissions);
-            // GANTI DENGAN:
-            document.addEventListener("DOMContentLoaded", function() {
-                loadStudyPrograms(); // Load dropdown study program
-                loadSubmissions(); // Load data default
-            });
         </script>
-
-        <script src="./assets/js/core/popper.min.js"></script>
-        <script src="./assets/js/core/bootstrap.min.js"></script>
-        <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
 
 </html>

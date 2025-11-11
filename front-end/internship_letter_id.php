@@ -21,10 +21,10 @@ $end_date   = $fmt->format(new DateTime($letter['end_date']));
 $dateStr    = $fmt->format(new DateTime()); // tanggal hari ini
 $periode    = $start_date . ' - ' . $end_date;
 
-
 $year = date('Y');
 $letterNumber = $letter['letter_number'] ?? '___';
-$nomorFormatted = "{$letterNumber}/WDI/PL29/VIII/{$year}";
+$monthRoman = $_GET['month_roman'] ?? 'VIII'; // Ambil dari query parameter
+$nomorFormatted = "{$letterNumber}/WDI/PL29/{$monthRoman}/{$year}";
 
 $company_name = $letter['company_name'] ?? ($company['name'] ?? '');
 $company_addr = $letter['company_address'] ?? ($company['address'] ?? '');

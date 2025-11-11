@@ -10,13 +10,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 
     <!-- Bootstrap Atlantis -->
-    <link rel="stylesheet"
-        href="https://themekita.com/demo-atlantis-bootstrap/livepreview/examples/assets/css/bootstrap.min.css">
-    <link rel="stylesheet"
-        href="https://themekita.com/demo-atlantis-bootstrap/livepreview/examples/assets/css/atlantis.min.css">
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/atlantis.min.css">
 
     <!-- Icon -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Icon -->
+    <link rel="icon" href="./assets/img/iconM.png" type="image/x-icon" />
+    <link href="./assets/img/iconM.png" rel="apple-touch-icon" type="image/x-icon">
 
     <!-- CSS -->
     <link rel="stylesheet" href="css/style_landing.css">
@@ -267,16 +269,16 @@
                 <div class="footer-column">
                     <h3 class="footer-title">Temukan Kami di</h3>
                     <div class="footer-social">
-                        <a href="#" class="social-link"><i class="bi bi-instagram"></i></a>
-                        <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
-                        <a href="#" class="social-link"><i class="bi bi-twitter"></i></a>
+                        <a href="https://www.instagram.com/myinternship.polibatam/" class="social-link"><i class="bi bi-instagram"></i></a>
+                        <a href="https://id-id.facebook.com/polibatamofficial/" class="social-link"><i class="bi bi-facebook"></i></a>
+                        <a href="https://id-id.facebook.com/polibatamofficial/" class="social-link"><i class="bi bi-twitter"></i></a>
                     </div>
                 </div>
             </div>
 
             <div class="footer-bottom">
                 <p>© 2025 MyInternship | Made with <span style="color: #3498db;">❤</span> by
-                    <a href="#" target="_blank" class="footer-link">
+                    <a href="https://github.com/nelifauziyah88/myinternship-development.git" target="_blank" class="footer-link">
                         <strong>PBLIFPagi3A-3</strong>
                     </a>
                 </p>

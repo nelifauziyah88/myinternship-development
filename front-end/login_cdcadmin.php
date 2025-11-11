@@ -7,6 +7,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+  <!-- Icon -->
+  <link rel="icon" href="./assets/img/iconM.png" type="image/x-icon" />
+  <link href="./assets/img/iconM.png" rel="apple-touch-icon" type="image/x-icon">
+
   <style>
     body.login {
       background-color: #f5f7fa;
@@ -208,83 +213,83 @@
   </div>
 
   <script>
-  // Toggle password visibility
-  const togglePassword = document.querySelector("#togglePassword");
-  const password = document.querySelector("#password");
-  togglePassword.addEventListener("click", function () {
-    const type = password.getAttribute("type") === "password" ? "text" : "password";
-    password.setAttribute("type", type);
-    this.classList.toggle("fa-eye-slash");
-  });
+    // Toggle password visibility
+    const togglePassword = document.querySelector("#togglePassword");
+    const password = document.querySelector("#password");
+    togglePassword.addEventListener("click", function() {
+      const type = password.getAttribute("type") === "password" ? "text" : "password";
+      password.setAttribute("type", type);
+      this.classList.toggle("fa-eye-slash");
+    });
 
-  // Handle login form
-  const form = document.querySelector("form");
+    // Handle login form
+    const form = document.querySelector("form");
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    const username = document.getElementById("username").value.trim();
-    const passwordVal = document.getElementById("password").value.trim();
+      const username = document.getElementById("username").value.trim();
+      const passwordVal = document.getElementById("password").value.trim();
 
-    if (!username || !passwordVal) {
-      alert("Username and password are required !");
-      return;
-    }
-
-    try {
-      // Step 1: Login ke backend Express API
-      const response = await fetch("http://localhost:8000/api/login_cdc", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username,
-          password: passwordVal,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Step 2: Setelah login berhasil → buat session di PHP
-        try {
-          const rememberChecked = document.getElementById("remember").checked;
-
-          const sessionResp = await fetch("session_login.php", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify({
-              user: data.user,
-              remember: rememberChecked,
-              role: "cdc",
-            }),
-          });
-
-          const sessionData = await sessionResp.json();
-
-          if (sessionData.success) {
-            // Redirect ke dashboard CDC
-            window.location.href = "dashboard_cdc.php";
-          } else {
-            alert("Failed to create session: " + (sessionData.message || "Unknown"));
-          }
-        } catch (err) {
-          console.error("Session error:", err);
-          alert("Failed to create session. Please try again !");
-        }
-      } else {
-        alert(data.message || "Login failed. Please check your credentials !");
+      if (!username || !passwordVal) {
+        alert("Username and password are required !");
+        return;
       }
-    } catch (error) {
-      console.error("Error:", error);
-      alert("An error occurred during login. Please try again !");
-    }
-  });
-</script>
+
+      try {
+        // Step 1: Login ke backend Express API
+        const response = await fetch("http://localhost:8000/api/login_cdc", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            password: passwordVal,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Step 2: Setelah login berhasil → buat session di PHP
+          try {
+            const rememberChecked = document.getElementById("remember").checked;
+
+            const sessionResp = await fetch("session_login.php", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: "include",
+              body: JSON.stringify({
+                user: data.user,
+                remember: rememberChecked,
+                role: "cdc",
+              }),
+            });
+
+            const sessionData = await sessionResp.json();
+
+            if (sessionData.success) {
+              // Redirect ke dashboard CDC
+              window.location.href = "dashboard_cdc.php";
+            } else {
+              alert("Failed to create session: " + (sessionData.message || "Unknown"));
+            }
+          } catch (err) {
+            console.error("Session error:", err);
+            alert("Failed to create session. Please try again !");
+          }
+        } else {
+          alert(data.message || "Login failed. Please check your credentials !");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred during login. Please try again !");
+      }
+    });
+  </script>
 
 </body>
 
