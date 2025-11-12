@@ -2,18 +2,17 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const db = require("../db");
+const { checkAndSetPublishedDate } = require("./student");
 
 // Login
 router.post("/login_cdc", async (req, res) => {
   try {
     let { username, password } = req.body || {};
     if (!username || !password) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Username and password are required.",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Username and password are required.",
+      });
     }
 
     username = String(username).trim();
@@ -108,12 +107,10 @@ router.post("/cdc/approval", async (req, res) => {
   try {
     const { id_letter, status, user_id, user_name, comment } = req.body;
     if (!id_letter || !status) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "id_letter and status are required.",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "id_letter and status are required.",
+      });
     }
 
     const s = status.toUpperCase();
@@ -138,21 +135,16 @@ router.post("/cdc/approval", async (req, res) => {
     const row = rows[0];
 
     if (row.koor_approval.toUpperCase() !== "ACCEPTED") {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message:
-            "The Coordinator has not yet allowed the CDC to take action.",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "The Coordinator has not yet allowed the CDC to take action.",
+      });
     }
     if (row.cdc_approval.toUpperCase() !== "WAITING") {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "The submission is not awaiting CDC approval",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "The submission is not awaiting CDC approval",
+      });
     }
 
     // Determine update SQL for internship_letter
@@ -185,7 +177,10 @@ router.post("/cdc/approval", async (req, res) => {
       const actor = req.user || req.session?.user || null;
       if (actor) {
         if (actor.role && actor.role.toLowerCase().includes("cdc")) {
-          const [urows] = await db.query(`SELECT id_upkpk, name FROM upkpk WHERE id_upkpk = ? LIMIT 1`, [actor.id_upkpk || actor.id]);
+          const [urows] = await db.query(
+            `SELECT id_upkpk, name FROM upkpk WHERE id_upkpk = ? LIMIT 1`,
+            [actor.id_upkpk || actor.id]
+          );
           if (urows && urows.length) {
             user_id_val = urows[0].id_upkpk || "-";
             user_name_val = urows[0].name || "-";
@@ -202,23 +197,26 @@ router.post("/cdc/approval", async (req, res) => {
 
     // Insert history row
     await db.query(
-  `INSERT INTO internship_letter_history 
+      `INSERT INTO internship_letter_history 
    (id_letter, approved_by, user_id, user_name, status_approval, timestamp, comment)
    VALUES (?, 'CDC ADMINISTRATOR', ?, ?, ?, NOW(), ?)`,
-  [id_letter, user_id || "-", user_name || "-", s, comment]
-);
+      [id_letter, user_id || "-", user_name || "-", s, comment]
+    );
+
+    // Cek dan set published_date jika kedua approval sudah ACCEPTED
+    await checkAndSetPublishedDate(id_letter);
 
     res.json({
       success: true,
       message: `Submission has been ${s.toLowerCase()} by CDC.`,
     });
- } catch (err) {
-  console.error("[CDC] approval error:", err);
-  return res.status(500).json({
-    success: false,
-    message: "Server error: " + err.message,
-  });
-}
+  } catch (err) {
+    console.error("[CDC] approval error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error: " + err.message,
+    });
+  }
 });
 
 // get latest rejected reason by CDC for a letter
@@ -232,8 +230,15 @@ router.get("/cdc/reason/:id", async (req, res) => {
        ORDER BY timestamp DESC LIMIT 1`,
       [id]
     );
-    if (!rows.length) return res.status(404).json({ success: false, message: "Reason not found." });
-    res.json({ success: true, comment: rows[0].comment, meta: { user_name: rows[0].user_name, timestamp: rows[0].timestamp } });
+    if (!rows.length)
+      return res
+        .status(404)
+        .json({ success: false, message: "Reason not found." });
+    res.json({
+      success: true,
+      comment: rows[0].comment,
+      meta: { user_name: rows[0].user_name, timestamp: rows[0].timestamp },
+    });
   } catch (err) {
     console.error("[CDC] reason fetch error:", err);
     res.status(500).json({ success: false, message: "Server error" });
@@ -245,7 +250,10 @@ router.post("/cdc/history/:id/edit", async (req, res) => {
   try {
     const id = req.params.id;
     const { comment } = req.body;
-    if (!comment || !comment.trim()) return res.status(400).json({ success: false, message: "Comment is required." });
+    if (!comment || !comment.trim())
+      return res
+        .status(400)
+        .json({ success: false, message: "Comment is required." });
 
     // Find the latest history row to update
     const [rows] = await db.query(
@@ -254,7 +262,10 @@ router.post("/cdc/history/:id/edit", async (req, res) => {
        ORDER BY timestamp DESC LIMIT 1`,
       [id]
     );
-    if (!rows.length) return res.status(404).json({ success: false, message: "History record not found." });
+    if (!rows.length)
+      return res
+        .status(404)
+        .json({ success: false, message: "History record not found." });
 
     const id_history = rows[0].id_history;
     await db.query(
@@ -272,15 +283,15 @@ router.post("/cdc/history/:id/edit", async (req, res) => {
 });
 
 // List submissions dengan filter (versi baru dengan filter)
-router.get('/cdc/submissions-filtered', async (req, res) => {
+router.get("/cdc/submissions-filtered", async (req, res) => {
   try {
-    const { 
-      study_program, 
-      student_name, 
-      coordinator, 
-      cdc, 
+    const {
+      study_program,
+      student_name,
+      coordinator,
+      cdc,
       company,
-      id_kampus 
+      id_kampus,
     } = req.query;
 
     let query = `
@@ -324,11 +335,11 @@ router.get('/cdc/submissions-filtered', async (req, res) => {
     // Filter by coordinator approval
     if (coordinator) {
       const coordStatus = coordinator.toUpperCase();
-      if (coordStatus === 'APPROVED') {
+      if (coordStatus === "APPROVED") {
         query += ` AND il.koor_approval = 'ACCEPTED'`;
-      } else if (coordStatus === 'WAITING') {
+      } else if (coordStatus === "WAITING") {
         query += ` AND il.koor_approval = 'WAITING'`;
-      } else if (coordStatus === 'REJECTED') {
+      } else if (coordStatus === "REJECTED") {
         query += ` AND il.koor_approval = 'REJECTED'`;
       }
     }
@@ -336,11 +347,11 @@ router.get('/cdc/submissions-filtered', async (req, res) => {
     // Filter by CDC approval
     if (cdc) {
       const cdcStatus = cdc.toUpperCase();
-      if (cdcStatus === 'APPROVE') {
+      if (cdcStatus === "APPROVE") {
         query += ` AND il.cdc_approval = 'ACCEPTED'`;
-      } else if (cdcStatus === 'WAITING') {
+      } else if (cdcStatus === "WAITING") {
         query += ` AND il.cdc_approval = 'WAITING'`;
-      } else if (cdcStatus === 'REJECT') {
+      } else if (cdcStatus === "REJECT") {
         query += ` AND il.cdc_approval = 'REJECTED'`;
       }
     }
@@ -348,11 +359,11 @@ router.get('/cdc/submissions-filtered', async (req, res) => {
     // Filter by company result
     if (company) {
       const companyStatus = company.toUpperCase();
-      if (companyStatus === 'ACCEPTED') {
+      if (companyStatus === "ACCEPTED") {
         query += ` AND il.status = 'ACCEPTED'`;
-      } else if (companyStatus === 'WAITING') {
+      } else if (companyStatus === "WAITING") {
         query += ` AND il.status = 'WAITING'`;
-      } else if (companyStatus === 'REJECTED') {
+      } else if (companyStatus === "REJECTED") {
         query += ` AND il.status = 'REJECTED'`;
       }
     }
@@ -362,17 +373,18 @@ router.get('/cdc/submissions-filtered', async (req, res) => {
     const [rows] = await db.query(query, params);
     res.json({ success: true, data: rows });
   } catch (err) {
-    console.error('[CDC] Error fetching submissions:', err);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error("[CDC] Error fetching submissions:", err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
 // Get study programs by kampus
-router.get('/cdc/study-programs/:id_kampus', async (req, res) => {
+router.get("/cdc/study-programs/:id_kampus", async (req, res) => {
   try {
     const { id_kampus } = req.params;
-    
-    const [rows] = await db.query(`
+
+    const [rows] = await db.query(
+      `
       SELECT DISTINCT 
         ps.kode_prodi,
         ps.prodi AS program_name,
@@ -382,32 +394,35 @@ router.get('/cdc/study-programs/:id_kampus', async (req, res) => {
       FROM program_study ps
       WHERE ps.id_kampus = ?
       ORDER BY ps.prodi ASC
-    `, [id_kampus]);
-    
+    `,
+      [id_kampus]
+    );
+
     res.json({ success: true, data: rows });
   } catch (err) {
-    console.error('[CDC] Error fetching study programs:', err);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error("[CDC] Error fetching study programs:", err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
 // Edit submission (hanya data perusahaan)
 router.put("/cdc/submissions/edit/:id_letter", async (req, res) => {
   const { id_letter } = req.params;
-  const { company_name, company_address, company_phone, company_email } = req.body;
+  const { company_name, company_address, company_phone, company_email } =
+    req.body;
 
   // Validasi input
   if (!company_name || !company_address) {
-    return res.status(400).json({ 
-      success: false, 
-      message: "Company name and address are required." 
+    return res.status(400).json({
+      success: false,
+      message: "Company name and address are required.",
     });
   }
 
   if (!company_phone && !company_email) {
-    return res.status(400).json({ 
-      success: false, 
-      message: "At least one contact (phone or email) is required." 
+    return res.status(400).json({
+      success: false,
+      message: "At least one contact (phone or email) is required.",
     });
   }
 
@@ -419,9 +434,9 @@ router.put("/cdc/submissions/edit/:id_letter", async (req, res) => {
     );
 
     if (!checkRows.length) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "Submission not found" 
+      return res.status(404).json({
+        success: false,
+        message: "Submission not found",
       });
     }
 
@@ -429,7 +444,7 @@ router.put("/cdc/submissions/edit/:id_letter", async (req, res) => {
     let contactParts = [];
     if (company_phone) contactParts.push(company_phone);
     if (company_email) contactParts.push(company_email);
-    const company_contact = contactParts.join(' ');
+    const company_contact = contactParts.join(" ");
 
     // Update data perusahaan
     await db.query(
@@ -444,14 +459,13 @@ router.put("/cdc/submissions/edit/:id_letter", async (req, res) => {
 
     res.json({
       success: true,
-      message: "Company information has been updated successfully."
+      message: "Company information has been updated successfully.",
     });
-
   } catch (err) {
     console.error("[CDC] Error updating submission:", err);
-    res.status(500).json({ 
-      success: false, 
-      message: "Server error: " + err.message 
+    res.status(500).json({
+      success: false,
+      message: "Server error: " + err.message,
     });
   }
 });
