@@ -765,5 +765,86 @@ router.get("/letter/:id/download", async (req, res) => {
   }
 });
 
+/**
+ * POST /api/student/rejected-by-company/:id_letter
+ * - Mahasiswa menandai surat magang sebagai REJECTED oleh perusahaan.
+ * - Bisa upload bukti (opsional).
+ */
+const multer = require("multer");
+const path = require("path");
+
+// Konfigurasi folder upload
+const uploadDir = path.join(__dirname, "../uploads/company_replies");
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, unique + path.extname(file.originalname));
+  },
+});
+const upload = multer({ storage });
+
+router.post("/rejected-by-company/:id_letter", upload.single("company_reply_letter"), async (req, res) => {
+  const id_letter = req.params.id_letter;
+
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM internship_letter WHERE id_letter = ?",
+      [id_letter]
+    );
+
+    if (!rows.length) {
+      return res.status(404).json({
+        success: false,
+        message: "Letter not found",
+      });
+    }
+
+    const letter = rows[0];
+
+    if (letter.status !== "ACCEPTED") {
+      return res.status(400).json({
+        success: false,
+        message: "Letter must be ACCEPTED before rejection by company.",
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Proof file is required when company rejects the internship.",
+      });
+    }
+
+    const filePath = `uploads/company_replies/${req.file.filename}`
+    const now = new Date();
+
+    await db.query(
+      `UPDATE internship_letter 
+       SET acceptance_status = 'REJECTED',
+           company_reply_letter = ?,
+           updated_at = ?
+       WHERE id_letter = ?`,
+      [filePath, now, id_letter]
+    );
+
+    return res.json({
+      success: true,
+      message: "Company rejection has been recorded successfully.",
+      file: filePath,
+    });
+
+  } catch (err) {
+    console.error("rejected-by-company error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error.",
+    });
+  }
+});
+
+
 module.exports = router;
 module.exports.checkAndSetPublishedDate = checkAndSetPublishedDate;

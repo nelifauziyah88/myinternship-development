@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Jika tidak ada session student → redirect ke role_login.php
 if (!isset($_SESSION['student']) || empty($_SESSION['student']['nim'])) {
     header('Location: role_login.php');
     exit;
@@ -23,10 +22,14 @@ $user = $student;
     <link href="./assets/img/iconM.png" rel="apple-touch-icon" type="image/x-icon">
 
     <link rel='stylesheet' href='./core/component/sweetalert2.min.css'>
+
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!-- CSS Files -->
     <link rel="stylesheet" href="./assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="./assets/css/atlantis.css">
 
+    <!-- Fonts and icons -->
     <script src="./assets/js/plugin/webfont/webfont.min.js"></script>
     <script>
         WebFont.load({
@@ -43,6 +46,7 @@ $user = $student;
         });
     </script>
 
+    <!-- CKEDITOR -->
     <script src="./library/ckeditor/ckeditor.js"></script>
 
     <script src='./core/component/jquery.min.js'></script>
@@ -53,7 +57,6 @@ $user = $student;
     <script defer src='./core/component/soloalert.js'></script>
 
     <style type="text/css">
-        /* Notification Badge */
         .notification-icon {
             position: relative;
         }
@@ -65,13 +68,14 @@ $user = $student;
             color: white;
             border-radius: 50%;
             padding: 2px 6px;
+            /* Ukuran badge */
             font-size: 10px;
+            /* Ukuran angka */
             line-height: 1;
             min-width: 16px;
             text-align: center;
         }
 
-        /* Calendar & UI Helpers */
         .fc-sun {
             color: red;
         }
@@ -86,7 +90,6 @@ $user = $student;
             color: #808080;
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -101,12 +104,12 @@ $user = $student;
             background: #6c757d;
         }
 
-        /* Text Wrapping */
         .wrap {
             white-space: normal !important;
             word-wrap: break-word;
             min-width: 140px;
             max-width: 140px;
+            /* max-width:150px; */
         }
 
         .wrap2 {
@@ -114,16 +117,16 @@ $user = $student;
             word-wrap: break-word;
             min-width: 170px;
             max-width: 170px;
+            /* max-width:150px; */
         }
 
-        /* Layout */
         .main-panel {
             padding-top: 50px;
         }
 
-        /* Sidebar Active State */
         .sidebar a.active {
             background-color: #007bff;
+            /* warna biru */
             color: white !important;
             border-radius: 10px;
         }
@@ -132,14 +135,13 @@ $user = $student;
             color: white;
         }
 
-        /* SweetAlert */
         .swal2-container {
             z-index: 50;
         }
 
-        /* Required Field Indicator */
         .required {
             color: #d9534f;
+            /* merah */
             margin-left: 6px;
             font-weight: 700;
         }
@@ -154,13 +156,14 @@ $user = $student;
 <body>
 
     <div class="wrapper">
- 
+
         <div class="modal fade" id="Modalkalender" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header no-bd">
                         <h5 class="modal-title">
-                            <span class="fw-mediumbold">Calendar</span>
+                            <span class="fw-mediumbold">
+                                Calendar</span>
                         </h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
@@ -194,12 +197,13 @@ $user = $student;
                     </button>
                 </div>
             </div>
-            <!-- End Logo Header -->
 
+            <!-- Navbar Header -->
             <nav class="navbar navbar-header navbar-expand-lg" data-background-color="blue">
                 <div class="container-fluid">
                     <div class="collapse" id="search-nav">
                         <ul class="navbar-nav navbar-left topbar-nav nav-search mr-md-3 align-items-center">
+
                             <!-- Tanggal -->
                             <li class="nav-item dropdown hidden-caret">
                                 <a aria-label="Current Date and Calendar" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
@@ -208,7 +212,7 @@ $user = $student;
                                 <ul class="float-right dropdown-menu dropdown-calendar dropdown-user animated fadeIn">
                                     <div class="dropdown-user-scroll scrollbar-outer">
                                         <div class="card-body text-center text-accent-1">
-                                            <h3 id="dateModal">Wed, 08 Oct 2025</h3>
+                                            <h3>Wed, 08 Oct 2025M</h3>
                                         </div>
                                     </div>
                                 </ul>
@@ -221,7 +225,7 @@ $user = $student;
                                 </a>
                                 <ul class="float-right dropdown-menu dropdown-calendar dropdown-user animated fadeIn">
                                     <div class="dropdown-user-scroll scrollbar-outer">
-                                        <div class="card-body text-center text-accent-1">
+                                        <div class="card-body text-center text-accent-1 ">
                                             <h3>Jakarta, Indonesia</h3>
                                             <h1>
                                                 <span id="clock2">22 : 12 : 24</span>
@@ -250,7 +254,7 @@ $user = $student;
                                 <i class="fa fa-bell"></i>
                                 <span id="count_notification"></span>
                             </a>
-                            <ul class='dropdown-menu messages-notif-box animated fadeIn' aria-labelledby='notifDropdown'>
+                            <ul class='dropdown-menu messages-notif-box animated fadeIn' aria-labelledby='notifDropdown' id=''>
                                 <li>
                                     <div class='dropdown-title'>New Notification</div>
                                 </li>
@@ -271,7 +275,7 @@ $user = $student;
                                 <div class="dropdown-user-scroll scrollbar-outer">
                                     <li>
                                         <div class="user-box">
-                                            <div class="avatar-lg"><img src="assets/img/profile.png" alt="image profile" class="avatar-img rounded"></div>
+                                            <div class="avatar-lg"><img src="" alt="image profile" class="avatar-img rounded"></div>
                                             <div class="u-text">
                                                 <h5><?= htmlspecialchars($user['name']) ?></h5>
                                                 <p class="text-muted">Mahasiswa</p>
@@ -284,6 +288,7 @@ $user = $student;
                                         <a class="dropdown-item" href="index.php">My Dashboard</a>
                                         <a class="dropdown-item" href="index.php?page=industry_profile">My Profile</a>
                                         <a class="dropdown-item" href="index.php?page=my_company">My Company</a>
+                                        <!-- <a class="dropdown-item" href="#">Inbox</a> -->
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="index.php?page=home">Home</a>
                                         <a class="dropdown-item" href="index.php?page=announcements">Announcements</a>
@@ -296,6 +301,7 @@ $user = $student;
                     </ul>
                 </div>
             </nav>
+            <!-- End Navbar -->
         </div>
 
         <!-- Sidebar -->
@@ -311,7 +317,9 @@ $user = $student;
                                 <span>
                                     <span class="wrap2"><?= htmlspecialchars($user['name']) ?></span>
                                     <span class="user-level">NIM: <?= htmlspecialchars($user['nim']) ?></span>
-                                    <span class="user-level">Student at <br> Politeknik Negeri Batam</span>
+                                    <span class="user-level">
+                                        Student at <br> Politeknik Negeri Batam
+                                    </span>
                                 </span>
                             </a>
                             <div class="clearfix"></div>
@@ -319,7 +327,7 @@ $user = $student;
                     </div>
 
                     <ul class="nav nav-primary">
-                        <li class="nav-item">
+                        <li class="nav-item active">
                             <a href="dashboard_student_final.php">
                                 <i class="fas fa-tachometer-alt"></i>
                                 <p>Dashboard</p>
@@ -363,8 +371,8 @@ $user = $student;
                             <h4 class="text-section">Internship Approval</h4>
                         </li>
 
-                        <li class="nav-item active">
-                            <a href="form_submission.php">
+                        <li class="nav-item">
+                            <a href="form_submission_copy.php">
                                 <i class="fas fa-file-alt"></i>
                                 <p>Form Submission</p>
                             </a>
@@ -384,7 +392,7 @@ $user = $student;
                             </span>
                             <h4 class="text-section">Account</h4>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item ">
                             <a href="#" class="collapsed" aria-expanded="false">
                                 <i class="fas fa-user"></i>
                                 <p>Profile</p>
@@ -400,8 +408,8 @@ $user = $student;
                 </div>
             </div>
         </div>
+        <!-- End Sidebar -->
 
-        <!-- MAIN PANEL -->
         <div class="main-panel">
             <!-- Header -->
             <div class="panel-header bg-primary-gradient">
@@ -414,7 +422,7 @@ $user = $student;
                 </div>
             </div>
 
-            <!-- FORM CONTENT -->
+            <!-- Content -->
             <div class="page-inner mt--5">
                 <div class="form-container" style="background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); padding: 40px;">
                     <form id="submissionForm">
@@ -625,7 +633,7 @@ $user = $student;
                 </div>
             </div>
 
-            <!-- FOOTER -->
+            <!-- Footer -->
             <footer class="footer">
                 <div class="container-fluid">
                     <div class="copyright ml-auto">
@@ -636,26 +644,42 @@ $user = $student;
         </div>
     </div>
 
-    <!-- JAVASCRIPT LIBRARIES -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+
+    <!-- Tambahkan di sebelum </body> -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!--   Core JS Files   -->
     <script src="./assets/js/core/popper.min.js"></script>
     <script src="./assets/js/core/bootstrap.min.js"></script>
+
+    <!-- jQuery UI -->
     <script src="./assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
     <script src="./assets/js/plugin/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
+
+    <!-- Moment JS -->
     <script src="./assets/js/plugin/moment/moment.min.js"></script>
+
+    <!-- Bootstrap Toggle -->
     <script src="./assets/js/plugin/bootstrap-toggle/bootstrap-toggle.min.js"></script>
+
+    <!-- jQuery Scrollbar -->
     <script src="./assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+
+    <!-- Fullcalendar -->
     <script src="./assets/js/plugin/fullcalendar/fullcalendar.min.js"></script>
-    <script src="./assets/js/plugin/atlantis.min.js"></script>
+
+    <!-- Atlantis JS -->
+    <script src="./assets/js/atlantis.min.js"></script>
+
+    <!-- Chart JS -->
     <script src="./assets/js/plugin/chart.js/chart.min.js"></script>
 
-    <!-- ============================================ -->
-    <!-- CLOCK & CALENDAR FUNCTIONS -->
-    <!-- ============================================ -->
     <script>
         $(document).ready(function() {
+
             clock_run();
+
             show_calendar();
         });
 
@@ -664,68 +688,84 @@ $user = $student;
             var d = date.getDate();
             var m = date.getMonth();
             var y = date.getFullYear();
+            var className = Array('fc-primary', 'fc-danger', 'fc-black', 'fc-success', 'fc-info', 'fc-warning', 'fc-danger-solid', 'fc-warning-solid', 'fc-success-solid', 'fc-black-solid', 'fc-success-solid', 'fc-primary-solid');
 
             $calendar = $('#calendar');
             $calendar.fullCalendar({
-                fixedWeekCount: false
+                fixedWeekCount: false, 
             });
         }
 
         function clock_run() {
+
             'use strict';
             let d = new Date();
             let en_day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             let en_month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            
-            function updateDateTime() {
+            let day = en_day[d.getDay()];
+            let date = d.getDate();
+            let month = en_month[d.getMonth()];
+            let year = (d.getYear() + 1900);
+            let curr_date = day + ', ' + date + ' ' + month + ' ' + year;
+            localStorage.setItem('curr_date', curr_date);
+            let old_date = localStorage.getItem('curr_date');
+
+            if ($("#date").text() != curr_date) {
+                localStorage.setItem('curr_date', curr_date);
+                $("#date").text(curr_date);
+            }
+
+            setInterval(function() {
                 let d = new Date();
                 let day = en_day[d.getDay()];
                 let date = d.getDate();
                 let month = en_month[d.getMonth()];
-                let year = d.getFullYear();
-                let curr_date = day + ', ' + date + ' ' + month + ' ' + year;
+                let year = (d.getYear() + 1900);
+                let date_day = day + ', ' + date + ' ' + month + ' ' + year;
 
-                $("#date").text(curr_date);
-                $("#dateModal").text(curr_date);
+                if (date_day != old_date) {
+                    localStorage.setItem('curr_date', date_day);
+                    $("#date").text(date_day);
+                }
 
                 let hours = d.getHours();
                 let minutes = d.getMinutes();
                 let seconds = d.getSeconds();
-                let time = ((hours < 10 ? "0" : "") + hours) + ' : ' + 
-                          ((minutes < 10 ? "0" : "") + minutes) + ' : ' + 
-                          ((seconds < 10 ? "0" : "") + seconds);
+                let time = ((hours < 10 ? "0" : "") + hours) + ' : ' + ((minutes < 10 ? "0" : "") + minutes) + ' : ' + ((seconds < 10 ? "0" : "") + seconds);
 
                 $("#clock").text(time);
                 $("#clock2").text(time);
-            }
-
-            updateDateTime();
-            setInterval(updateDateTime, 1000);
+            }, 1000);
         }
     </script>
 
-    <!-- ============================================ -->
-    <!-- UTILITY FUNCTIONS -->
-    <!-- ============================================ -->
+    <!-- Javascript Function -->
     <script type="text/javascript">
         function copyToClipboard(text) {
             var tempInput = document.createElement("input");
             document.body.appendChild(tempInput);
             tempInput.value = text;
             tempInput.select();
+
             document.execCommand("copy");
+
             document.body.removeChild(tempInput);
+
             alert("Text copied to clipboard: " + text);
+
         }
 
         function getNotificationForm(formSelector) {
             $.ajax({
                 url: 'index.php?request=validation_get',
                 type: 'GET',
+
                 success: function(response, xhr, status, error) {
                     console.log('Getting form notification');
+
                     $('body').append(response);
                 },
+
                 error: function(xhr, status, error) {
                     console.log('Failed Getting form notification');
                 }
@@ -734,22 +774,26 @@ $user = $student;
         }
 
         function logout_confirm() {
+
             let _token = $('meta[name="csrf-token"]').attr('content');
 
             Swal.fire({
-                title: 'Logout from your account?',
+                title: 'Logout from your account ?',
                 text: 'Are you sure you want to end the current session?',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: "#DD6B55",
-                confirmButtonText: "Yes, I'm sure!",
+                confirmButtonText: "Yes, I\'m sure!",
                 cancelButtonText: "Cancel"
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // AJAX logout ke PHP
                     $.ajax({
-                        url: "session_logout.php",
+                        url: "session_logout.php", 
                         type: "POST",
-                        data: { 'token': _token },
+                        data: {
+                            'token': _token
+                        },
                         success: function() {
                             setTimeout(function() {
                                 localStorage.removeItem('first');
@@ -767,6 +811,7 @@ $user = $student;
         }
 
         function konfirmasi(notif, lokasi) {
+
             var x = confirm(notif);
             if (x === true) {
                 window.location.href = lokasi;
@@ -774,41 +819,35 @@ $user = $student;
         }
 
         function spinner() {
+
             var icon_spinner = event.target.querySelector('i');
             var icon_old = icon_spinner.className;
             var spinner = "fas fa-spinner fa-spin mr-1";
 
+            icon_spinner.className = '';
             icon_spinner.className = spinner;
 
             setTimeout(function() {
+                icon_spinner.className = '';
                 icon_spinner.className = icon_old;
             }, 2000);
         }
-    </script>
 
-    <!-- ============================================ -->
-    <!-- SELECT2 INITIALIZATION -->
-    <!-- ============================================ -->
-    <script>
         $(document).ready(function() {
             $('#companySelect').select2({
-                placeholder: "- Select Company -",
+                placeholder: "Choose Company",
                 allowClear: true,
-                width: '100%'
+                width: '100%' 
             });
         });
-    </script>
 
-    <!-- ============================================ -->
-    <!-- SIDEBAR ACTIVE MENU HIGHLIGHT -->
-    <!-- ============================================ -->
-    <script>
         document.addEventListener("DOMContentLoaded", function() {
             const navItems = document.querySelectorAll(".sidebar .nav-item");
 
             navItems.forEach(item => {
                 item.addEventListener("click", function() {
                     navItems.forEach(i => i.classList.remove("active"));
+
                     this.classList.add("active");
                 });
             });
@@ -824,40 +863,36 @@ $user = $student;
         });
     </script>
 
-    <!-- ============================================ -->
-    <!-- FORM SUBMISSION LOGIC -->
-    <!-- ============================================ -->
     <script>
         (function() {
-            // ========================================
-            // CONFIGURATION & VARIABLES
-            // ========================================
             const nim = <?= json_encode($student['nim']) ?>;
+
+            // base API
             const API_BASE = 'http://localhost:8000/api/student';
+
             let __formBlockerElement = null;
 
-            // ========================================
-            // FORM BLOCKER FUNCTIONS
-            // ========================================
             function createFormBlocker() {
                 const form = document.getElementById('submissionForm');
-                if (!form || __formBlockerElement) return;
+                if (!form) return;
+
+                if (__formBlockerElement) return;
 
                 const rect = form.getBoundingClientRect();
+
                 const blocker = document.createElement('div');
                 blocker.id = 'form-blocker';
-                
                 Object.assign(blocker.style, {
                     position: 'fixed',
                     top: `${rect.top}px`,
                     left: `${rect.left}px`,
                     width: `${rect.width}px`,
                     height: `${rect.height}px`,
-                    background: 'rgba(255,255,255,0.0)',
-                    zIndex: 20000,
-                    pointerEvents: 'auto',
-                    cursor: 'default'
+                    background: 'rgba(255,255,255,0.0)', 
+                    pointerEvents: 'auto', 
                 });
+
+                blocker.style.cursor = 'default';
 
                 document.body.appendChild(blocker);
                 __formBlockerElement = blocker;
@@ -870,7 +905,6 @@ $user = $student;
                 const blocker = __formBlockerElement;
                 const form = document.getElementById('submissionForm');
                 if (!blocker || !form) return;
-                
                 const rect = form.getBoundingClientRect();
                 blocker.style.top = `${rect.top}px`;
                 blocker.style.left = `${rect.left}px`;
@@ -886,43 +920,42 @@ $user = $student;
                 window.removeEventListener('scroll', updateFormBlockerPosition, true);
             }
 
-            // ========================================
-            // ALERT FUNCTIONS
-            // ========================================
             function showActiveSubmissionAlertAndBlockForm() {
                 Swal.fire({
                     title: 'You have an active internship submission',
                     html: '<p>You cannot submit a new application until your current submission is processed.</p>',
                     icon: 'info',
-                    allowOutsideClick: false,
+                    allowOutsideClick: false, 
                     allowEscapeKey: false,
                     showConfirmButton: false,
                     didOpen: () => {
+
                         const cont = document.querySelector('.swal2-container');
                         if (cont) {
                             cont.style.pointerEvents = 'none';
                             const popup = cont.querySelector('.swal2-popup');
-                            if (popup) popup.style.zIndex = 30000;
+                            if (popup) {
+                                popup.style.zIndex = 30000; 
+                            }
                         }
+
                         createFormBlocker();
-                    }
+                    },
                 });
             }
 
             function closeActiveSubmissionAlertAndUnblock() {
                 if (Swal && Swal.close) Swal.close();
+
                 removeFormBlocker();
             }
 
-            // ========================================
-            // CHECK ACTIVE SUBMISSION
-            // ========================================
             async function checkActive() {
                 try {
                     const res = await fetch(`${API_BASE}/check-submission/${encodeURIComponent(nim)}`);
                     const j = await res.json();
-                    
                     if (!j.last) {
+                        removeFormBlocker();
                         closeActiveSubmissionAlertAndUnblock();
                         return;
                     }
@@ -939,13 +972,13 @@ $user = $student;
                         removeFormBlocker();
                         Swal.fire({
                             html: `
-                                <div style="font-size: 40px; margin-bottom: 10px;">😊</div>
-                                <h3 style="font-weight: bold;">Don't be sad, you'll get accepted next time!</h3>
-                            `,
+          <div style="font-size: 40px; margin-bottom: 10px;">😊</div>
+          <h3 style="font-weight: bold;">Don't be sad, you'll get accepted next time!</h3>
+        `,
                             showConfirmButton: false,
                             allowOutsideClick: true,
                             backdrop: true,
-                            timer: 2000
+                            timer: 1500,
                         });
                         return;
                     }
@@ -958,9 +991,9 @@ $user = $student;
                     if (finalStatus === 'ACCEPTED' && acceptanceStatus === 'ACCEPTED') {
                         Swal.fire({
                             html: `
-                                <div style="font-size: 40px; margin-bottom: 10px;">😆</div>
-                                <h3 style="font-weight: bold;">Congratulations on being accepted for your internship!</h3>
-                            `,
+          <div style="font-size: 40px; margin-bottom: 10px;">😆</div>
+          <h3 style="font-weight: bold;">Congratulations on being accepted for your internship!</h3>
+        `,
                             showConfirmButton: false,
                             allowOutsideClick: false,
                             allowEscapeKey: false,
@@ -982,29 +1015,31 @@ $user = $student;
                         removeFormBlocker();
                         Swal.fire({
                             html: `
-                                <div style="font-size: 40px; margin-bottom: 10px;">😊</div>
-                                <h3 style="font-weight: bold;">Don't be sad, you'll get accepted next time!</h3>
-                            `,
+          <div style="font-size: 40px; margin-bottom: 10px;">😊</div>
+          <h3 style="font-weight: bold;">Don't be sad, you'll get accepted next time!</h3>
+        `,
                             showConfirmButton: false,
                             allowOutsideClick: true,
                             backdrop: true,
-                            timer: 2000
+                            timer: 1500,
                         });
                         return;
                     }
 
                     if (acceptanceStatus === '-') {
                         showActiveSubmissionAlertAndBlockForm();
+                        return;
                     }
 
                 } catch (err) {
-                    console.error('checkActive error:', err);
+                    console.error('checkActive error', err);
                 }
             }
 
-            // ========================================
-            // LOAD STUDENT PROFILE
-            // ========================================
+            $(document).ready(function() {
+                checkActive();
+            });
+
             async function loadStudentProfile() {
                 try {
                     const res = await fetch(`${API_BASE}/form-submission/${encodeURIComponent(nim)}`);
@@ -1012,33 +1047,25 @@ $user = $student;
                     const j = await res.json();
 
                     const s = j.student || {};
-                    const setFieldValue = (id, value) => {
-                        const el = document.getElementById(id);
-                        if (el) el.value = value || '';
-                    };
+                    if (document.getElementById('nimField')) document.getElementById('nimField').value = s.nim || '';
+                    if (document.getElementById('nameField')) document.getElementById('nameField').value = s.name || '';
+                    if (document.getElementById('programField')) document.getElementById('programField').value = s.program_study || '';
+                    if (document.getElementById('departmentField')) document.getElementById('departmentField').value = j.department || '';
+                    if (document.getElementById('coordinatorField')) document.getElementById('coordinatorField').value = j.coordinator || '';
 
-                    setFieldValue('nimField', s.nim);
-                    setFieldValue('nameField', s.name);
-                    setFieldValue('programField', s.program_study);
-                    setFieldValue('departmentField', j.department);
-                    setFieldValue('coordinatorField', j.coordinator);
-                    setFieldValue('emailField', s.email);
+                    if (s.email && document.getElementById('emailField')) document.getElementById('emailField').value = s.email;
                 } catch (err) {
-                    console.error('loadStudentProfile error:', err);
+                    console.error('loadStudentProfile error', err);
                 }
             }
 
-            // ========================================
-            // LOAD COMPANIES
-            // ========================================
             async function loadCompanies() {
                 try {
                     const res = await fetch(`${API_BASE}/company`);
                     const list = await res.json();
                     const sel = document.getElementById('companySelect');
                     if (!sel) return;
-                    
-                    sel.innerHTML = '<option value="">- Select Company -</option>';
+                    sel.innerHTML = '<option value="" selected>Choose Company</option>';
                     list.forEach(c => {
                         const opt = document.createElement('option');
                         opt.value = c.id;
@@ -1046,92 +1073,236 @@ $user = $student;
                         sel.appendChild(opt);
                     });
 
-                    if (window.jQuery && $.fn.select2) {
+                    if (window.jQuery && jQuery().select2) {
                         $('#companySelect').select2({
-                            placeholder: "- Select Company -",
-                            allowClear: true,
                             width: '100%'
                         });
                     }
                 } catch (err) {
-                    console.error('loadCompanies error:', err);
+                    console.error('loadCompanies error', err);
                 }
+                $('#companySelect').on('select2:select', async function(e) {
+                    const id = e.params.data.id;
+
+                    const $addr = $('#companyAddress');
+
+                    if (!id) {
+                        $addr.val('').prop('readonly', true);
+                        return;
+                    }
+
+                    try {
+                        const res = await fetch(`${API_BASE}/company/${id}`);
+                        const c = await res.json();
+                        $addr.val(c.address || '').prop('readonly', true);
+                    } catch (err) {
+                        console.error(err);
+                    }
+                });
+
             }
 
-            // ========================================
-            // COMPANY SELECT HANDLER
-            // ========================================
-            $('#companySelect').on('select2:select', async function(e) {
-                const id = e.params.data.id;
-                const $addr = $('#companyAddress');
-
-                if (!id) {
-                    $addr.val('').prop('readonly', true);
-                    return;
-                }
-
-                try {
-                    const res = await fetch(`${API_BASE}/company/${id}`);
-                    const c = await res.json();
-                    $addr.val(c.address || '').prop('readonly', true);
-                } catch (err) {
-                    console.error('Company fetch error:', err);
+            document.addEventListener('change', async function(e) {
+                if (!e.target) return;
+                if (e.target.id === 'companySelect') {
+                    const id = e.target.value;
+                    if (!id) {
+                        const addrEl = document.getElementById('companyAddress');
+                        if (addrEl) addrEl.value = '';
+                        return;
+                    }
+                    try {
+                        const res = await fetch(`${API_BASE}/company/${encodeURIComponent(id)}`);
+                        if (!res.ok) return;
+                        const c = await res.json();
+                        const addrEl = document.getElementById('companyAddress');
+                        if (addrEl) {
+                            addrEl.value = c.address || '';
+                            addrEl.disabled = true;
+                        }
+                    } catch (err) {
+                        console.error('company detail error', err);
+                    }
                 }
             });
 
-            // ========================================
-            // COMPANY EXIST CHECKBOX HANDLER
-            // ========================================
             const chk = document.getElementById('companyExist');
             if (chk) {
                 chk.addEventListener('change', function() {
                     const checked = this.checked;
                     const newFields = document.getElementById('newCompanyFields');
+                    const newName = document.getElementById('newCompanyName');
+                    const newContact = document.getElementById('newCompanyContact');
                     const sel = document.getElementById('companySelect');
                     const addrEl = document.getElementById('companyAddress');
-                    const companySelectStar = document.getElementById('companySelectStar');
 
-                    // Toggle new company fields
                     if (newFields) {
                         newFields.style.display = checked ? '' : 'none';
                     }
 
-                    // Handle company select dropdown
                     if (sel) {
                         sel.disabled = checked;
                         if (checked) {
-                            if (window.jQuery && $.fn.select2) {
+                            sel.value = '';
+                            if (window.jQuery && jQuery().select2) {
                                 $('#companySelect').val(null).trigger('change');
+                            }
+                            if (addrEl) {
+                                addrEl.value = '';
+                                addrEl.readOnly = false;
+                            }
+                        } else {
+                            sel.disabled = false;
+                            const selVal = sel.value || '';
+                            if (selVal) {
+                                fetch(`${API_BASE}/company/${encodeURIComponent(selVal)}`)
+                                    .then(r => r.json())
+                                    .then(c => {
+                                        if (addrEl) {
+                                            addrEl.value = c.address || '';
+                                            addrEl.readOnly = true;
+                                        }
+                                    })
+                                    .catch(err => console.error(err));
                             } else {
-                                sel.value = '';
+                                if (addrEl) {
+                                    addrEl.value = '';
+                                    addrEl.readOnly = true;
+                                }
                             }
                         }
                     }
 
-                    // Handle address field
-                    if (addrEl) {
-                        addrEl.value = '';
-                        addrEl.readOnly = !checked;
-                    }
-
-                    // Toggle required star visibility
-                    if (companySelectStar) {
-                        companySelectStar.style.display = checked ? 'none' : 'inline-block';
-                    }
-
-                    // Clear new company fields when unchecked
-                    if (!checked) {
-                        const newName = document.getElementById('newCompanyName');
-                        const newContact = document.getElementById('newCompanyContact');
-                        if (newName) newName.value = '';
+                    if (checked) {
+                        if (newName) {
+                            newName.value = '';
+                            newName.focus();
+                        }
                         if (newContact) newContact.value = '';
+                        if (addrEl) {
+                            addrEl.value = '';
+                            addrEl.readOnly = false;
+                        }
+                    }
+
+                    const newCompanyNameStar = document.getElementById('newCompanyNameStar');
+                    const newCompanyContactStar = document.getElementById('newCompanyContactStar');
+                    const companyAddressStar = document.getElementById('companyAddressStar');
+                    const companySelectStar = document.getElementById('companySelectStar');
+
+                    if (checked) {
+                        if (newCompanyNameStar) newCompanyNameStar.style.display = 'inline-block';
+                        if (newCompanyContactStar) newCompanyContactStar.style.display = 'inline-block';
+                        if (companyAddressStar) companyAddressStar.style.display = 'inline-block';
+                        if (companySelectStar) companySelectStar.style.display = 'none';
+                    } else {
+                        if (newCompanyNameStar) newCompanyNameStar.style.display = 'none';
+                        if (newCompanyContactStar) newCompanyContactStar.style.display = 'none';
+                        if (companyAddressStar) companyAddressStar.style.display = 'none';
+                        if (companySelectStar) companySelectStar.style.display = 'inline-block';
                     }
                 });
             }
 
-            // ========================================
-            // DATE VALIDATION
-            // ========================================
+            // intercept form submit
+            const form = document.getElementById('submissionForm');
+            if (form) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    // prepare payload
+                    const checked = document.getElementById('companyExist') && document.getElementById('companyExist').checked;
+
+                    const payload = {
+                        nim: nim,
+                        company_id: checked ? null : (document.getElementById('companySelect') ? document.getElementById('companySelect').value : null),
+                        company_name: checked ? (document.getElementById('newCompanyName') ? document.getElementById('newCompanyName').value : null) : null,
+                        company_contact: checked ? (document.getElementById('newCompanyContact') ? document.getElementById('newCompanyContact').value : null) : null,
+                        company_address: document.getElementById('companyAddress') ? document.getElementById('companyAddress').value : null,
+                        start_date: document.getElementById('startDate') ? document.getElementById('startDate').value : null,
+                        end_date: document.getElementById('endDate') ? document.getElementById('endDate').value : null,
+                        semester: document.getElementById('semesterField') ? document.getElementById('semesterField').value : null,
+                        class: (document.querySelector('input[name="class"]:checked') ? document.querySelector('input[name="class"]:checked').value : null),
+                        email: document.getElementById('emailField') ? document.getElementById('emailField').value : null,
+                        phone: document.getElementById('phoneField') ? document.getElementById('phoneField').value : null
+                    };
+
+                    // enhanced client-side validation for required fields
+                    // required: class, semester, start_date, end_date, email, phone, language
+                    const missing = [];
+                    if (!payload.class) missing.push('Class');
+                    if (!payload.semester) missing.push('Semester');
+                    if (!payload.start_date) missing.push('Start Date');
+                    if (!payload.end_date) missing.push('End Date');
+                    if (!payload.email) missing.push('Email');
+                    if (!payload.phone) missing.push('Active WhatsApp Number');
+
+                    // language radio
+                    const langVal = (document.querySelector('input[name="language"]:checked') ? document.querySelector('input[name="language"]:checked').value : null);
+                    if (!langVal) missing.push('Language for Letter');
+                    payload.language = langVal;
+
+                    // company validation
+                    if (!payload.company_id && !payload.company_name) {
+                        missing.push('Company (choose or enter new company)');
+                    }
+                    if (!payload.company_address) missing.push('Company Address');
+
+                    if (missing.length) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Missing required fields',
+                            html: `<div>Please fill: <ul style="text-align:left;">${missing.map(m => `<li>${m}</li>`).join('')}</ul></div>`
+                        });
+                        return;
+                    }
+
+                    try {
+                        const res = await fetch(`${API_BASE}/form-submission`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+                        const j = await res.json();
+                        if (res.ok) {
+                            Swal.fire('Success', 'Submission successfully created', 'success').then(() => {
+
+                                window.location.href = 'approval_status.php';
+                            });
+                        } else {
+                            Swal.fire('Error', j.error || 'Submission failed', 'error');
+                        }
+                    } catch (err) {
+                        console.error('submit error', err);
+                        Swal.fire('Error', 'Server error while submitting', 'error');
+                    }
+                });
+            }
+
+            (async () => {
+                await checkActive();
+                await loadStudentProfile();
+                await loadCompanies();
+
+                const newFields = document.getElementById('newCompanyFields');
+                if (newFields) newFields.style.display = 'none';
+            })();
+
+            (function initRequiredStars() {
+                const newCompanyNameStar = document.getElementById('newCompanyNameStar');
+                const newCompanyContactStar = document.getElementById('newCompanyContactStar');
+                const companyAddressStar = document.getElementById('companyAddressStar');
+                const companySelectStar = document.getElementById('companySelectStar');
+
+                if (newCompanyNameStar) newCompanyNameStar.style.display = 'none';
+                if (newCompanyContactStar) newCompanyContactStar.style.display = 'none';
+                if (companyAddressStar) companyAddressStar.style.display = 'none';
+                // companySelectStar: visible by default only if you want the dropdown to be flagged required when not checked
+                if (companySelectStar) companySelectStar.style.display = 'inline-block';
+            })();
+
             const startDateInput = document.getElementById('startDate');
             const endDateInput = document.getElementById('endDate');
 
@@ -1142,162 +1313,35 @@ $user = $student;
                 return `${year}-${month}-${day}`;
             }
 
-            if (startDateInput) {
-                startDateInput.addEventListener('change', () => {
-                    const startValue = startDateInput.value;
-                    if (startValue && endDateInput) {
-                        const startDate = new Date(startValue);
-                        const minEndDate = new Date(startDate);
-                        minEndDate.setDate(startDate.getDate() + 1);
-                        endDateInput.min = formatDate(minEndDate);
+            startDateInput.addEventListener('change', () => {
+                const startValue = startDateInput.value;
+                if (startValue) {
+                    const startDate = new Date(startValue);
 
-                        if (endDateInput.value && new Date(endDateInput.value) < minEndDate) {
-                            endDateInput.value = '';
-                        }
+                    const minEndDate = new Date(startDate);
+                    minEndDate.setDate(startDate.getDate() + 1);
+                    endDateInput.min = formatDate(minEndDate);
+
+                    if (endDateInput.value && new Date(endDateInput.value) < minEndDate) {
+                        endDateInput.value = '';
                     }
-                });
-            }
-
-            if (endDateInput) {
-                endDateInput.addEventListener('change', () => {
-                    const endValue = endDateInput.value;
-                    if (endValue && startDateInput) {
-                        const endDate = new Date(endValue);
-                        const maxStartDate = new Date(endDate);
-                        maxStartDate.setDate(endDate.getDate() - 1);
-                        startDateInput.max = formatDate(maxStartDate);
-
-                        if (startDateInput.value && new Date(startDateInput.value) > maxStartDate) {
-                            startDateInput.value = '';
-                        }
-                    }
-                });
-            }
-
-            // ========================================
-            // FORM VALIDATION & SUBMISSION
-            // ========================================
-            const form = document.getElementById('submissionForm');
-            if (form) {
-                form.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-
-                    const isNewCompany = document.getElementById('companyExist')?.checked || false;
-
-                    // Build payload
-                    const payload = {
-                        nim: nim,
-                        company_id: !isNewCompany ? (document.getElementById('companySelect')?.value || null) : null,
-                        company_name: isNewCompany ? (document.getElementById('newCompanyName')?.value || null) : null,
-                        company_contact: isNewCompany ? (document.getElementById('newCompanyContact')?.value || null) : null,
-                        company_address: document.getElementById('companyAddress')?.value || null,
-                        start_date: document.getElementById('startDate')?.value || null,
-                        end_date: document.getElementById('endDate')?.value || null,
-                        semester: document.getElementById('semesterField')?.value || null,
-                        class: document.querySelector('input[name="class"]:checked')?.value || null,
-                        email: document.getElementById('emailField')?.value || null,
-                        phone: document.getElementById('phoneField')?.value || null,
-                        language: document.querySelector('input[name="language"]:checked')?.value || null
-                    };
-
-                    // Validation
-                    const missing = [];
-                    
-                    if (!payload.class) missing.push('Class');
-                    if (!payload.semester) missing.push('Semester');
-                    if (!payload.start_date) missing.push('Start Date');
-                    if (!payload.end_date) missing.push('End Date');
-                    if (!payload.email) missing.push('Email');
-                    if (!payload.phone) missing.push('Active WhatsApp Number');
-                    if (!payload.language) missing.push('Language for Letter');
-                    
-                    if (isNewCompany) {
-                        if (!payload.company_name) missing.push('New Company Name');
-                        if (!payload.company_contact) missing.push('Company Contact');
-                    } else {
-                        if (!payload.company_id) missing.push('Company Selection');
-                    }
-                    
-                    if (!payload.company_address) missing.push('Company Address');
-
-                    if (missing.length > 0) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Missing Required Fields',
-                            html: `<div style="text-align: left;">Please fill in:<ul>${missing.map(m => `<li>${m}</li>`).join('')}</ul></div>`
-                        });
-                        return;
-                    }
-
-                    // Email validation
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailRegex.test(payload.email)) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Invalid Email',
-                            text: 'Please enter a valid email address.'
-                        });
-                        return;
-                    }
-
-                    // Phone validation (basic)
-                    const phoneRegex = /^[0-9+\-\s()]+$/;
-                    if (!phoneRegex.test(payload.phone)) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Invalid Phone Number',
-                            text: 'Please enter a valid phone number.'
-                        });
-                        return;
-                    }
-
-                    // Submit form
-                    try {
-                        const res = await fetch(`${API_BASE}/form-submission`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-                        
-                        const j = await res.json();
-                        
-                        if (res.ok) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: 'Submission successfully created',
-                                timer: 2000,
-                                showConfirmButton: false
-                            }).then(() => {
-                                window.location.href = 'approval_status.php';
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Submission Failed',
-                                text: j.error || 'An error occurred while submitting the form.'
-                            });
-                        }
-                    } catch (err) {
-                        console.error('Submit error:', err);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Server Error',
-                            text: 'Unable to connect to the server. Please try again later.'
-                        });
-                    }
-                });
-            }
-
-            // ========================================
-            // INITIALIZATION
-            // ========================================
-            $(document).ready(async function() {
-                await checkActive();
-                await loadStudentProfile();
-                await loadCompanies();
+                }
             });
 
+            endDateInput.addEventListener('change', () => {
+                const endValue = endDateInput.value;
+                if (endValue) {
+                    const endDate = new Date(endValue);
+
+                    const maxStartDate = new Date(endDate);
+                    maxStartDate.setDate(endDate.getDate() - 1);
+                    startDateInput.max = formatDate(maxStartDate);
+
+                    if (startDateInput.value && new Date(startDateInput.value) > maxStartDate) {
+                        startDateInput.value = '';
+                    }
+                }
+            });
         })();
     </script>
 

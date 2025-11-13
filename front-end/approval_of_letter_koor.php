@@ -1432,9 +1432,7 @@ if ($id_kampus) {
                     const result = await Swal.fire({
                         title: "Rejection reason",
                         html: `<div style="text-align:left; white-space:pre-wrap;">${escapeHtml(reason)}</div>`,
-                        showCancelButton: true,
                         showDenyButton: true,
-                        cancelButtonText: "Cancel",
                         denyButtonText: "Edit",
                         confirmButtonText: "Close"
                     });
