@@ -244,6 +244,9 @@ router.post("/form-submission", async (req, res) => {
     let company_contact = body.company_contact || null;
     let company_address = body.company_address || null;
 
+    // Tambahkan variable untuk track company_not_exist
+    let company_not_exist = 1;
+
     if (!id_company) {
       // new company -> require fields
       if (!company_name || !company_contact || !company_address) {
@@ -251,9 +254,47 @@ router.post("/form-submission", async (req, res) => {
           .status(400)
           .json({ error: "new company name/contact/address required" });
       }
-      // Store in internship_letter only
+
+      // SESUDAH - Tambahkan semua kolom NOT NULL dengan nilai default:
+      const [stuRow] = await db.query(
+        `SELECT id_kampus FROM student_internship WHERE nim = ? LIMIT 1`,
+        [nim]
+      );
+      const id_kampus = stuRow.length ? stuRow[0].id_kampus : 1;
+
+      const [companyResult] = await db.query(
+        `INSERT INTO company (
+  name, type, phone, email, website, facebook, twitter, instagram, linkedin, logo,
+  address, province, city, description, status, access_type, id_kampus
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'not verified', 1, ?)
+`,
+        [
+          company_name,
+          "General", // type (default)
+          body.company_contact || "", // phone (gunakan string kosong jika null)
+          "", // email
+          "", // website (default kosong)
+          "", // facebook (default kosong)
+          "", // twitter (default kosong)
+          "", // instagram (default kosong)
+          "", // linkedin (default kosong)
+          "", // logo (default kosong)
+          company_address || "", // address
+          "", // province (default kosong)
+          "", // city (default kosong)
+          "", // description (default kosong)
+          id_kampus, // id_kampus (sesuaikan dengan student.id_kampus atau default 1)
+        ]
+      );
+
+      // Set id_company dengan id yang baru dibuat
+      id_company = companyResult.insertId;
+
+      // Set flag bahwa ini company baru (tidak exist di database sebelumnya)
+      company_not_exist = 1; // 0 = company tidak exist sebelumnya
     } else {
-      // existing company -> get address, phone, and email from DB (ignore client provided address)
+      // existing company -> get address, phone, and email from DB
       const [cRow] = await db.query(
         `SELECT name, address, phone, email 
      FROM company 
@@ -280,6 +321,9 @@ router.post("/form-submission", async (req, res) => {
       } else {
         company_contact = company_contact || null;
       }
+
+      // Set flag bahwa company sudah exist di database
+      company_not_exist = 0; // 1 = company exist di database
     }
 
     // other fields (guard defaults)
@@ -289,6 +333,7 @@ router.post("/form-submission", async (req, res) => {
     const class_type = body.class || null;
     const email = body.email || null;
     const phone = body.phone || null;
+    const no_whatsapp = body.no_whatsapp || body.phone || null;
     const language = body.language || null;
 
     // server-side required validations
@@ -310,8 +355,8 @@ router.post("/form-submission", async (req, res) => {
     // insert into internship_letter
     const [result] = await db.query(
       `INSERT INTO internship_letter 
-  (nim, id_company, start_date, end_date, status, semester, \`class\`, koor_approval, cdc_approval, company_name, company_contact, company_address, language, letter_number)
-  VALUES (?, ?, ?, ?, 'WAITING', ?, ?, 'WAITING', 'WAITING', ?, ?, ?, ?, ?)`,
+    (nim, id_company, start_date, end_date, status, semester, class, koor_approval, cdc_approval, company_name, company_contact, company_address, language, letter_number, company_not_exist)
+   VALUES (?, ?, ?, ?, 'WAITING', ?, ?, 'WAITING', 'WAITING', ?, ?, ?, ?, ?, ?)`,
       [
         nim,
         id_company,
@@ -324,8 +369,36 @@ router.post("/form-submission", async (req, res) => {
         company_address,
         language,
         nextNumber,
+        company_not_exist,
       ]
     );
+
+    // INSERT KODE BARU DI SINI - Update email dan phone di student_internship
+    if (email || no_whatsapp) {
+      const updateFields = [];
+      const updateValues = [];
+
+      if (email) {
+        updateFields.push("email = ?");
+        updateValues.push(email);
+      }
+
+      if (no_whatsapp) {
+        updateFields.push("no_whatsapp = ?");
+        updateValues.push(no_whatsapp);
+      }
+
+      if (updateFields.length > 0) {
+        updateValues.push(nim); // untuk WHERE clause
+        await db.query(
+          `UPDATE student_internship 
+           SET ${updateFields.join(", ")} 
+           WHERE nim = ?`,
+          updateValues
+        );
+        console.log(`Updated student contact info for NIM: ${nim}`);
+      }
+    }
 
     res.json({ success: true, id: result.insertId });
   } catch (err) {
@@ -498,6 +571,40 @@ function formatDateEng(isoDateStr) {
   return `${mm} ${dd}, ${yyyy}`;
 }
 
+// Helper function: Update published_date jika kedua approval sudah APPROVED
+async function checkAndSetPublishedDate(id_letter) {
+  try {
+    const [rows] = await db.query(
+      `SELECT koor_approval, cdc_approval, published_date 
+       FROM internship_letter 
+       WHERE id_letter = ? LIMIT 1`,
+      [id_letter]
+    );
+
+    if (!rows.length) return;
+
+    const letter = rows[0];
+
+    // Cek apakah kedua approval sudah ACCEPTED dan published_date masih NULL
+    if (
+      letter.koor_approval === "ACCEPTED" &&
+      letter.cdc_approval === "ACCEPTED" &&
+      !letter.published_date
+    ) {
+      const publishedDate = new Date();
+      await db.query(
+        `UPDATE internship_letter 
+         SET published_date = ?, status = 'ACCEPTED' 
+         WHERE id_letter = ?`,
+        [publishedDate, id_letter]
+      );
+      console.log(`Published date set for letter ${id_letter}`);
+    }
+  } catch (err) {
+    console.error("Error in checkAndSetPublishedDate:", err);
+  }
+}
+
 // Route: generate & download PDF letter by id_letter
 router.get("/letter/:id/download", async (req, res) => {
   const id = req.params.id;
@@ -577,6 +684,7 @@ router.get("/letter/:id/download", async (req, res) => {
       lang === "ENG" ? "internship_letter_eng.php" : "internship_letter_id.php";
     const templateURL = `http://localhost/myinternship/front-end/${templateFile}?id_letter=${id}&lang=${lang}&month_roman=${monthRoman}`;
 
+    // SESUDAH - Tambahkan update published_date:
     const browser = await puppeteer.launch({
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
@@ -599,6 +707,87 @@ router.get("/letter/:id/download", async (req, res) => {
     res.status(500).json({ error: "Server error when generating PDF" });
   }
 });
+
+/**
+ * POST /api/student/rejected-by-company/:id_letter
+ * - Mahasiswa menandai surat magang sebagai REJECTED oleh perusahaan.
+ * - Bisa upload bukti (opsional).
+ */
+const multer = require("multer");
+const path = require("path");
+
+// Konfigurasi folder upload
+const uploadDir = path.join(__dirname, "../uploads/company_replies");
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, unique + path.extname(file.originalname));
+  },
+});
+const upload = multer({ storage });
+
+router.post("/rejected-by-company/:id_letter", upload.single("company_reply_letter"), async (req, res) => {
+  const id_letter = req.params.id_letter;
+
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM internship_letter WHERE id_letter = ?",
+      [id_letter]
+    );
+
+    if (!rows.length) {
+      return res.status(404).json({
+        success: false,
+        message: "Letter not found",
+      });
+    }
+
+    const letter = rows[0];
+
+    if (letter.status !== "ACCEPTED") {
+      return res.status(400).json({
+        success: false,
+        message: "Letter must be ACCEPTED before rejection by company.",
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Proof file is required when company rejects the internship.",
+      });
+    }
+
+    const filePath = `uploads/company_replies/${req.file.filename}`
+    const now = new Date();
+
+    await db.query(
+      `UPDATE internship_letter 
+       SET acceptance_status = 'REJECTED',
+           company_reply_letter = ?,
+           updated_at = ?
+       WHERE id_letter = ?`,
+      [filePath, now, id_letter]
+    );
+
+    return res.json({
+      success: true,
+      message: "Company rejection has been recorded successfully.",
+      file: filePath,
+    });
+
+  } catch (err) {
+    console.error("rejected-by-company error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error.",
+    });
+  }
+});
+
 
 // helper untuk format ke YYYY-MM-DD tanpa timezone offset
 function formatDate(dateValue) {
@@ -919,3 +1108,4 @@ const [userResult] = await conn.query(
 });
 
 module.exports = router;
+module.exports.checkAndSetPublishedDate = checkAndSetPublishedDate;

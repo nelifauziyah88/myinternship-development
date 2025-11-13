@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../db');
+const { checkAndSetPublishedDate } = require('./student');
 
 // Login
 router.post("/login_lecturer", async (req, res) => {
@@ -242,6 +243,9 @@ router.post("/lecturer/approval", async (req, res) => {
        VALUES (?, ?, ?, ?, ?, NOW(), ?)`,
       [id_letter, approved_by, final_user_id, final_user_name, s, comment || null]
     );
+
+    // Cek dan set published_date jika kedua approval sudah ACCEPTED
+    await checkAndSetPublishedDate(id_letter);
 
     return res.json({
       success: true,

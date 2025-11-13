@@ -783,7 +783,6 @@ if ($id_kampus) {
                     th.addEventListener('click', () => {
                         th.classList.toggle('asc');
                         th.classList.toggle('desc');
-                        // Di sini bisa tambahkan logika sorting tabel
                     });
                 });
             </script>
