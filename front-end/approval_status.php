@@ -912,50 +912,60 @@ if ($id_kampus) {
                             statusBadge = '-';
                         }
 
+                        // === LOCK KETIKA SURAT SUDAH ACCEPTED/REJECTED ===
+                        const isLocked = (r.acceptance_status === 'ACCEPTED' || r.acceptance_status === 'REJECTED');
+
                         // === TOMBOL DOWNLOAD ===
-                        // Button disabled jika status bukan ACCEPTED
-                        const downloadDisabled = (r.status !== 'ACCEPTED') ? 'disabled' : '';
+                        const downloadDisabled = (r.status !== 'ACCEPTED' || isLocked) ? 'disabled' : '';
                         const downloadBtn = `
-                <button class="btn btn-sm btn-download"
-                        data-id="${id}"
-                        data-lang="${r.language || 'ID'}"
-                        ${downloadDisabled}
-                        style="background:#E9ECEF;color:#212529;min-width:130px;border:none;box-shadow:0 3px 6px rgba(0,0,0,0.15);">
-                    <i class="fa fa-download"></i> Download
-                </button>`;
+                        <button class="btn btn-sm btn-download"
+                                data-id="${id}"
+                                data-lang="${r.language || 'ID'}"
+                                ${downloadDisabled}
+                                style="background:#E9ECEF;color:#212529;min-width:130px;border:none;box-shadow:0 3px 6px rgba(0,0,0,0.15);">
+                            <i class="fa fa-download"></i> Download
+                        </button>`;
 
                         // === ACTION BUTTON ===
-                        const actionDisabled = (r.status !== 'ACCEPTED') ? 'disabled' : '';
-                        const actionDropdown = (r.status === 'ACCEPTED') ? `
-    <div class="dropdown">
-        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="actionDropdown${id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Action
-        </button>
-        <div class="dropdown-menu" aria-labelledby="actionDropdown${id}">
-            <a class="dropdown-item" href="accepted_by_company.php?id=${id}">
-                <i class="fa fa-check text-success mr-2"></i>Accepted by Company
-            </a>
-            <a class="dropdown-item" href="rejected_by_company.php?id=${id}">
-                <i class="fa fa-times text-danger mr-2"></i>Rejected by Company
-            </a>
-        </div>
-    </div>
-` : `
-    <button class="btn btn-secondary btn-sm" disabled>Action</button>
-`;
+                        let actionDropdown = '';
+                        if (isLocked) {
+                            // Jika sudah ACCEPTED/REJECTED → tombol action disable total
+                            actionDropdown = `
+                            <button class="btn btn-secondary btn-sm" disabled style="opacity:0.6;">
+                                Action
+                            </button>`;
+                        } else if (r.status === 'ACCEPTED') {
+                            actionDropdown = `
+                            <div class="dropdown">
+                                <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="actionDropdown${id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Action
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="actionDropdown${id}">
+                                    <a class="dropdown-item" href="accepted_by_company.php?id=${id}">
+                                        <i class="fa fa-check text-success mr-2"></i>Accepted by Company
+                                    </a>
+                                    <a class="dropdown-item" href="rejected_by_company.php?id=${id}">
+                                        <i class="fa fa-times text-danger mr-2"></i>Rejected by Company
+                                    </a>
+                                </div>
+                            </div>`;
+                        } else {
+                            actionDropdown = `
+                            <button class="btn btn-secondary btn-sm" disabled>Action</button>`;
+                        }
 
                         // === RENDER ROW ===
                         const tr = document.createElement('tr');
                         tr.setAttribute('data-id', id);
                         tr.innerHTML = `
-    <td class="align-middle text-center">${idx + 1}</td>
-    ${dateCell}
-    <td class="align-middle text-center">${koorBadge}</td>
-    <td class="align-middle text-center">${cdcBadge}</td>
-    <td class="align-middle text-center">${statusBadge}</td>
-    <td class="align-middle text-center">${downloadBtn}</td>
-    <td class="align-middle text-center">${actionDropdown}</td>
-`;
+                        <td class="align-middle text-center">${idx + 1}</td>
+                        ${dateCell}
+                        <td class="align-middle text-center">${koorBadge}</td>
+                        <td class="align-middle text-center">${cdcBadge}</td>
+                        <td class="align-middle text-center">${statusBadge}</td>
+                        <td class="align-middle text-center">${downloadBtn}</td>
+                        <td class="align-middle text-center">${actionDropdown}</td>
+                        `;
                         tableBody.appendChild(tr);
                     });
 
@@ -979,43 +989,6 @@ if ($id_kampus) {
                         const lang = btn.dataset.lang || 'ID';
                         // Redirect ke endpoint download
                         window.location.href = `${API_BASE}/letter/${id}/download?lang=${lang}`;
-                    });
-                });
-
-                // Event listener untuk tombol Action
-                document.querySelectorAll('.btn-action').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        if (btn.disabled) return;
-                        const id = btn.dataset.id;
-
-                        // Prompt user untuk input status acceptance
-                        const choose = prompt('Type ACCEPTED for "Accepted by company" or REJECTED for "Rejected by company"')?.toUpperCase();
-                        if (!['ACCEPTED', 'REJECTED'].includes(choose)) {
-                            alert('Invalid choice or cancelled.');
-                            return;
-                        }
-
-                        try {
-                            // Kirim PUT request ke API
-                            const res = await fetch(`${API_BASE}/acceptance/${id}`, {
-                                method: 'PUT',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    acceptance_status: choose
-                                })
-                            });
-                            const json = await res.json();
-                            if (!json.success) throw new Error(json.error || 'Failed to save');
-
-                            alert('Action saved successfully.');
-                            // Reload data setelah berhasil
-                            await loadApproval();
-                        } catch (err) {
-                            console.error(err);
-                            alert('Failed to save action: ' + (err.message || 'Unknown error'));
-                        }
                     });
                 });
             }
