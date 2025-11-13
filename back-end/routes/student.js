@@ -5,6 +5,7 @@ const puppeteer = require("puppeteer");
 const db = require("../db");
 const fs = require("fs");
 const path = require("path");
+const multer = require("multer");
 
 // Login
 router.post("/login_student", async (req, res) => {
@@ -713,8 +714,6 @@ router.get("/letter/:id/download", async (req, res) => {
  * - Mahasiswa menandai surat magang sebagai REJECTED oleh perusahaan.
  * - Bisa upload bukti (opsional).
  */
-const multer = require("multer");
-const path = require("path");
 
 // Konfigurasi folder upload
 const uploadDir = path.join(__dirname, "../uploads/company_replies");
