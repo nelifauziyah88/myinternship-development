@@ -405,7 +405,7 @@ router.get("/cdc/study-programs/:id_kampus", async (req, res) => {
   }
 });
 
-// Edit submission (hanya data perusahaan)
+// Edit submission (data perusahaan - UPDATE ke internship_letter DAN company)
 router.put("/cdc/submissions/edit/:id_letter", async (req, res) => {
   const { id_letter } = req.params;
   const { company_name, company_address, company_phone, company_email } =
@@ -427,9 +427,9 @@ router.put("/cdc/submissions/edit/:id_letter", async (req, res) => {
   }
 
   try {
-    // Cek apakah submission exists
+    // Cek apakah submission exists dan ambil id_company
     const [checkRows] = await db.query(
-      `SELECT id_letter FROM internship_letter WHERE id_letter = ?`,
+      `SELECT id_letter, id_company FROM internship_letter WHERE id_letter = ?`,
       [id_letter]
     );
 
@@ -440,13 +440,35 @@ router.put("/cdc/submissions/edit/:id_letter", async (req, res) => {
       });
     }
 
-    // Gabungkan phone dan email menjadi satu string untuk company_contact
+    const id_company = checkRows[0].id_company;
+
+    // Menggabungkan phone dan email menjadi satu string untuk company_contact
     let contactParts = [];
     if (company_phone) contactParts.push(company_phone);
     if (company_email) contactParts.push(company_email);
     const company_contact = contactParts.join(" ");
 
-    // Update data perusahaan
+    // Update data di tabel company 
+    if (id_company) {
+      await db.query(
+        `UPDATE company
+         SET name = ?,
+             address = ?,
+             phone = ?,
+             email = ?
+         WHERE id_company = ?`,
+        [
+          company_name,
+          company_address,
+          company_phone || "-",
+          company_email || "-",
+          id_company
+        ]
+      );
+      console.log(`[CDC] Updated company data for id_company: ${id_company}`);
+    }
+
+    // Update data di tabel internship_letter
     await db.query(
       `UPDATE internship_letter
        SET company_name = ?,
@@ -456,6 +478,8 @@ router.put("/cdc/submissions/edit/:id_letter", async (req, res) => {
        WHERE id_letter = ?`,
       [company_name, company_address, company_contact, id_letter]
     );
+
+    console.log(`[CDC] Updated internship_letter data for id_letter: ${id_letter}`);
 
     res.json({
       success: true,

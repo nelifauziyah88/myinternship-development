@@ -716,6 +716,7 @@ router.get("/letter/:id/download", async (req, res) => {
  */
 
 // Konfigurasi folder upload
+// Konfigurasi folder upload
 const uploadDir = path.join(__dirname, "../uploads/company_replies");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
@@ -728,65 +729,44 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-router.post("/rejected-by-company/:id_letter", upload.single("company_reply_letter"), async (req, res) => {
-  const id_letter = req.params.id_letter;
-
+router.post('/rejected-by-company/:id', upload.single('company_reply_letter'), async (req, res) => {
   try {
-    const [rows] = await db.query(
-      "SELECT * FROM internship_letter WHERE id_letter = ?",
-      [id_letter]
-    );
+    const { acceptance_status } = req.body;
+    const id = req.params.id;
 
-    if (!rows.length) {
-      return res.status(404).json({
-        success: false,
-        message: "Letter not found",
-      });
+    console.log("=== DEBUG REJECTED-BY-COMPANY ===");
+    console.log("ID:", id);
+    console.log("Body:", req.body);
+    console.log("File:", req.file);
+
+    if (acceptance_status !== "REJECTED") {
+      return res.status(400).json({ success: false, message: "Invalid acceptance status." });
     }
 
-    const letter = rows[0];
+    let filePath = '-'; // default jika tidak upload
+if (req.file) {
+  filePath = `uploads/${req.file.filename}`;
+}
 
-    if (letter.status !== "ACCEPTED") {
-      return res.status(400).json({
-        success: false,
-        message: "Letter must be ACCEPTED before rejection by company.",
-      });
-    }
 
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "Proof file is required when company rejects the internship.",
-      });
-    }
-
-    const filePath = `uploads/company_replies/${req.file.filename}`
-    const now = new Date();
-
-    await db.query(
+    const [result] = await db.query(
       `UPDATE internship_letter 
-       SET acceptance_status = 'REJECTED',
-           company_reply_letter = ?,
-           updated_at = ?
-       WHERE id_letter = ?`,
-      [filePath, now, id_letter]
+       SET acceptance_status = ?, company_reply_letter = ? 
+       WHERE id_letter = ?`,  
+      [acceptance_status, filePath, id]
     );
 
-    return res.json({
-      success: true,
-      message: "Company rejection has been recorded successfully.",
-      file: filePath,
-    });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: "Letter not found." });
+    }
 
-  } catch (err) {
-    console.error("rejected-by-company error:", err);
-    return res.status(500).json({
-      success: false,
-      message: "Server error.",
-    });
+    res.json({ success: true, message: "Company rejection recorded." });
+
+  } catch (error) {
+    console.error("Error in /rejected-by-company:", error);
+    res.status(500).json({ success: false, message: "Server error." });
   }
 });
-
 
 // helper untuk format ke YYYY-MM-DD tanpa timezone offset
 function formatDate(dateValue) {
@@ -940,7 +920,7 @@ router.post("/accepted-by-company/submit", async (req, res) => {
         // 2. Jika company_not_exist = 1 → insert ke company baru
 if (company_not_exist === "1" || (letter && letter.company_not_exist === 1)) {
 
-  // 🔍 Ambil phone/email dari internship_letter.company_contact (jika ada)
+  // Ambil phone/email dari internship_letter.company_contact (jika ada)
   let phone = "-";
   let email_c = "-"; // pakai email_c biar tidak tabrakan dengan variabel email mahasiswa
 
@@ -958,14 +938,14 @@ if (company_not_exist === "1" || (letter && letter.company_not_exist === 1)) {
     }
   }
 
-  // 🔍 Ambil id_kampus mahasiswa dari tabel student_internship
+  // Ambil id_kampus mahasiswa dari tabel student_internship
   const [studRows] = await conn.query(
     "SELECT id_kampus FROM student_internship WHERE nim = ? LIMIT 1",
     [nim]
   );
   const id_kampus = studRows.length > 0 ? studRows[0].id_kampus : 1; // default 1 kalau tidak ditemukan
 
-  // 🧱 Insert ke tabel company lengkap
+  // Insert ke tabel company lengkap
   const [result] = await conn.query(`
     INSERT INTO company 
     (name, type, type_other, phone, email, website, facebook, twitter, instagram, linkedin, logo, address, province, city, country, description, status, access_type, id_kampus)
@@ -993,7 +973,7 @@ if (oldHRD.length > 0 && oldHRD[0].password) {
   existingPassword = oldHRD[0].password;
 }
 
-// 🧱 Insert user_company baru dengan username dan password placeholder
+// Insert user_company baru dengan username dan password placeholder
 const [userResult] = await conn.query(
   "INSERT INTO user_company (id_company, user_fullname, user_email, user_phone, user_type, username, password) VALUES (?, ?, ?, ?, 'HRD', 'TEMP', ?)",
   [id_company, hrd_name, hrd_email, hrd_whatsapp, existingPassword || "-"]
@@ -1076,7 +1056,7 @@ const [userResult] = await conn.query(
           [id_letter, id_internship, info_source]
         );
 
-        // 8️⃣ Update internship_letter (company_reply_letter + acceptance_status)
+        // Update internship_letter (company_reply_letter + acceptance_status)
         if (uploadedFilePath) {
           await conn.query(
             "UPDATE internship_letter SET company_reply_letter = ?, acceptance_status = 'ACCEPTED' WHERE nim = ?",
