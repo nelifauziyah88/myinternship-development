@@ -2,10 +2,10 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const puppeteer = require("puppeteer");
+const multer = require("multer");
 const db = require("../db");
 const fs = require("fs");
 const path = require("path");
-const multer = require("multer");
 
 // Login
 router.post("/login_student", async (req, res) => {
@@ -256,7 +256,7 @@ router.post("/form-submission", async (req, res) => {
           .json({ error: "new company name/contact/address required" });
       }
 
-      // SESUDAH - Tambahkan semua kolom NOT NULL dengan nilai default:
+      // Tambahkan semua kolom NOT NULL dengan nilai default:
       const [stuRow] = await db.query(
         `SELECT id_kampus FROM student_internship WHERE nim = ? LIMIT 1`,
         [nim]
@@ -264,38 +264,18 @@ router.post("/form-submission", async (req, res) => {
       const id_kampus = stuRow.length ? stuRow[0].id_kampus : 1;
 
       const [companyResult] = await db.query(
-        `INSERT INTO company (
-  name, type, phone, email, website, facebook, twitter, instagram, linkedin, logo,
-  address, province, city, description, status, access_type, id_kampus
-)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'not verified', 1, ?)
-`,
-        [
-          company_name,
-          "General", // type (default)
-          body.company_contact || "", // phone (gunakan string kosong jika null)
-          "", // email
-          "", // website (default kosong)
-          "", // facebook (default kosong)
-          "", // twitter (default kosong)
-          "", // instagram (default kosong)
-          "", // linkedin (default kosong)
-          "", // logo (default kosong)
-          company_address || "", // address
-          "", // province (default kosong)
-          "", // city (default kosong)
-          "", // description (default kosong)
-          id_kampus, // id_kampus (sesuaikan dengan student.id_kampus atau default 1)
-        ]
+        `INSERT INTO company (name, type, phone, email, website, facebook, twitter, instagram, linkedin, logo,
+        address, province, city, description, status, access_type, id_kampus
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'not verified', 1, ?)`,
+        [company_name, "General", body.company_contact || "", "", "", "", "", "", "", "", company_address || "", "", "", "", id_kampus]
       );
 
       // Set id_company dengan id yang baru dibuat
       id_company = companyResult.insertId;
 
-      // Set flag bahwa ini company baru (tidak exist di database sebelumnya)
-      company_not_exist = 1; // 0 = company tidak exist sebelumnya
+      company_not_exist = 1;
     } else {
-      // existing company -> get address, phone, and email from DB
+      // existing company
       const [cRow] = await db.query(
         `SELECT name, address, phone, email 
      FROM company 
@@ -323,8 +303,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'not verified', 1, ?)
         company_contact = company_contact || null;
       }
 
-      // Set flag bahwa company sudah exist di database
-      company_not_exist = 0; // 1 = company exist di database
+      company_not_exist = 0;
     }
 
     // other fields (guard defaults)
@@ -374,7 +353,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'not verified', 1, ?)
       ]
     );
 
-    // INSERT KODE BARU DI SINI - Update email dan phone di student_internship
+    // Update email dan phone di student_internship
     if (email || no_whatsapp) {
       const updateFields = [];
       const updateValues = [];
@@ -390,7 +369,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'not verified', 1, ?)
       }
 
       if (updateFields.length > 0) {
-        updateValues.push(nim); // untuk WHERE clause
+        updateValues.push(nim);
         await db.query(
           `UPDATE student_internship 
            SET ${updateFields.join(", ")} 
@@ -586,7 +565,7 @@ async function checkAndSetPublishedDate(id_letter) {
 
     const letter = rows[0];
 
-    // Cek apakah kedua approval sudah ACCEPTED dan published_date masih NULL
+    // Memeriksa apakah kedua approval sudah ACCEPTED dan published_date masih NULL
     if (
       letter.koor_approval === "ACCEPTED" &&
       letter.cdc_approval === "ACCEPTED" &&
@@ -680,12 +659,12 @@ router.get("/letter/:id/download", async (req, res) => {
       return romans[month];
     }
 
-    // Template URL - kirim monthRoman sebagai query parameter
+    // Template URL
     const templateFile =
       lang === "ENG" ? "internship_letter_eng.php" : "internship_letter_id.php";
     const templateURL = `http://localhost/myinternship/front-end/${templateFile}?id_letter=${id}&lang=${lang}&month_roman=${monthRoman}`;
 
-    // SESUDAH - Tambahkan update published_date:
+    // Tambahkan update published_date:
     const browser = await puppeteer.launch({
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
@@ -714,9 +693,6 @@ router.get("/letter/:id/download", async (req, res) => {
  * - Mahasiswa menandai surat magang sebagai REJECTED oleh perusahaan.
  * - Bisa upload bukti (opsional).
  */
-
-// Konfigurasi folder upload
-// Konfigurasi folder upload
 const uploadDir = path.join(__dirname, "../uploads/company_replies");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
@@ -778,9 +754,7 @@ function formatDate(dateValue) {
   return `${year}-${month}-${day}`;
 }
 
-// ===============================
 // GET: Autofill data form accepted_by_company
-// ===============================
 router.get("/accepted-by-company/autofill/:nim", async (req, res) => {
   const nim = req.params.nim;
   try {
@@ -837,9 +811,7 @@ router.get("/accepted-by-company/autofill/:nim", async (req, res) => {
   }
 });
 
-// ===============================
 // POST: Submit accepted_by_company
-// ===============================
 router.post("/accepted-by-company/submit", async (req, res) => {
   try {
     const chunks = [];
@@ -918,66 +890,66 @@ router.post("/accepted-by-company/submit", async (req, res) => {
         let id_user_company = null;
 
         // 2. Jika company_not_exist = 1 → insert ke company baru
-if (company_not_exist === "1" || (letter && letter.company_not_exist === 1)) {
+        if (company_not_exist === "1" || (letter && letter.company_not_exist === 1)) {
 
-  // Ambil phone/email dari internship_letter.company_contact (jika ada)
-  let phone = "-";
-  let email_c = "-"; // pakai email_c biar tidak tabrakan dengan variabel email mahasiswa
+          // Ambil phone/email dari internship_letter.company_contact (jika ada)
+          let phone = "-";
+          let email_c = "-"; // Menggunakan email_c agar tidak bentrok dengan email mahasiswa
 
-  if (letter && letter.company_contact) {
-    const contact = letter.company_contact.trim();
+          if (letter && letter.company_contact) {
+            const contact = letter.company_contact.trim();
 
-    // jika hanya angka atau +62
-    if (/^[+0-9\s-]+$/.test(contact) && contact.replace(/\D/g, "").length >= 8) {
-      phone = contact;
-    }
+            // jika hanya angka atau +62 = nomor telepon
+            if (/^[+0-9\s-]+$/.test(contact) && contact.replace(/\D/g, "").length >= 8) {
+              phone = contact;
+            }
 
-    // jika mengandung @, anggap email
-    else if (contact.includes("@")) {
-      email_c = contact;
-    }
-  }
+            // jika mengandung @ = anggap email
+            else if (contact.includes("@")) {
+              email_c = contact;
+            }
+          }
 
-  // Ambil id_kampus mahasiswa dari tabel student_internship
-  const [studRows] = await conn.query(
-    "SELECT id_kampus FROM student_internship WHERE nim = ? LIMIT 1",
-    [nim]
-  );
-  const id_kampus = studRows.length > 0 ? studRows[0].id_kampus : 1; // default 1 kalau tidak ditemukan
+          // Ambil id_kampus mahasiswa dari tabel student_internship
+          const [studRows] = await conn.query(
+            "SELECT id_kampus FROM student_internship WHERE nim = ? LIMIT 1",
+            [nim]
+          );
+          const id_kampus = studRows.length > 0 ? studRows[0].id_kampus : 1;
 
-  // Insert ke tabel company lengkap
-  const [result] = await conn.query(`
+          // Insert ke tabel company lengkap
+          const [result] = await conn.query(`
     INSERT INTO company 
     (name, type, type_other, phone, email, website, facebook, twitter, instagram, linkedin, logo, address, province, city, country, description, status, access_type, id_kampus)
     VALUES (?, '-', NULL, ?, ?, '-', '-', '-', '-', '-', '-', ?, ?, ?, ?, '-', 'verified', '1', ?)
   `, [
-    company_name,
-    phone,
-    email_c,
-    company_address,
-    province,
-    city,
-    country,
-    id_kampus
-  ]);
+            company_name,
+            phone,
+            email_c,
+            company_address,
+            province,
+            city,
+            country,
+            id_kampus
+          ]);
 
-  id_company = result.insertId;
+          id_company = result.insertId;
 
           // 3. Insert user_company baru (HRD)
-let existingPassword = "-";
-const [oldHRD] = await conn.query(
-  "SELECT password FROM user_company WHERE id_company = ? AND user_type = 'HRD' LIMIT 1",
-  [id_company]
-);
-if (oldHRD.length > 0 && oldHRD[0].password) {
-  existingPassword = oldHRD[0].password;
-}
+          let existingPassword = "-";
+          const [oldHRD] = await conn.query(
+            "SELECT password FROM user_company WHERE id_company = ? AND user_type = 'HRD' LIMIT 1",
+            [id_company]
+          );
+          if (oldHRD.length > 0 && oldHRD[0].password) {
+            existingPassword = oldHRD[0].password;
+          }
 
-// Insert user_company baru dengan username dan password placeholder
-const [userResult] = await conn.query(
-  "INSERT INTO user_company (id_company, user_fullname, user_email, user_phone, user_type, username, password) VALUES (?, ?, ?, ?, 'HRD', 'TEMP', ?)",
-  [id_company, hrd_name, hrd_email, hrd_whatsapp, existingPassword || "-"]
-);
+          // Insert user_company baru dengan username dan password placeholder
+          const [userResult] = await conn.query(
+            "INSERT INTO user_company (id_company, user_fullname, user_email, user_phone, user_type, username, password) VALUES (?, ?, ?, ?, 'HRD', 'TEMP', ?)",
+            [id_company, hrd_name, hrd_email, hrd_whatsapp, existingPassword || "-"]
+          );
           id_user_company = userResult.insertId;
 
           // 4. Update username HRD jadi format HRD.00X
@@ -1028,19 +1000,19 @@ const [userResult] = await conn.query(
         );
 
         // 7. Insert internship_letter_acceptance
-        // === Ambil id_letter dari surat terakhir mahasiswa
+        // Ambil id_letter dari surat terakhir mahasiswa
         const [letterRows2] = await conn.query(
           "SELECT id_letter FROM internship_letter WHERE nim = ? ORDER BY id_letter DESC LIMIT 1",
           [nim]
         );
         const id_letter = letterRows2.length ? letterRows2[0].id_letter : null;
 
-        // === Hitung periode magang (harus di atas insert internship)
+        // Hitung periode magang (harus di atas insert internship)
         const ms = Math.abs(new Date(end_date) - new Date(start_date));
         const months = Math.max(1, Math.floor(ms / (1000 * 60 * 60 * 24 * 30)));
         const internship_period = `${months} month(s)`;
 
-        // === Insert into internship
+        // Insert into internship
         const [internshipResult] = await conn.query(
           `INSERT INTO internship 
           (nim, id_company, start_date, end_date, id_user_company, status, internship_position, internship_period, timestamp_register)
@@ -1049,21 +1021,21 @@ const [userResult] = await conn.query(
         );
         const id_internship = internshipResult.insertId;
 
-        // === Insert into internship_letter_acceptance
+        // Insert into internship_letter_acceptance
         await conn.query(
           `INSERT INTO internship_letter_acceptance (id_letter, id_internship, source_internship_info, created_at)
           VALUES (?, ?, ?, NOW())`,
           [id_letter, id_internship, info_source]
         );
 
-        // Update internship_letter (company_reply_letter + acceptance_status)
+        // 8. Update internship_letter (company_reply_letter + acceptance_status)
         if (uploadedFilePath) {
           await conn.query(
             "UPDATE internship_letter SET company_reply_letter = ?, acceptance_status = 'ACCEPTED' WHERE nim = ?",
             [uploadedFilePath, nim]
           );
         } else {
-          // Accpted without upload files
+          // Accepted without upload files
           await conn.query(
             "UPDATE internship_letter SET acceptance_status = 'ACCEPTED' WHERE nim = ?",
             [nim]

@@ -684,7 +684,7 @@ $stempel = "assets/img/ttd.png";
         </div>
 
         <div class="content-balasan">
-            Based on the Industrial Internship Application Letter Number ................... yang telah diajukan kepada kami,
+            Based on the Industrial Internship Application Letter Number ................... that has been submitted to us,
             We hereby announce that the following students :
         </div>
 

@@ -223,6 +223,74 @@ if ($id_kampus) {
         .btn-back:hover {
             background-color: #e5e7eb;
         }
+
+        .dropzone {
+    width: 70%;
+    padding: 40px;
+    border: 2px dashed #4a9fb8;
+    border-radius: 8px;
+    background-color: #e8f4f8;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.dropzone.dragover {
+    background-color: #d4eef3;
+    border-color: #3fa2b5;
+}
+
+.dz-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    color: #4a9fb8;
+}
+
+.dz-title {
+    font-size: 20px;
+    color: #4a9fb8;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.dz-subtitle {
+    font-size: 14px;
+    color: #7a8a92;
+    font-weight: normal;
+}
+
+.file-list {
+    width: 70%;
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    background: #f7f9fa;
+    border: 1px solid #d8e2e6;
+}
+
+.file-item {
+    padding: 10px;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    border-radius: 5px;
+    background-color: #d7dfe4;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: #1f6feb;
+    width: 0%;
+    transition: width 0.3s;
+}
     </style>
 </head>
 
@@ -569,7 +637,9 @@ if ($id_kampus) {
                                         <label><input type="radio" name="city" value="tanjung_balai"> Tanjung Balai Karimun</label>
                                         <label><input type="radio" name="city" value="other"> Other</label>
                                     </div>
-                                    <input type="text" name="city_other" class="form-control" placeholder="Please type another option here" style="width:70%; margin-top: 10px;">
+                                    <input type="text" name="city_other" class="form-control"
+                                        placeholder="Please type another option here"
+                                        style="width:70%; margin-top: 10px; display:none;">
                                 </div>
 
                                 <div class="form-group">
@@ -578,7 +648,9 @@ if ($id_kampus) {
                                         <label><input type="radio" name="province" value="riau_islands"> Riau Islands</label>
                                         <label><input type="radio" name="province" value="other"> Other</label>
                                     </div>
-                                    <input type="text" name="province_other" class="form-control" placeholder="Please type another option here" style="width:70%; margin-top: 10px;">
+                                    <input type="text" name="province_other" class="form-control"
+                                        placeholder="Please type another option here"
+                                        style="width:70%; margin-top: 10px; display:none;">
                                 </div>
 
                                 <div class="form-group">
@@ -642,12 +714,24 @@ if ($id_kampus) {
                                 </div>
 
                                 <div class="form-group" style="margin-bottom: 30px;">
-                                    <label style="margin-bottom: 10px;">Internship Response Letter / Proof of Acceptance <span style="color:red;">*</span></label>
-                                    <div class="form-control" style="width:70%; display:flex; align-items:center; gap:10px; background-color:#e9ecef; border:1px solid #dee2e6; border-radius:8px; padding:10px 15px; height:45px;">
-                                        <button type="button" class="file-button" onclick="document.getElementById('fileInput').click()" style="background-color:#6c757d; color:white; border:none; padding:6px 15px; border-radius:5px; cursor:pointer;">Choose file</button>
-                                        <span id="fileName" class="file-name" style="color:#6c757d;">No file chosen</span>
-                                        <input type="file" id="fileInput" name="attachment" accept=".pdf,.doc,.docx" style="display:none;">
+                                    <label style="margin-bottom: 10px;">
+                                        Internship Response Letter / Proof of Acceptance <span style="color:red;">*</span>
+                                    </label>
+
+                                    <!-- DROPZONE -->
+                                    <div id="dropzone" class="dropzone">
+                                        <div class="dz-content">
+                                            <div class="dz-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                                            <div class="dz-title">Browse Files</div>
+                                            <div class="dz-subtitle">Click or drag a PDF file here</div>
+                                        </div>
                                     </div>
+
+                                    <!-- HIDDEN FILE INPUT -->
+                                    <input type="file" id="fileInput" name="attachment" accept="application/pdf" style="display:none;">
+
+                                    <!-- FILE LIST PREVIEW -->
+                                    <div id="fileList" class="file-list" style="display:none;"></div>
                                 </div>
 
                                 <div style="display:flex; justify-content: space-between; margin-top: 30px;">
@@ -934,6 +1018,27 @@ if ($id_kampus) {
                 form.querySelector("input[name='company_not_exist']").value = d.company_not_exist ? String(d.company_not_exist) : "0";
             };
 
+            // === SHOW/HIDE city_other based on radio ===
+            form.querySelectorAll("input[name='city']").forEach(r => {
+                r.addEventListener("change", () => {
+                    const isOther = r.value === "other";
+                    const cityOther = form.querySelector("input[name='city_other']");
+                    cityOther.style.display = isOther ? "block" : "none";
+                    if (!isOther) cityOther.value = "";
+                });
+            });
+
+            // === SHOW/HIDE province_other based on radio ===
+            form.querySelectorAll("input[name='province']").forEach(r => {
+                r.addEventListener("change", () => {
+                    const isOther = r.value === "other";
+                    const provOther = form.querySelector("input[name='province_other']");
+                    provOther.style.display = isOther ? "block" : "none";
+                    if (!isOther) provOther.value = "";
+                });
+            });
+
+
             // === AUTO-FILL ===
             fetch(`${API_BASE}/accepted-by-company/autofill/${nim}`)
                 .then(res => res.json())
@@ -967,6 +1072,21 @@ if ($id_kampus) {
                     if (cityVal) setRadioChecked("city", cityVal);
                     if (provVal) setRadioChecked("province", provVal);
                     if (countryVal) setRadioChecked("country", countryVal);
+
+                    // Show text input jika value existing adalah "other"
+                    const cityOther = form.querySelector("input[name='city_other']");
+                    if (cityVal === "other") {
+                        cityOther.style.display = "block";
+                    } else {
+                        cityOther.style.display = "none";
+                    }
+
+                    const provOther = form.querySelector("input[name='province_other']");
+                    if (provVal === "other") {
+                        provOther.style.display = "block";
+                    } else {
+                        provOther.style.display = "none";
+                    }
 
                     // === HRD ===
                     safeSet("input[name='hrd_email']", d.hrd_email);
@@ -1008,12 +1128,14 @@ if ($id_kampus) {
                         if (provinceOther) {
                             provinceOther.readOnly = true;
                             provinceOther.style.backgroundColor = "#f5f5f5";
+                            provinceOther.style.display = "none";
                         }
 
                         const cityOther = form.querySelector("input[name='city_other']");
                         if (cityOther) {
                             cityOther.readOnly = true;
                             cityOther.style.backgroundColor = "#f5f5f5";
+                            cityOther.style.display = "none";
                         }
 
                     } else {
@@ -1062,6 +1184,91 @@ if ($id_kampus) {
                     adjustDateLimits();
                 })
                 .catch(err => console.error("Autofill error:", err));
+
+                const dropzone = document.getElementById("dropzone");
+const fileInput = document.getElementById("fileInput");
+const fileList = document.getElementById("fileList");
+
+// ========== CLICK ⇒ OPEN FILE EXPLORER ==========
+dropzone.addEventListener("click", () => fileInput.click());
+
+// ========== CHANGE (file chosen manually) ==========
+fileInput.addEventListener("change", (e) => {
+    handleFile(e.target.files[0]);
+});
+
+// ========== DRAG OVER ==========
+dropzone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropzone.classList.add("dragover");
+});
+
+// ========== DRAG LEAVE ==========
+dropzone.addEventListener("dragleave", () => {
+    dropzone.classList.remove("dragover");
+});
+
+// ========== DROP FILE ==========
+dropzone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("dragover");
+
+    const file = e.dataTransfer.files[0];
+    handleFile(file);
+});
+
+// ========== HANDLE THE FILE ==========
+function handleFile(file) {
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+        alert("Only PDF files are allowed.");
+        return;
+    }
+
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    fileInput.files = dt.files;
+
+    dropzone.style.display = "none";
+    fileList.style.display = "block";
+
+    fileList.innerHTML = `
+        <div class="file-item">
+            ${file.name}
+            <span class="delete-file" style="color:red; cursor:pointer; margin-left:auto; font-weight:bold;">✕</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-bar-fill" id="uploadProgress"></div>
+        </div>
+    `;
+
+    simulateProgress();
+
+    // DELETE BUTTON
+    document.querySelector(".delete-file").addEventListener("click", () => {
+        fileInput.value = ""; // reset
+        fileList.style.display = "none";
+        dropzone.style.display = "block";
+    });
+}
+
+
+// ========== Fake progress bar (optional) ==========
+function simulateProgress() {
+    const bar = document.getElementById("uploadProgress");
+    let width = 0;
+
+    const timer = setInterval(() => {
+        width += 10;
+        bar.style.width = width + "%";
+
+        if (width >= 100) {
+            clearInterval(timer);
+            bar.parentElement.style.display = "none"; // Hide bar when complete
+        }
+    }, 80);
+}
 
             // === SUBMISSION ===
             form.addEventListener("submit", async (e) => {
