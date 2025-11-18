@@ -296,8 +296,8 @@ if ($id_kampus) {
                     <div class="user-box">
                       <div class="avatar-lg"><img src="assets/img/profile.png" class="avatar-img rounded"></div>
                       <div class="u-text">
-                        <h5>Neli Fauziyah</h5>
-                        <p class="text-muted">NIM: 3312401007</p>
+                        <h5><?php echo htmlspecialchars($user['name'] ?? ''); ?></h5>
+                        <p class="text-muted">Student at : <br?<?php echo htmlspecialchars($nama_kampus); ?></p>
                       </div>
                     </div>
                   </li>
@@ -327,9 +327,9 @@ if ($id_kampus) {
             <div class="info">
               <a data-toggle="collapse" href="#collapseExample">
                 <span>
-                  <span class="wrap2">Neli Fauziyah</span>
-                  <span class="user-level">NIM: 3312401007</span>
-                  <span class="user-level">Student at <br> Politeknik Negeri Batam</span>
+                  <span class="wrap2"><?php echo htmlspecialchars($user['name'] ?? ''); ?></span>
+                  <span class="user-level">NIM: <?php echo htmlspecialchars($user['nim'] ?? ''); ?></span>
+                  <span class="user-level">Student at <br> <?php echo htmlspecialchars($nama_kampus); ?></span>
                 </span>
               </a>
             </div>
@@ -387,7 +387,7 @@ if ($id_kampus) {
         <div class="page-inner py-5">
           <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row">
             <div>
-              <h1 class="text-white pb-2 fw-bold">Internship Acceptance Confirmation Form</h1>
+              <h1 class="text-white pb-2 fw-bold">Internship Rejectance Confirmation Form</h1>
             </div>
           </div>
         </div>
@@ -606,46 +606,73 @@ if ($id_kampus) {
 
     // === Submit form ===
     internshipForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
+  e.preventDefault();
+  if (submitBtn.disabled) return;
 
-      if (submitBtn.disabled) return;
+  const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
+  let filePath = "-"; // default jika tidak upload
 
-      const response = responseReceived.value;
-      const within14 = responseWithin14Days.value;
-      const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
+  try {
+    // === STEP 1: Upload file ke PHP dahulu ===
+    if (file) {
+      const fd = new FormData();
+      fd.append("attachment", file);
 
-      const formData = new FormData();
-      formData.append("acceptance_status", "REJECTED");
-      if (file) formData.append("company_reply_letter", file);
+      const uploadRes = await fetch("upload_company_reply.php", {
+        method: "POST",
+        body: fd,
+      });
 
-      try {
-        const res = await fetch(`${apiBase}/student/rejected-by-company/${id}`, {
-          method: "POST",
-          body: formData,
-        });
+      const uploadJson = await uploadRes.json();
 
-        const json = await res.json();
-
-        if (json.success) {
-          Swal.fire({
-            icon: "success",
-            title: "Submitted!",
-            text: "Company rejection recorded.",
-          }).then(() => (window.location.href = "approval_status.php"));
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "Failed",
-            text: json.message || "Unknown error",
-          });
-        }
-      } catch (error) {
-        Swal.fire({
+      if (!uploadJson.success) {
+        return Swal.fire({
           icon: "error",
-          text: "Server unreachable."
+          title: "Upload Failed",
+          text: uploadJson.message,
         });
       }
+
+      filePath = uploadJson.path; // path hasil upload dari PHP
+    }
+
+    // === STEP 2: Kirim update ke backend Express ===
+    const res = await fetch(`${apiBase}/student/rejected-by-company/${id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        acceptance_status: "REJECTED",
+        company_reply_letter: filePath,
+      }),
     });
+
+    const json = await res.json();
+
+    if (json.success) {
+      Swal.fire({
+        icon: "success",
+        title: "Submitted",
+        text: "Company rejection recorded.",
+      }).then(() => window.location.href = "approval_status.php");
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Failed",
+        text: json.message || "Unknown error",
+      });
+    }
+
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "Server Error",
+      text: "Server unreachable.",
+    });
+  }
+});
+
   </script>
 
 </body>

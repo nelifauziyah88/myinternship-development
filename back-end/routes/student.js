@@ -2,10 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const puppeteer = require("puppeteer");
-const multer = require("multer");
 const db = require("../db");
-const fs = require("fs");
-const path = require("path");
 
 // Login
 router.post("/login_student", async (req, res) => {
@@ -688,42 +685,19 @@ router.get("/letter/:id/download", async (req, res) => {
   }
 });
 
-/**
- * POST /api/student/rejected-by-company/:id_letter
- * - Mahasiswa menandai surat magang sebagai REJECTED oleh perusahaan.
- * - Bisa upload bukti (opsional).
- */
-const uploadDir = path.join(__dirname, "../uploads/company_replies");
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, unique + path.extname(file.originalname));
-  },
-});
-const upload = multer({ storage });
-
-router.post('/rejected-by-company/:id', upload.single('company_reply_letter'), async (req, res) => {
+router.post('/rejected-by-company/:id', async (req, res) => {
   try {
-    const { acceptance_status } = req.body;
+    const { acceptance_status, company_reply_letter } = req.body;
     const id = req.params.id;
 
-    console.log("=== DEBUG REJECTED-BY-COMPANY ===");
-    console.log("ID:", id);
-    console.log("Body:", req.body);
-    console.log("File:", req.file);
-
     if (acceptance_status !== "REJECTED") {
-      return res.status(400).json({ success: false, message: "Invalid acceptance status." });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid acceptance status"
+      });
     }
 
-    let filePath = '-'; // default jika tidak upload
-    if (req.file) {
-      filePath = `uploads/${req.file.filename}`;
-    }
-
+    const filePath = company_reply_letter || "-";
 
     const [result] = await db.query(
       `UPDATE internship_letter 
@@ -733,16 +707,26 @@ router.post('/rejected-by-company/:id', upload.single('company_reply_letter'), a
     );
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, message: "Letter not found." });
+      return res.status(404).json({
+        success: false,
+        message: "Letter not found"
+      });
     }
 
-    res.json({ success: true, message: "Company rejection recorded." });
+    res.json({
+      success: true,
+      message: "Company rejection recorded"
+    });
 
   } catch (error) {
     console.error("Error in /rejected-by-company:", error);
-    res.status(500).json({ success: false, message: "Server error." });
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
   }
 });
+
 
 // helper untuk format ke YYYY-MM-DD tanpa timezone offset
 function formatDate(dateValue) {
