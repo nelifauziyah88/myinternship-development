@@ -720,15 +720,15 @@ router.post('/rejected-by-company/:id', upload.single('company_reply_letter'), a
     }
 
     let filePath = '-'; // default jika tidak upload
-if (req.file) {
-  filePath = `uploads/${req.file.filename}`;
-}
+    if (req.file) {
+      filePath = `uploads/${req.file.filename}`;
+    }
 
 
     const [result] = await db.query(
       `UPDATE internship_letter 
        SET acceptance_status = ?, company_reply_letter = ? 
-       WHERE id_letter = ?`,  
+       WHERE id_letter = ?`,
       [acceptance_status, filePath, id]
     );
 
@@ -814,244 +814,204 @@ router.get("/accepted-by-company/autofill/:nim", async (req, res) => {
 // POST: Submit accepted_by_company
 router.post("/accepted-by-company/submit", async (req, res) => {
   try {
-    const chunks = [];
-    req.on("data", chunk => chunks.push(chunk));
+    const fields = req.body;
 
-    req.on("end", async () => {
-      const raw = Buffer.concat(chunks);
-      const contentType = req.headers["content-type"] || "";
-      const boundaryMatch = contentType.match(/boundary=(.+)$/);
-      if (!boundaryMatch) return res.status(400).json({ success: false, message: "Invalid form data" });
+    const {
+      nim,
+      company_name,
+      company_address,
+      city,
+      province,
+      country,
+      hrd_email,
+      hrd_name,
+      hrd_whatsapp,
+      placement_department,
+      start_date,
+      end_date,
+      info_source,
+      email,
+      whatsapp,
+      company_not_exist,
+      company_reply_letter
+    } = fields;
 
-      const boundary = boundaryMatch[1];
-      const parts = raw.toString().split("--" + boundary).filter(p => p.includes("Content-Disposition"));
+    const conn = await db.getConnection();
+    await conn.beginTransaction();
 
-      const fields = {};
-      let uploadedFilePath = null;
+    try {
+      // 1. Ambil data internship_letter
+      const [letterRows] = await conn.query(
+        "SELECT * FROM internship_letter WHERE nim = ? ORDER BY id_letter DESC LIMIT 1",
+        [nim]
+      );
+      const letter = letterRows[0] || null;
+      let id_company = letter?.id_company || null;
+      let id_user_company = null;
 
-      for (const part of parts) {
-        const nameMatch = part.match(/name="([^"]+)"/);
-        if (!nameMatch) continue;
-        const fieldName = nameMatch[1];
+      // 2. Jika company_not_exist = 1 → insert ke company baru
+      if (company_not_exist === "1" || (letter && letter.company_not_exist === 1)) {
 
-        const filenameMatch = part.match(/filename="([^"]+)"/);
-        if (filenameMatch) {
-          // Handle file upload
-          const filename = Date.now() + "_" + filenameMatch[1];
-          const fileStart = part.indexOf("\r\n\r\n") + 4;
-          const fileEnd = part.lastIndexOf("\r\n");
-          const fileContent = part.substring(fileStart, fileEnd);
+        // Ambil phone/email dari internship_letter.company_contact (jika ada)
+        let phone = "-";
+        let email_c = "-"; // Menggunakan email_c agar tidak bentrok dengan email mahasiswa
 
-          const uploadDir = path.join(__dirname, "..", "uploads", "company_reply_letters");
-          if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+        if (letter && letter.company_contact) {
+          const contact = letter.company_contact.trim();
 
-          const filePath = path.join(uploadDir, filename);
-          fs.writeFileSync(filePath, fileContent, "binary");
-          uploadedFilePath = "uploads/company_reply_letters/" + filename;
-        } else {
-          // Handle normal text field
-          const valueStart = part.indexOf("\r\n\r\n") + 4;
-          const valueEnd = part.lastIndexOf("\r\n");
-          const value = part.substring(valueStart, valueEnd).trim();
-          fields[fieldName] = value;
-        }
-      }
-
-      const {
-        nim,
-        company_name,
-        company_address,
-        city,
-        province,
-        country,
-        hrd_email,
-        hrd_name,
-        hrd_whatsapp,
-        placement_department,
-        start_date,
-        end_date,
-        info_source,
-        email,
-        whatsapp,
-        company_not_exist
-      } = fields;
-
-      const conn = await db.getConnection();
-      await conn.beginTransaction();
-
-      try {
-        // 1. Ambil data internship_letter
-        const [letterRows] = await conn.query(
-          "SELECT * FROM internship_letter WHERE nim = ? ORDER BY id_letter DESC LIMIT 1",
-          [nim]
-        );
-        const letter = letterRows[0] || null;
-        let id_company = letter?.id_company || null;
-        let id_user_company = null;
-
-        // 2. Jika company_not_exist = 1 → insert ke company baru
-        if (company_not_exist === "1" || (letter && letter.company_not_exist === 1)) {
-
-          // Ambil phone/email dari internship_letter.company_contact (jika ada)
-          let phone = "-";
-          let email_c = "-"; // Menggunakan email_c agar tidak bentrok dengan email mahasiswa
-
-          if (letter && letter.company_contact) {
-            const contact = letter.company_contact.trim();
-
-            // jika hanya angka atau +62 = nomor telepon
-            if (/^[+0-9\s-]+$/.test(contact) && contact.replace(/\D/g, "").length >= 8) {
-              phone = contact;
-            }
-
-            // jika mengandung @ = anggap email
-            else if (contact.includes("@")) {
-              email_c = contact;
-            }
+          // jika hanya angka atau +62 = nomor telepon
+          if (/^[+0-9\s-]+$/.test(contact) && contact.replace(/\D/g, "").length >= 8) {
+            phone = contact;
           }
 
-          // Ambil id_kampus mahasiswa dari tabel student_internship
-          const [studRows] = await conn.query(
-            "SELECT id_kampus FROM student_internship WHERE nim = ? LIMIT 1",
-            [nim]
-          );
-          const id_kampus = studRows.length > 0 ? studRows[0].id_kampus : 1;
+          // jika mengandung @ = anggap email
+          else if (contact.includes("@")) {
+            email_c = contact;
+          }
+        }
 
-          // Insert ke tabel company lengkap
-          const [result] = await conn.query(`
+        // Ambil id_kampus mahasiswa dari tabel student_internship
+        const [studRows] = await conn.query(
+          "SELECT id_kampus FROM student_internship WHERE nim = ? LIMIT 1",
+          [nim]
+        );
+        const id_kampus = studRows.length > 0 ? studRows[0].id_kampus : 1;
+
+        // Insert ke tabel company lengkap
+        const [result] = await conn.query(`
     INSERT INTO company 
     (name, type, type_other, phone, email, website, facebook, twitter, instagram, linkedin, logo, address, province, city, country, description, status, access_type, id_kampus)
     VALUES (?, '-', NULL, ?, ?, '-', '-', '-', '-', '-', '-', ?, ?, ?, ?, '-', 'verified', '1', ?)
   `, [
-            company_name,
-            phone,
-            email_c,
-            company_address,
-            province,
-            city,
-            country,
-            id_kampus
-          ]);
+          company_name,
+          phone,
+          email_c,
+          company_address,
+          province,
+          city,
+          country,
+          id_kampus
+        ]);
 
-          id_company = result.insertId;
+        id_company = result.insertId;
 
-          // 3. Insert user_company baru (HRD)
-          let existingPassword = "-";
-          const [oldHRD] = await conn.query(
-            "SELECT password FROM user_company WHERE id_company = ? AND user_type = 'HRD' LIMIT 1",
-            [id_company]
-          );
-          if (oldHRD.length > 0 && oldHRD[0].password) {
-            existingPassword = oldHRD[0].password;
-          }
+        // 3. Insert user_company baru (HRD)
+        let existingPassword = "-";
+        const [oldHRD] = await conn.query(
+          "SELECT password FROM user_company WHERE id_company = ? AND user_type = 'HRD' LIMIT 1",
+          [id_company]
+        );
+        if (oldHRD.length > 0 && oldHRD[0].password) {
+          existingPassword = oldHRD[0].password;
+        }
 
-          // Insert user_company baru dengan username dan password placeholder
+        // Insert user_company baru dengan username dan password placeholder
+        const [userResult] = await conn.query(
+          "INSERT INTO user_company (id_company, user_fullname, user_email, user_phone, user_type, username, password) VALUES (?, ?, ?, ?, 'HRD', 'TEMP', ?)",
+          [id_company, hrd_name, hrd_email, hrd_whatsapp, existingPassword || "-"]
+        );
+        id_user_company = userResult.insertId;
+
+        // 4. Update username HRD jadi format HRD.00X
+        let paddedId;
+        if (id_user_company < 10) paddedId = `00${id_user_company}`;
+        else if (id_user_company < 100) paddedId = `0${id_user_company}`;
+        else paddedId = `${id_user_company}`;
+
+        const generatedUsername = `HRD.${paddedId}`;
+        await conn.query(
+          "UPDATE user_company SET username = ? WHERE id_user_company = ?",
+          [generatedUsername, id_user_company]
+        );
+      } else {
+        // 5. Company sudah ada → ambil HRD lama dari user_company
+        const [existingHRD] = await conn.query(
+          "SELECT id_user_company FROM user_company WHERE id_company = ? AND user_type = 'HRD' LIMIT 1",
+          [id_company]
+        );
+
+        if (existingHRD.length > 0) {
+          id_user_company = existingHRD[0].id_user_company;
+        } else {
+          // fallback kalau HRD belum pernah terdaftar
           const [userResult] = await conn.query(
-            "INSERT INTO user_company (id_company, user_fullname, user_email, user_phone, user_type, username, password) VALUES (?, ?, ?, ?, 'HRD', 'TEMP', ?)",
-            [id_company, hrd_name, hrd_email, hrd_whatsapp, existingPassword || "-"]
+            "INSERT INTO user_company (id_company, user_fullname, user_email, user_phone, user_type) VALUES (?, ?, ?, ?, 'HRD')",
+            [id_company, hrd_name, hrd_email, hrd_whatsapp]
           );
           id_user_company = userResult.insertId;
 
-          // 4. Update username HRD jadi format HRD.00X
+          // update username
           let paddedId;
           if (id_user_company < 10) paddedId = `00${id_user_company}`;
           else if (id_user_company < 100) paddedId = `0${id_user_company}`;
           else paddedId = `${id_user_company}`;
-
           const generatedUsername = `HRD.${paddedId}`;
           await conn.query(
             "UPDATE user_company SET username = ? WHERE id_user_company = ?",
             [generatedUsername, id_user_company]
           );
-        } else {
-          // 5. Company sudah ada → ambil HRD lama dari user_company
-          const [existingHRD] = await conn.query(
-            "SELECT id_user_company FROM user_company WHERE id_company = ? AND user_type = 'HRD' LIMIT 1",
-            [id_company]
-          );
-
-          if (existingHRD.length > 0) {
-            id_user_company = existingHRD[0].id_user_company;
-          } else {
-            // fallback kalau HRD belum pernah terdaftar
-            const [userResult] = await conn.query(
-              "INSERT INTO user_company (id_company, user_fullname, user_email, user_phone, user_type) VALUES (?, ?, ?, ?, 'HRD')",
-              [id_company, hrd_name, hrd_email, hrd_whatsapp]
-            );
-            id_user_company = userResult.insertId;
-
-            // update username
-            let paddedId;
-            if (id_user_company < 10) paddedId = `00${id_user_company}`;
-            else if (id_user_company < 100) paddedId = `0${id_user_company}`;
-            else paddedId = `${id_user_company}`;
-            const generatedUsername = `HRD.${paddedId}`;
-            await conn.query(
-              "UPDATE user_company SET username = ? WHERE id_user_company = ?",
-              [generatedUsername, id_user_company]
-            );
-          }
         }
+      }
 
-        // 6. Update student_internship
-        await conn.query(
-          "UPDATE student_internship SET email = ?, no_whatsapp = ? WHERE nim = ?",
-          [email, whatsapp, nim]
-        );
+      // 6. Update student_internship
+      await conn.query(
+        "UPDATE student_internship SET email = ?, no_whatsapp = ? WHERE nim = ?",
+        [email, whatsapp, nim]
+      );
 
-        // 7. Insert internship_letter_acceptance
-        // Ambil id_letter dari surat terakhir mahasiswa
-        const [letterRows2] = await conn.query(
-          "SELECT id_letter FROM internship_letter WHERE nim = ? ORDER BY id_letter DESC LIMIT 1",
-          [nim]
-        );
-        const id_letter = letterRows2.length ? letterRows2[0].id_letter : null;
+      // 7. Insert internship_letter_acceptance
+      // Ambil id_letter dari surat terakhir mahasiswa
+      const [letterRows2] = await conn.query(
+        "SELECT id_letter FROM internship_letter WHERE nim = ? ORDER BY id_letter DESC LIMIT 1",
+        [nim]
+      );
+      const id_letter = letterRows2.length ? letterRows2[0].id_letter : null;
 
-        // Hitung periode magang (harus di atas insert internship)
-        const ms = Math.abs(new Date(end_date) - new Date(start_date));
-        const months = Math.max(1, Math.floor(ms / (1000 * 60 * 60 * 24 * 30)));
-        const internship_period = `${months} month(s)`;
+      // Hitung periode magang (harus di atas insert internship)
+      const ms = Math.abs(new Date(end_date) - new Date(start_date));
+      const months = Math.max(1, Math.floor(ms / (1000 * 60 * 60 * 24 * 30)));
+      const internship_period = `${months} month(s)`;
 
-        // Insert into internship
-        const [internshipResult] = await conn.query(
-          `INSERT INTO internship 
+      // Insert into internship
+      const [internshipResult] = await conn.query(
+        `INSERT INTO internship 
           (nim, id_company, start_date, end_date, id_user_company, status, internship_position, internship_period, timestamp_register)
           VALUES (?, ?, ?, ?, ?, 'ongoing', ?, ?, NOW())`,
-          [nim, id_company, start_date, end_date, id_user_company, placement_department, internship_period]
-        );
-        const id_internship = internshipResult.insertId;
+        [nim, id_company, start_date, end_date, id_user_company, placement_department, internship_period]
+      );
+      const id_internship = internshipResult.insertId;
 
-        // Insert into internship_letter_acceptance
-        await conn.query(
-          `INSERT INTO internship_letter_acceptance (id_letter, id_internship, source_internship_info, created_at)
+      // Insert into internship_letter_acceptance
+      await conn.query(
+        `INSERT INTO internship_letter_acceptance (id_letter, id_internship, source_internship_info, created_at)
           VALUES (?, ?, ?, NOW())`,
-          [id_letter, id_internship, info_source]
+        [id_letter, id_internship, info_source]
+      );
+
+      // 8. Update internship_letter (company_reply_letter + acceptance_status)
+      if (company_reply_letter) {
+        await conn.query(
+          "UPDATE internship_letter SET company_reply_letter = ?, acceptance_status = 'ACCEPTED' WHERE nim = ?",
+          [company_reply_letter, nim]
         );
-
-        // 8. Update internship_letter (company_reply_letter + acceptance_status)
-        if (uploadedFilePath) {
-          await conn.query(
-            "UPDATE internship_letter SET company_reply_letter = ?, acceptance_status = 'ACCEPTED' WHERE nim = ?",
-            [uploadedFilePath, nim]
-          );
-        } else {
-          // Accepted without upload files
-          await conn.query(
-            "UPDATE internship_letter SET acceptance_status = 'ACCEPTED' WHERE nim = ?",
-            [nim]
-          );
-        }
-
-        await conn.commit();
-        res.json({ success: true, message: "Internship claim submitted successfully!" });
-      } catch (err) {
-        await conn.rollback();
-        console.error("Transaction error:", err);
-        res.status(500).json({ success: false, error: "Database transaction failed" });
-      } finally {
-        conn.release();
+      } else {
+        // Accepted without upload files
+        await conn.query(
+          "UPDATE internship_letter SET acceptance_status = 'ACCEPTED' WHERE nim = ?",
+          [nim]
+        );
       }
-    });
+
+      await conn.commit();
+      res.json({ success: true, message: "Internship claim submitted successfully!" });
+    } catch (err) {
+      await conn.rollback();
+      console.error("Transaction error:", err);
+      res.status(500).json({ success: false, error: "Database transaction failed" });
+    } finally {
+      conn.release();
+    }
+
   } catch (err) {
     console.error("Upload error:", err);
     res.status(500).json({ success: false, error: "File upload failed" });

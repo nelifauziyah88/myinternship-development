@@ -225,72 +225,72 @@ if ($id_kampus) {
         }
 
         .dropzone {
-    width: 70%;
-    padding: 40px;
-    border: 2px dashed #4a9fb8;
-    border-radius: 8px;
-    background-color: #e8f4f8;
-    text-align: center;
-    cursor: pointer;
-    transition: 0.2s;
-}
+            width: 70%;
+            padding: 40px;
+            border: 2px dashed #4a9fb8;
+            border-radius: 8px;
+            background-color: #e8f4f8;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
 
-.dropzone.dragover {
-    background-color: #d4eef3;
-    border-color: #3fa2b5;
-}
+        .dropzone.dragover {
+            background-color: #d4eef3;
+            border-color: #3fa2b5;
+        }
 
-.dz-icon {
-    font-size: 48px;
-    margin-bottom: 15px;
-    color: #4a9fb8;
-}
+        .dz-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #4a9fb8;
+        }
 
-.dz-title {
-    font-size: 20px;
-    color: #4a9fb8;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
+        .dz-title {
+            font-size: 20px;
+            color: #4a9fb8;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
 
-.dz-subtitle {
-    font-size: 14px;
-    color: #7a8a92;
-    font-weight: normal;
-}
+        .dz-subtitle {
+            font-size: 14px;
+            color: #7a8a92;
+            font-weight: normal;
+        }
 
-.file-list {
-    width: 70%;
-    margin-top: 15px;
-    padding: 15px;
-    border-radius: 10px;
-    background: #f7f9fa;
-    border: 1px solid #d8e2e6;
-}
+        .file-list {
+            width: 70%;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f7f9fa;
+            border: 1px solid #d8e2e6;
+        }
 
-.file-item {
-    padding: 10px;
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+        .file-item {
+            padding: 10px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.progress-bar {
-    width: 100%;
-    height: 6px;
-    border-radius: 5px;
-    background-color: #d7dfe4;
-    margin-top: 5px;
-    overflow: hidden;
-}
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background-color: #d7dfe4;
+            margin-top: 5px;
+            overflow: hidden;
+        }
 
-.progress-bar-fill {
-    height: 100%;
-    background-color: #1f6feb;
-    width: 0%;
-    transition: width 0.3s;
-}
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #1f6feb;
+            width: 0%;
+            transition: width 0.3s;
+        }
     </style>
 </head>
 
@@ -1185,55 +1185,55 @@ if ($id_kampus) {
                 })
                 .catch(err => console.error("Autofill error:", err));
 
-                const dropzone = document.getElementById("dropzone");
-const fileInput = document.getElementById("fileInput");
-const fileList = document.getElementById("fileList");
+            const dropzone = document.getElementById("dropzone");
+            const fileInput = document.getElementById("fileInput");
+            const fileList = document.getElementById("fileList");
 
-// ========== CLICK ⇒ OPEN FILE EXPLORER ==========
-dropzone.addEventListener("click", () => fileInput.click());
+            // ========== CLICK ⇒ OPEN FILE EXPLORER ==========
+            dropzone.addEventListener("click", () => fileInput.click());
 
-// ========== CHANGE (file chosen manually) ==========
-fileInput.addEventListener("change", (e) => {
-    handleFile(e.target.files[0]);
-});
+            // ========== CHANGE (file chosen manually) ==========
+            fileInput.addEventListener("change", (e) => {
+                handleFile(e.target.files[0]);
+            });
 
-// ========== DRAG OVER ==========
-dropzone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    dropzone.classList.add("dragover");
-});
+            // ========== DRAG OVER ==========
+            dropzone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropzone.classList.add("dragover");
+            });
 
-// ========== DRAG LEAVE ==========
-dropzone.addEventListener("dragleave", () => {
-    dropzone.classList.remove("dragover");
-});
+            // ========== DRAG LEAVE ==========
+            dropzone.addEventListener("dragleave", () => {
+                dropzone.classList.remove("dragover");
+            });
 
-// ========== DROP FILE ==========
-dropzone.addEventListener("drop", (e) => {
-    e.preventDefault();
-    dropzone.classList.remove("dragover");
+            // ========== DROP FILE ==========
+            dropzone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dropzone.classList.remove("dragover");
 
-    const file = e.dataTransfer.files[0];
-    handleFile(file);
-});
+                const file = e.dataTransfer.files[0];
+                handleFile(file);
+            });
 
-// ========== HANDLE THE FILE ==========
-function handleFile(file) {
-    if (!file) return;
+            // ========== HANDLE THE FILE ==========
+            function handleFile(file) {
+                if (!file) return;
 
-    if (file.type !== "application/pdf") {
-        alert("Only PDF files are allowed.");
-        return;
-    }
+                if (file.type !== "application/pdf") {
+                    alert("Only PDF files are allowed.");
+                    return;
+                }
 
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    fileInput.files = dt.files;
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                fileInput.files = dt.files;
 
-    dropzone.style.display = "none";
-    fileList.style.display = "block";
+                dropzone.style.display = "none";
+                fileList.style.display = "block";
 
-    fileList.innerHTML = `
+                fileList.innerHTML = `
         <div class="file-item">
             ${file.name}
             <span class="delete-file" style="color:red; cursor:pointer; margin-left:auto; font-weight:bold;">✕</span>
@@ -1243,32 +1243,32 @@ function handleFile(file) {
         </div>
     `;
 
-    simulateProgress();
+                simulateProgress();
 
-    // DELETE BUTTON
-    document.querySelector(".delete-file").addEventListener("click", () => {
-        fileInput.value = ""; // reset
-        fileList.style.display = "none";
-        dropzone.style.display = "block";
-    });
-}
+                // DELETE BUTTON
+                document.querySelector(".delete-file").addEventListener("click", () => {
+                    fileInput.value = ""; // reset
+                    fileList.style.display = "none";
+                    dropzone.style.display = "block";
+                });
+            }
 
 
-// ========== Fake progress bar (optional) ==========
-function simulateProgress() {
-    const bar = document.getElementById("uploadProgress");
-    let width = 0;
+            // ========== Fake progress bar (optional) ==========
+            function simulateProgress() {
+                const bar = document.getElementById("uploadProgress");
+                let width = 0;
 
-    const timer = setInterval(() => {
-        width += 10;
-        bar.style.width = width + "%";
+                const timer = setInterval(() => {
+                    width += 10;
+                    bar.style.width = width + "%";
 
-        if (width >= 100) {
-            clearInterval(timer);
-            bar.parentElement.style.display = "none"; // Hide bar when complete
-        }
-    }, 80);
-}
+                    if (width >= 100) {
+                        clearInterval(timer);
+                        bar.parentElement.style.display = "none"; // Hide bar when complete
+                    }
+                }, 80);
+            }
 
             // === SUBMISSION ===
             form.addEventListener("submit", async (e) => {
@@ -1372,12 +1372,56 @@ function simulateProgress() {
                 formData.append("nim", nim);
 
                 try {
+                    // 1. Upload file ke PHP dulu
+                    const uploadRes = await fetch("upload_company_reply.php", {
+                        method: "POST",
+                        body: formData, // FormData original berisi file
+                    });
+
+                    const uploadData = await uploadRes.json();
+
+                    if (!uploadData.success) {
+                        return Swal.fire({
+                            icon: "error",
+                            title: "Upload Failed",
+                            text: uploadData.message || "Unable to upload file."
+                        });
+                    }
+
+                    // 2. Setelah file berhasil diupload → kirim DATA (tanpa file)
+                    const payload = {
+                        nim,
+                        company_name: form.querySelector("[name='company_name']").value,
+                        company_address: form.querySelector("[name='company_address']").value,
+                        city: form.querySelector("[name='city']").value,
+                        province: form.querySelector("[name='province']").value,
+                        country: form.querySelector("[name='country']").value,
+                        hrd_email: form.querySelector("[name='hrd_email']").value,
+                        hrd_name: form.querySelector("[name='hrd_name']").value,
+                        hrd_whatsapp: form.querySelector("[name='hrd_whatsapp']").value,
+                        placement_department: form.querySelector("[name='placement_department']").value,
+                        start_date: form.querySelector("[name='start_date']").value,
+                        end_date: form.querySelector("[name='end_date']").value,
+                        info_source: form.querySelector("[name='info_source']").value,
+                        email: form.querySelector("[name='email']").value,
+                        whatsapp: form.querySelector("[name='whatsapp']").value,
+                        company_not_exist: form.querySelector("[name='company_not_exist']").value,
+
+                        // PENTING: path file dari PHP
+                        company_reply_letter: uploadData.path
+                    };
+
+                    // 3. Kirim ke Node
                     const res = await fetch(`${API_BASE}/accepted-by-company/submit`, {
                         method: "POST",
-                        body: formData,
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(payload),
                     });
 
                     const data = await res.json();
+
                     if (data.success) {
                         Swal.fire({
                             icon: "success",
