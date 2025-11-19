@@ -936,606 +936,560 @@ if ($id_kampus) {
             <!-- SweetAlert2 Library -->
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-            <script>
-                // ============================================
-                // LOGOUT & UTILITY FUNCTIONS
-                // ============================================
-                function logout_confirm() {
-                    let _token = $('meta[name="csrf-token"]').attr('content');
+           <script>
+// ============================================
+// LOGOUT & UTILITY FUNCTIONS
+// ============================================
+function logout_confirm() {
+    let _token = $('meta[name="csrf-token"]').attr('content');
 
-                    Swal.fire({
-                        title: 'Logout from your account ?',
-                        text: 'Are you sure you want to end the current session?',
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: "#DD6B55",
-                        confirmButtonText: "Yes, I'm sure!",
-                        cancelButtonText: "Cancel"
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            $.ajax({
-                                url: "session_logout.php",
-                                type: "POST",
-                                data: {
-                                    'token': _token
-                                },
-                                success: function() {
-                                    setTimeout(function() {
-                                        // Note: Avoid localStorage in production if possible
-                                        localStorage.removeItem('first');
-                                        localStorage.removeItem('first_chime');
-                                        localStorage.removeItem('next_chime');
-                                        window.location.href = 'role_login.php';
-                                    }, 200);
-                                },
-                                error: function() {
-                                    Swal.fire('Error', 'Logout failed, please try again.', 'error');
-                                }
-                            });
-                        }
-                    });
-                }
-
-                function copyToClipboard(text) {
-                    var tempInput = document.createElement("input");
-                    document.body.appendChild(tempInput);
-                    tempInput.value = text;
-                    tempInput.select();
-                    document.execCommand("copy");
-                    document.body.removeChild(tempInput);
-                    alert("Text copied to clipboard: " + text);
-                }
-
-                function getNotificationForm(formSelector) {
-                    $.ajax({
-                        url: 'index.php?request=validation_get',
-                        type: 'GET',
-                        success: function(response) {
-                            console.log('Getting form notification');
-                            $('body').append(response);
-                        },
-                        error: function() {
-                            console.log('Failed Getting form notification');
-                        }
-                    });
-                    return true;
-                }
-
-                function konfirmasi(notif, lokasi) {
-                    var x = confirm(notif);
-                    if (x === true) {
-                        window.location.href = lokasi;
-                    }
-                }
-
-                function spinner() {
-                    var icon_spinner = event.target.querySelector('i');
-                    var icon_old = icon_spinner.className;
-                    var spinner = "fas fa-spinner fa-spin mr-1";
-
-                    icon_spinner.className = spinner;
-
+    Swal.fire({
+        title: 'Logout from your account ?',
+        text: 'Are you sure you want to end the current session?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, I'm sure!",
+        cancelButtonText: "Cancel"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "session_logout.php",
+                type: "POST",
+                data: { 'token': _token },
+                success: function() {
                     setTimeout(function() {
-                        icon_spinner.className = icon_old;
-                    }, 2000);
+                        localStorage.removeItem('first');
+                        localStorage.removeItem('first_chime');
+                        localStorage.removeItem('next_chime');
+                        window.location.href = 'role_login.php';
+                    }, 200);
+                },
+                error: function() {
+                    Swal.fire('Error', 'Logout failed, please try again.', 'error');
                 }
+            });
+        }
+    });
+}
 
-                // ============================================
-                // CLOCK & CALENDAR FUNCTIONS
-                // ============================================
-                function clock_run() {
-                    'use strict';
-                    let d = new Date();
-                    let en_day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                    let en_month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                    let day = en_day[d.getDay()];
-                    let date = d.getDate();
-                    let month = en_month[d.getMonth()];
-                    let year = (d.getYear() + 1900);
-                    let curr_date = day + ', ' + date + ' ' + month + ' ' + year;
-                    localStorage.setItem('curr_date', curr_date);
-                    let old_date = localStorage.getItem('curr_date');
+function copyToClipboard(text) {
+    var tempInput = document.createElement("input");
+    document.body.appendChild(tempInput);
+    tempInput.value = text;
+    tempInput.select();
+    document.execCommand("copy");
+    document.body.removeChild(tempInput);
+    alert("Text copied to clipboard: " + text);
+}
 
-                    if ($("#date").text() != curr_date) {
-                        localStorage.setItem('curr_date', curr_date);
-                        $("#date").text(curr_date);
-                    }
+// ============================================
+// CLOCK & CALENDAR FUNCTIONS
+// ============================================
+function clock_run() {
+    'use strict';
+    let d = new Date();
+    let en_day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    let en_month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    let day = en_day[d.getDay()];
+    let date = d.getDate();
+    let month = en_month[d.getMonth()];
+    let year = (d.getYear() + 1900);
+    let curr_date = day + ', ' + date + ' ' + month + ' ' + year;
+    
+    $("#date").text(curr_date);
+    
+    setInterval(function() {
+        let d = new Date();
+        let hours = d.getHours();
+        let minutes = d.getMinutes();
+        let seconds = d.getSeconds();
+        let time = ((hours < 10 ? "0" : "") + hours) + ' : ' +
+                   ((minutes < 10 ? "0" : "") + minutes) + ' : ' +
+                   ((seconds < 10 ? "0" : "") + seconds);
+        
+        $("#clock").text(time);
+        $("#clock2").text(time);
+    }, 1000);
+}
 
-                    setInterval(function() {
-                        let d = new Date();
-                        let day = en_day[d.getDay()];
-                        let date = d.getDate();
-                        let month = en_month[d.getMonth()];
-                        let year = (d.getYear() + 1900);
-                        let date_day = day + ', ' + date + ' ' + month + ' ' + year;
+function show_calendar() {
+    var $calendar = $('#calendar');
+    $calendar.fullCalendar({
+        fixedWeekCount: false
+    });
+}
 
-                        if (date_day != old_date) {
-                            localStorage.setItem('curr_date', date_day);
-                            $("#date").text(date_day);
-                        }
+// ============================================
+// SIDEBAR NAVIGATION HIGHLIGHT
+// ============================================
+function initSidebarHighlight() {
+    const navItems = document.querySelectorAll(".sidebar .nav-item");
+    
+    navItems.forEach(item => {
+        item.addEventListener("click", function() {
+            navItems.forEach(i => i.classList.remove("active"));
+            this.classList.add("active");
+        });
+    });
+    
+    const currentPage = window.location.href;
+    navItems.forEach(item => {
+        const link = item.querySelector("a");
+        if (link && currentPage.includes(link.getAttribute("href"))) {
+            navItems.forEach(i => i.classList.remove("active"));
+            item.classList.add("active");
+        }
+    });
+}
 
-                        let hours = d.getHours();
-                        let minutes = d.getMinutes();
-                        let seconds = d.getSeconds();
-                        let time = ((hours < 10 ? "0" : "") + hours) + ' : ' +
-                            ((minutes < 10 ? "0" : "") + minutes) + ' : ' +
-                            ((seconds < 10 ? "0" : "") + seconds);
+// ============================================
+// DEPARTMENT DASHBOARD DATA - FETCH FROM API
+// ============================================
+let departmentsData = {};
+let departments = [];
+let currentDeptIndex = 0;
+let responseChart = null;
+let pieCharts = [];
 
-                        $("#clock").text(time);
-                        $("#clock2").text(time);
-                    }, 1000);
-                }
+// ==================================================================================
+// FETCH DASHBOARD DATA - SIMPLIFIED (NO HARDCODE REFERENCE NEEDED)
+// ==================================================================================
+async function fetchDashboardData(year = 2025) {
+    try {
+        const response = await fetch(`http://localhost:8000/api/student/dashboard/statistics?year=${year}`);
+        const result = await response.json();
 
-                function show_calendar() {
-                    var date = new Date();
-                    var d = date.getDate();
-                    var m = date.getMonth();
-                    var y = date.getFullYear();
-
-                    var $calendar = $('#calendar');
-                    $calendar.fullCalendar({
-                        fixedWeekCount: false
-                    });
-                }
-
-                // ============================================
-                // SIDEBAR NAVIGATION HIGHLIGHT
-                // ============================================
-                function initSidebarHighlight() {
-                    const navItems = document.querySelectorAll(".sidebar .nav-item");
-
-                    navItems.forEach(item => {
-                        item.addEventListener("click", function() {
-                            navItems.forEach(i => i.classList.remove("active"));
-                            this.classList.add("active");
-                        });
-                    });
-
-                    // Set active based on current page
-                    const currentPage = window.location.href;
-                    navItems.forEach(item => {
-                        const link = item.querySelector("a");
-                        if (link && currentPage.includes(link.getAttribute("href"))) {
-                            navItems.forEach(i => i.classList.remove("active"));
-                            item.classList.add("active");
-                        }
-                    });
-                }
-
-                // ============================================
-                // DEPARTMENT DASHBOARD DATA
-                // ============================================
-                const departmentsData = {
-                    'Informatics Engineering': {
-                        programs: [
-                            'D3 Informatics Engineering',
-                            'D3 Geomatics Technology',
-                            'D4 Animation',
-                            'D4 Multimedia Engineering Technology',
-                            'D4 Cyber Security Engineering',
-                            'D4 Software Development Engineering'
-                        ],
-                        responseTime: [5, 7, 6, 7, 5, 6],
-                        acceptanceRates: [
-                            [90, 10],
-                            [85, 15],
-                            [88, 12],
-                            [82, 18],
-                            [92, 8],
-                            [87, 13]
-                        ]
-                    },
-                    'Electrical Engineering': {
-                        programs: [
-                            'D3 Manufacturing Electronics Engineering',
-                            'D4 Electrical Engineering Technology',
-                            'D3 Instrumentation Engineering',
-                            'D4 Mechatronic Engineering',
-                            'D2 Automation Engineering',
-                            'D4 Robotics Engineering',
-                            'D4 Energy Generation Engineering Technology'
-                        ],
-                        responseTime: [6, 7, 5, 6, 7, 6, 5],
-                        acceptanceRates: [
-                            [65, 35],
-                            [70, 30],
-                            [68, 32],
-                            [75, 25],
-                            [62, 38],
-                            [80, 20],
-                            [73, 27]
-                        ]
-                    },
-                    'Mechanical Engineering': {
-                        programs: [
-                            'D3 Mechanical Engineering',
-                            'Professional Engineer Program',
-                            'D3 Aircraft Maintenance Engineering',
-                            'D4 Ship Construction Engineering',
-                            'D4 Welding and Fabrication Engineering Technology'
-                        ],
-                        responseTime: [5, 6, 7, 4, 5],
-                        acceptanceRates: [
-                            [75, 25],
-                            [80, 20],
-                            [70, 30],
-                            [85, 15],
-                            [72, 28]
-                        ]
-                    },
-                    'Business Management': {
-                        programs: [
-                            'D4 Applied Business Administration',
-                            'D3 Accounting',
-                            'D4 Managerial Accounting',
-                            'D2 Goods Distribution',
-                            'D4 International Trade Logistics'
-                        ],
-                        responseTime: [7, 6, 5, 7, 6],
-                        acceptanceRates: [
-                            [85, 15],
-                            [78, 22],
-                            [82, 18],
-                            [75, 25],
-                            [88, 12]
-                        ]
-                    }
+        if (result.success) {
+            const data = result.data;
+            departments = data.departments;
+            
+            if (departments.length === 0) {
+                console.warn('No departments found');
+                return false;
+            }
+            
+            departmentsData = {};
+            
+            // Group data by department
+            departments.forEach(dept => {
+                // Filter data for this department
+                const deptResponseTime = data.responseTime.filter(r => r.department === dept);
+                const deptAcceptanceRate = data.acceptanceRate.filter(r => r.department === dept);
+                
+                // Extract programs, response times, and acceptance rates
+                const programs = deptResponseTime.map(r => r.program);
+                const responseTimes = deptResponseTime.map(r => parseFloat(r.avgTotalResponseTime));
+                const acceptanceRates = deptAcceptanceRate.map(r => [r.acceptanceRate, r.rejectionRate]);
+                
+                // Store in departmentsData
+                departmentsData[dept] = {
+                    programs: programs,
+                    responseTime: responseTimes,
+                    acceptanceRates: acceptanceRates,
+                    hasData: deptResponseTime.some(r => r.hasData) || deptAcceptanceRate.some(r => r.hasData)
                 };
+                
+                console.log(`Department: ${dept}, Programs: ${programs.length}, Has Data: ${departmentsData[dept].hasData}`);
+            });
+            
+            return true;
+        } else {
+            console.error('Failed to fetch dashboard data:', result.message);
+            return false;
+        }
+    } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Connection Error',
+            text: 'Failed to load dashboard data. Please check your connection.',
+            confirmButtonColor: '#dc3545'
+        });
+        return false;
+    }
+}
 
-                const departments = [
-                    'Informatics Engineering',
-                    'Electrical Engineering',
-                    'Mechanical Engineering',
-                    'Business Management'
-                ];
+// ============================================
+// BAR CHART - Response Time (IMPROVED)
+// ============================================
+function createResponseChart(labels, data) {
+    const canvas = document.getElementById('responseChart');
+    if (!canvas) {
+        console.error('Canvas responseChart not found!');
+        return;
+    }
 
-                let currentDeptIndex = 0;
-                let responseChart = null;
-                let pieCharts = [];
+    // 1. DESTROY previous chart COMPLETELY
+    if (responseChart) {
+        try {
+            responseChart.destroy();
+            console.log('Previous bar chart destroyed');
+        } catch (e) {
+            console.error('Error destroying previous chart:', e);
+        }
+        responseChart = null;
+    }
 
-                // ============================================
-                // BAR CHART - Response Time
-                // ============================================
-                function createResponseChart(labels, data) {
-                    const canvas = document.getElementById('responseChart');
-                    if (!canvas) return;
+    // 2. CLEAR canvas attributes
+    canvas.removeAttribute('width');
+    canvas.removeAttribute('height');
+    canvas.removeAttribute('style');
 
-                    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d');
+    
+    // 3. Clear canvas content
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                    // Destroy previous chart
-                    if (responseChart) {
-                        try {
-                            responseChart.destroy();
-                        } catch (e) {}
-                        responseChart = null;
-                    }
+    // 4. Calculate dimensions
+    const barHeight = 80;
+    const minHeight = 400;
+    const chartHeight = Math.max(minHeight, labels.length * barHeight);
+    const containerWidth = canvas.parentElement.offsetWidth;
 
-                    // Reset canvas
-                    canvas.removeAttribute('style');
-                    canvas.removeAttribute('width');
-                    canvas.removeAttribute('height');
+    // 5. Set canvas size
+    canvas.width = containerWidth;
+    canvas.height = chartHeight;
+    canvas.style.width = '100%';
+    canvas.style.height = chartHeight + 'px';
 
-                    // Calculate height based on number of labels - LEBIH BESAR
-                    const barHeight = 100; // Dari 35px jadi 100px per bar
-                    const chartHeight = labels.length * barHeight;
-
-                    // Get container width
-                    const containerWidth = canvas.parentElement.offsetWidth;
-
-                    canvas.width = containerWidth;
-                    canvas.height = chartHeight;
-                    canvas.style.width = '100%';
-                    canvas.style.height = chartHeight + 'px';
-
-                    // Tambahkan scroll container jika belum ada
-                    let scrollContainer = canvas.parentElement;
-                    if (!scrollContainer.classList.contains('chart-scroll-container')) {
-                        scrollContainer.style.maxHeight = '500px'; // Max height untuk scroll
-                        scrollContainer.style.overflowY = 'auto';
-                        scrollContainer.style.overflowX = 'hidden';
-                        scrollContainer.classList.add('chart-scroll-container');
-                    }
-
-                    responseChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: 'Average Response Time (Days)',
-                                data: data,
-                                backgroundColor: '#4e73df',
-                                borderRadius: 5,
-                                barThickness: 60 // Dari 20px jadi 30px (bar lebih tebal)
-                            }]
-                        },
-                        options: {
-                            indexAxis: 'y',
-                            responsive: false,
-                            maintainAspectRatio: false,
-                            scales: {
-                                x: {
-                                    beginAtZero: true,
-                                    max: 7,
-                                    ticks: {
-                                        stepSize: 1,
-                                        font: {
-                                            size: 11
-                                        } // Font tetap kecil
-                                    },
-                                    title: {
-                                        display: true,
-                                        text: 'Days',
-                                        font: {
-                                            size: 12,
-                                            weight: 'bold'
-                                        }
-                                    },
-                                    grid: {
-                                        color: '#e9ecef'
-                                    }
-                                },
-                                y: {
-                                    ticks: {
-                                        color: '#495057',
-                                        font: {
-                                            size: 11
-                                        } // Font tetap kecil
-                                    },
-                                    grid: {
-                                        display: false
-                                    }
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    display: false
-                                },
-                                tooltip: {
-                                    backgroundColor: 'rgba(0,0,0,0.8)',
-                                    padding: 10,
-                                    titleFont: {
-                                        size: 12
-                                    },
-                                    bodyFont: {
-                                        size: 11
-                                    },
-                                    callbacks: {
-                                        label: (context) => {
-                                            return `Response Time: ${context.formattedValue} days`;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
+    // 6. Create new chart
+    responseChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Average Response Time (Days)',
+                data: data,
+                backgroundColor: '#4e73df',
+                borderRadius: 5,
+                barThickness: 55
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: false,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: Math.max(7, Math.ceil(Math.max(...data) * 1.1)),
+                    ticks: { stepSize: 1, font: { size: 11 } },
+                    title: { display: true, text: 'Days', font: { size: 12, weight: 'bold' } },
+                    grid: { color: '#e9ecef' }
+                },
+                y: {
+                    ticks: { color: '#495057', font: { size: 11 }, autoSkip: false },
+                    grid: { display: false }
                 }
-
-                // ============================================
-                // PIE CHARTS - Acceptance Rate
-                // ============================================
-                function updatePieCharts(pieData) {
-                    const container = document.getElementById('pieContainer');
-                    if (!container) return;
-
-                    // Destroy old charts
-                    pieCharts.forEach(c => {
-                        try {
-                            c.destroy();
-                        } catch (e) {}
-                    });
-                    pieCharts = [];
-                    container.innerHTML = '';
-
-                    pieData.forEach((item, i) => {
-                        const pieDiv = document.createElement('div');
-                        pieDiv.className = 'pie-item mb-3';
-                        pieDiv.style.cssText = `
-            background: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-            min-width: 180px;
-            flex: 1 1 45%;
-        `;
-
-                        const title = document.createElement('div');
-                        title.className = 'text-center font-weight-bold mb-2';
-                        title.style.fontSize = '13px';
-                        title.textContent = item.name;
-
-                        const canvas = document.createElement('canvas');
-                        canvas.id = `pie-${i}`;
-                        canvas.style.cssText = 'width: 100%; height: 140px;';
-
-                        pieDiv.appendChild(title);
-                        pieDiv.appendChild(canvas);
-                        container.appendChild(pieDiv);
-
-                        const ctx = canvas.getContext('2d');
-                        const chart = new Chart(ctx, {
-                            type: 'pie',
-                            data: {
-                                labels: ['Accepted', 'Rejected'],
-                                datasets: [{
-                                    data: item.data,
-                                    backgroundColor: ['#28a745', '#dc3545'],
-                                    borderColor: '#fff',
-                                    borderWidth: 2
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: {
-                                        display: false
-                                    },
-                                    tooltip: {
-                                        backgroundColor: 'rgba(0,0,0,0.8)',
-                                        padding: 10,
-                                        titleFont: {
-                                            size: 12
-                                        },
-                                        bodyFont: {
-                                            size: 11
-                                        },
-                                        callbacks: {
-                                            label: (ctx) => {
-                                                return `${ctx.label}: ${ctx.formattedValue}%`;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        });
-
-                        pieCharts.push(chart);
-                    });
-                }
-
-                // ============================================
-                // NAVIGATION & UPDATE FUNCTIONS
-                // ============================================
-                function navigateDepartment(dir) {
-                    currentDeptIndex += dir;
-                    if (currentDeptIndex < 0) currentDeptIndex = 0;
-                    if (currentDeptIndex >= departments.length) currentDeptIndex = departments.length - 1;
-
-                    updateDashboard();
-                    updateNavButtons();
-
-                    // Smooth scroll to charts
-                    const chartRow = document.querySelector('#responseChart')?.closest('.row');
-                    if (chartRow) {
-                        chartRow.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    padding: 10,
+                    callbacks: {
+                        label: (context) => `Response Time: ${context.parsed.x.toFixed(2)} days`
                     }
                 }
+            }
+        }
+    });
+    
+    console.log(`Bar chart created with ${labels.length} programs`);
+}
 
-                function updateNavButtons() {
-                    const prevBtn = document.getElementById('prevBtn');
-                    const nextBtn = document.getElementById('nextBtn');
+// ============================================
+// PIE CHARTS - Acceptance Rate (IMPROVED)
+// ============================================
+function updatePieCharts(pieData) {
+    const container = document.getElementById('pieContainer');
+    if (!container) {
+        console.error('Pie container not found!');
+        return;
+    }
 
-                    if (prevBtn) prevBtn.disabled = currentDeptIndex === 0;
-                    if (nextBtn) nextBtn.disabled = currentDeptIndex === departments.length - 1;
-                }
+    // 1. DESTROY ALL old pie charts
+    pieCharts.forEach((c, index) => {
+        try {
+            c.destroy();
+            console.log(`Pie chart ${index} destroyed`);
+        } catch (e) {
+            console.error(`Error destroying pie chart ${index}:`, e);
+        }
+    });
+    pieCharts = [];
 
-                function updateDashboard() {
-                    const dept = departments[currentDeptIndex];
-                    const data = departmentsData[dept];
+    // 2. CLEAR container
+    container.innerHTML = '';
 
-                    // Update title
-                    const currentDeptEl = document.getElementById('currentDept');
-                    if (currentDeptEl) {
-                        currentDeptEl.textContent = dept + ' Department';
-                    }
+    // 3. Create new pie charts
+    pieData.forEach((item, i) => {
+        const pieDiv = document.createElement('div');
+        pieDiv.className = 'pie-item mb-3';
 
-                    // Update charts
-                    if (data) {
-                        createResponseChart(data.programs, data.responseTime);
+        const title = document.createElement('div');
+        title.className = 'text-center font-weight-bold mb-2';
+        title.style.fontSize = '13px';
+        title.textContent = item.name;
 
-                        const pies = data.programs.map((p, i) => ({
-                            name: p,
-                            data: data.acceptanceRates[i]
-                        }));
-                        updatePieCharts(pies);
+        const canvas = document.createElement('canvas');
+        canvas.id = `pie-${i}`;
 
-                        // Update pie title
-                        const pieTitle = document.getElementById('pieTitle');
-                        if (pieTitle) {
-                            pieTitle.textContent = 'Internship Acceptance Rate — ' + dept;
+        pieDiv.appendChild(title);
+        pieDiv.appendChild(canvas);
+        container.appendChild(pieDiv);
+
+        const ctx = canvas.getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Accepted', 'Rejected'],
+                datasets: [{
+                    data: item.data,
+                    backgroundColor: ['#28a745', '#dc3545'],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        padding: 10,
+                        callbacks: {
+                            label: (ctx) => `${ctx.label}: ${ctx.formattedValue}%`
                         }
                     }
                 }
+            }
+        });
 
-                function filterByYear() {
-                    updateDashboard();
-                }
+        pieCharts.push(chart);
+    });
+    
+    console.log(`Created ${pieData.length} pie charts`);
+}
 
-                // ============================================
-                // NAVIGATION UI SETUP (Top Right/Left Position)
-                // ============================================
-                function setupNavigationUI() {
-                    // Cari elemen currentDept yang sudah ada di HTML
-                    let currentDeptElement = document.getElementById('currentDept');
+// ============================================
+// NAVIGATION & UPDATE FUNCTIONS
+// ============================================
+function navigateDepartment(dir) {
+    currentDeptIndex += dir;
+    if (currentDeptIndex < 0) currentDeptIndex = 0;
+    if (currentDeptIndex >= departments.length) currentDeptIndex = departments.length - 1;
 
-                    if (!currentDeptElement) {
-                        console.warn('Element #currentDept tidak ditemukan di HTML');
-                        return;
-                    }
+    updateDashboard();
+    updateNavButtons();
 
-                    // Cari parent container (department-nav)
-                    let deptNavContainer = currentDeptElement.parentElement;
+    const chartRow = document.querySelector('#responseChart')?.closest('.row');
+    if (chartRow) {
+        chartRow.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
 
-                    // Atur parent container dengan gap yang pas
-                    deptNavContainer.className = 'department-nav d-flex align-items-center';
-                    deptNavContainer.style.cssText = 'gap: 10px;';
+function updateNavButtons() {
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
 
-                    // Previous button (Left)
-                    const prevBtn = document.createElement('button');
-                    prevBtn.id = 'prevBtn';
-                    prevBtn.className = 'btn btn-outline-primary';
-                    prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-                    prevBtn.title = 'Previous Department';
-                    prevBtn.style.cssText = 'width: 45px; height: 45px; padding: 0;';
+    if (prevBtn) prevBtn.disabled = currentDeptIndex === 0;
+    if (nextBtn) nextBtn.disabled = currentDeptIndex === departments.length - 1;
+}
 
-                    // Next button (Right)
-                    const nextBtn = document.createElement('button');
-                    nextBtn.id = 'nextBtn';
-                    nextBtn.className = 'btn btn-outline-primary';
-                    nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-                    nextBtn.title = 'Next Department';
-                    nextBtn.style.cssText = 'width: 45px; height: 45px; padding: 0;';
+function updateDashboard() {
+    if (departments.length === 0) {
+        const currentDeptEl = document.getElementById('currentDept');
+        if (currentDeptEl) currentDeptEl.textContent = 'No Data Available';
+        
+        showNoDataState();
+        return;
+    }
+    
+    const dept = departments[currentDeptIndex];
+    const data = departmentsData[dept];
 
-                    // Update style currentDept - kotak lebih pendek
-                    currentDeptElement.className = 'current-dept font-weight-bold text-dark bg-light px-4 py-2 rounded text-center';
-                    currentDeptElement.style.cssText = 'min-width: 350px; max-width: 450px; margin: 0;';
+    // Update title
+    const currentDeptEl = document.getElementById('currentDept');
+    if (currentDeptEl) {
+        currentDeptEl.textContent = dept + ' Department';
+    }
 
-                    // Masukkan button ke kiri dan kanan dari currentDept
-                    deptNavContainer.insertBefore(prevBtn, currentDeptElement);
-                    deptNavContainer.appendChild(nextBtn);
+    // Check if department has any programs
+    if (!data || !data.programs || data.programs.length === 0) {
+        console.log(`Department "${dept}" has no programs - showing empty state`);
+        showNoDataState();
+        return;
+    }
 
-                    // Event listeners
-                    prevBtn.addEventListener('click', () => navigateDepartment(-1));
-                    nextBtn.addEventListener('click', () => navigateDepartment(1));
-                }
+    // Department has programs - render charts
+    console.log(`Department "${dept}" has ${data.programs.length} programs - rendering charts`);
+    createResponseChart(data.programs, data.responseTime);
 
-                // ============================================
-                // BROWSER CACHE & HISTORY MANAGEMENT
-                // ============================================
-                function setupBrowserSecurity() {
-                    // Block browser cache on back button
-                    window.addEventListener("pageshow", function(event) {
-                        if (event.persisted) {
-                            window.location.reload();
-                        }
-                    });
+    const pies = data.programs.map((p, i) => ({
+        name: p,
+        data: data.acceptanceRates[i] || [0, 0]
+    }));
+    updatePieCharts(pies);
 
-                    // Prevent back button navigation
-                    window.history.pushState(null, "", window.location.href);
-                    window.onpopstate = function() {
-                        window.history.pushState(null, "", window.location.href);
-                    };
-                }
+    const pieTitle = document.getElementById('pieTitle');
+    if (pieTitle) {
+        pieTitle.textContent = 'Internship Acceptance Rate — ' + dept;
+    }
+}
 
-                // ============================================
-                // INITIALIZATION
-                // ============================================
-                $(document).ready(function() {
-                    clock_run();
-                    show_calendar();
-                });
+// ============================================
+// SHOW NO DATA STATE (BLANK - NO MESSAGE)
+// ============================================
+function showNoDataState() {
+    // 1. DESTROY bar chart if exists
+    if (responseChart) {
+        try {
+            responseChart.destroy();
+            console.log('Bar chart destroyed');
+        } catch (e) {
+            console.error('Error destroying bar chart:', e);
+        }
+        responseChart = null;
+    }
 
-                document.addEventListener('DOMContentLoaded', function() {
-                    initSidebarHighlight();
-                    setupNavigationUI();
-                    updateDashboard();
-                    updateNavButtons();
-                    setupBrowserSecurity();
-                });
-            </script>
+    // 2. DESTROY all pie charts if exist
+    pieCharts.forEach(c => {
+        try {
+            c.destroy();
+        } catch (e) {}
+    });
+    pieCharts = [];
+
+    // 3. CLEAR bar chart canvas - BLANK (no text)
+    const responseCanvas = document.getElementById('responseChart');
+    if (responseCanvas) {
+        const ctx = responseCanvas.getContext('2d');
+        
+        // Reset canvas size
+        responseCanvas.width = responseCanvas.parentElement.offsetWidth;
+        responseCanvas.height = 400;
+        responseCanvas.style.width = '100%';
+        responseCanvas.style.height = '400px';
+        
+        // Just clear - NO TEXT
+        ctx.clearRect(0, 0, responseCanvas.width, responseCanvas.height);
+    }
+    
+    // 4. CLEAR pie container - BLANK (no text)
+    const pieContainer = document.getElementById('pieContainer');
+    if (pieContainer) {
+        pieContainer.innerHTML = '';
+    }
+    
+    console.log('Blank state rendered (no message)');
+}
+
+async function filterByYear() {
+    const yearSelect = document.getElementById('yearFilter');
+    const selectedYear = yearSelect.value === 'all' ? new Date().getFullYear() : yearSelect.value;
+    
+    const success = await fetchDashboardData(selectedYear);
+    
+    if (success && departments.length > 0) {
+        currentDeptIndex = 0;
+        updateDashboard();
+        updateNavButtons();
+    } else {
+        departments = [];
+        departmentsData = {};
+        updateDashboard();
+        updateNavButtons();
+    }
+}
+
+// ============================================
+// NAVIGATION UI SETUP
+// ============================================
+function setupNavigationUI() {
+    let currentDeptElement = document.getElementById('currentDept');
+    if (!currentDeptElement) {
+        console.warn('Element #currentDept not found');
+        return;
+    }
+
+    let deptNavContainer = currentDeptElement.parentElement;
+    deptNavContainer.className = 'department-nav d-flex align-items-center';
+    deptNavContainer.style.cssText = 'gap: 10px;';
+
+    const prevBtn = document.createElement('button');
+    prevBtn.id = 'prevBtn';
+    prevBtn.className = 'btn btn-outline-primary';
+    prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+    prevBtn.title = 'Previous Department';
+    prevBtn.style.cssText = 'width: 45px; height: 45px; padding: 0;';
+
+    const nextBtn = document.createElement('button');
+    nextBtn.id = 'nextBtn';
+    nextBtn.className = 'btn btn-outline-primary';
+    nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+    nextBtn.title = 'Next Department';
+    nextBtn.style.cssText = 'width: 45px; height: 45px; padding: 0;';
+
+    currentDeptElement.className = 'current-dept font-weight-bold text-dark bg-light px-4 py-2 rounded text-center';
+    currentDeptElement.style.cssText = 'min-width: 350px; max-width: 450px; margin: 0;';
+
+    deptNavContainer.insertBefore(prevBtn, currentDeptElement);
+    deptNavContainer.appendChild(nextBtn);
+
+    prevBtn.addEventListener('click', () => navigateDepartment(-1));
+    nextBtn.addEventListener('click', () => navigateDepartment(1));
+}
+
+// ============================================
+// BROWSER SECURITY
+// ============================================
+function setupBrowserSecurity() {
+    window.addEventListener("pageshow", function(event) {
+        if (event.persisted) window.location.reload();
+    });
+    
+    window.history.pushState(null, "", window.location.href);
+    window.onpopstate = function() {
+        window.history.pushState(null, "", window.location.href);
+    };
+}
+
+// ============================================
+// INITIALIZATION
+// ============================================
+$(document).ready(function() {
+    clock_run();
+    show_calendar();
+});
+
+document.addEventListener('DOMContentLoaded', async function() {
+    initSidebarHighlight();
+    setupNavigationUI();
+    setupBrowserSecurity();
+    
+    // Show loading state
+    const currentDeptEl = document.getElementById('currentDept');
+    if (currentDeptEl) {
+        currentDeptEl.textContent = 'Loading...';
+    }
+    
+    const success = await fetchDashboardData(2025);
+    
+    if (success && departments.length > 0) {
+        currentDeptIndex = 0;
+        updateDashboard();
+        updateNavButtons();
+    } else {
+        if (currentDeptEl) {
+            currentDeptEl.textContent = 'No Data Available';
+        }
+        showNoDataState();
+    }
+});
+</script>
 
 </body>
 

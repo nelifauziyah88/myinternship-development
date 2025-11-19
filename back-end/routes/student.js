@@ -1048,6 +1048,279 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
     res.status(500).json({ success: false, error: "File upload failed" });
   }
 });
+// =======================================
+// STUDENT DASHBOARD STATISTICS - REAL 
+// =======================================
 
+/**
+ * GET /api/student/dashboard/statistics
+ */
+router.get("/dashboard/statistics", async (req, res) => {
+    try {
+        const { department, year } = req.query;
+        const currentYear = year || new Date().getFullYear();
+        const id_kampus = 1;
+
+        const allProgramsQuery = `
+          SELECT 
+            CONCAT(ps.jenjang, ' ', ps.study_program) AS program_full_name,
+            ps.major AS department,
+            ps.kode_prodi
+          FROM program_study ps
+          WHERE ps.id_kampus = ?
+            ${department ? "AND ps.major = ?" : ""}
+          ORDER BY ps.major, program_full_name
+        `;
+
+        const allProgramsParams = department 
+          ? [id_kampus, department] 
+          : [id_kampus];
+
+        const [allPrograms] = await db.query(allProgramsQuery, allProgramsParams);
+
+        // STEP 2: RESPONSE TIME (Koor + CDC)
+        const responseTimeQuery = `
+          SELECT 
+            CONCAT(ps.jenjang, ' ', ps.study_program) AS program_full_name,
+            ps.major AS department,
+            AVG(DATEDIFF(ilh_koor.timestamp, il.created_at)) AS avg_response_time_koor,
+            AVG(DATEDIFF(ilh_cdc.timestamp, ilh_koor.timestamp)) AS avg_response_time_cdc,
+            AVG(DATEDIFF(ilh_cdc.timestamp, il.created_at)) AS avg_total_response_time,
+            COUNT(*) AS data_count
+          FROM internship_letter il
+          INNER JOIN student_internship si ON il.nim = si.nim
+          INNER JOIN program_study ps 
+            ON si.program_study = ps.kode_prodi 
+           AND si.id_kampus = ps.id_kampus
+          LEFT JOIN (
+            SELECT id_letter, MIN(timestamp) AS timestamp
+            FROM internship_letter_history
+            WHERE LOWER(approved_by) = 'internship coordinator'
+              AND LOWER(status_approval) = 'accepted'
+            GROUP BY id_letter
+          ) ilh_koor ON il.id_letter = ilh_koor.id_letter
+          LEFT JOIN (
+            SELECT id_letter, MIN(timestamp) AS timestamp
+            FROM internship_letter_history
+            WHERE LOWER(approved_by) = 'cdc administrator'
+              AND LOWER(status_approval) = 'accepted'
+            GROUP BY id_letter
+          ) ilh_cdc ON il.id_letter = ilh_cdc.id_letter
+          WHERE YEAR(il.created_at) = ?
+            AND ps.id_kampus = ?
+            ${department ? "AND ps.major = ?" : ""}
+            AND ilh_koor.timestamp IS NOT NULL
+            AND ilh_cdc.timestamp IS NOT NULL
+          GROUP BY program_full_name, ps.major
+        `;
+
+        const responseTimeParams = department
+          ? [currentYear, id_kampus, department]
+          : [currentYear, id_kampus];
+
+        const [responseTimeData] = await db.query(responseTimeQuery, responseTimeParams);
+
+        // STEP 3: ACCEPTANCE RATE (Company Response)
+        const acceptanceRateQuery = `
+          SELECT 
+            CONCAT(ps.jenjang, ' ', ps.study_program) AS program_full_name,
+            ps.major AS department,
+            COUNT(CASE WHEN il.acceptance_status = 'ACCEPTED' THEN 1 END) AS accepted_count,
+            COUNT(CASE WHEN il.acceptance_status = 'REJECTED' THEN 1 END) AS rejected_count,
+            COUNT(*) AS total_count,
+            ROUND((COUNT(CASE WHEN il.acceptance_status = 'ACCEPTED' THEN 1 END) / COUNT(*)) * 100, 2) AS acceptance_rate,
+            ROUND((COUNT(CASE WHEN il.acceptance_status = 'REJECTED' THEN 1 END) / COUNT(*)) * 100, 2) AS rejection_rate
+          FROM internship_letter il
+          INNER JOIN student_internship si ON il.nim = si.nim
+          INNER JOIN program_study ps 
+            ON si.program_study = ps.kode_prodi 
+           AND si.id_kampus = ps.id_kampus
+          WHERE YEAR(il.created_at) = ?
+            AND ps.id_kampus = ?
+            ${department ? "AND ps.major = ?" : ""}
+            AND il.acceptance_status IN ('ACCEPTED', 'REJECTED')
+          GROUP BY program_full_name, ps.major
+        `;
+
+        const acceptanceRateParams = department
+          ? [currentYear, id_kampus, department]
+          : [currentYear, id_kampus];
+
+        const [acceptanceRateData] = await db.query(acceptanceRateQuery, acceptanceRateParams);
+
+        // STEP 4: MERGE DATA - ALL PROGRAMS WITH ACTUAL DATA 
+        const responseTimeMap = new Map();
+        responseTimeData.forEach(r => {
+            const key = `${r.department}|||${r.program_full_name}`;
+            responseTimeMap.set(key, {
+                avgResponseTimeKoor: Number(r.avg_response_time_koor || 0).toFixed(2),
+                avgResponseTimeCdc: Number(r.avg_response_time_cdc || 0).toFixed(2),
+                avgTotalResponseTime: Number(r.avg_total_response_time || 0).toFixed(2),
+                dataCount: r.data_count || 0
+            });
+        });
+
+        const acceptanceRateMap = new Map();
+        acceptanceRateData.forEach(r => {
+            const key = `${r.department}|||${r.program_full_name}`;
+            acceptanceRateMap.set(key, {
+                acceptedCount: r.accepted_count || 0,
+                rejectedCount: r.rejected_count || 0,
+                totalCount: r.total_count || 0,
+                acceptanceRate: Number(r.acceptance_rate || 0),
+                rejectionRate: Number(r.rejection_rate || 0)
+            });
+        });
+
+        const responseTimeResult = [];
+        const acceptanceRateResult = [];
+
+        allPrograms.forEach(program => {
+            const key = `${program.department}|||${program.program_full_name}`;
+            
+            // Response Time Data
+            const responseData = responseTimeMap.get(key);
+            responseTimeResult.push({
+                program: program.program_full_name,
+                department: program.department,
+                avgResponseTimeKoor: responseData ? responseData.avgResponseTimeKoor : "0.00",
+                avgResponseTimeCdc: responseData ? responseData.avgResponseTimeCdc : "0.00",
+                avgTotalResponseTime: responseData ? responseData.avgTotalResponseTime : "0.00",
+                hasData: !!responseData,
+                dataCount: responseData ? responseData.dataCount : 0
+            });
+
+            // Acceptance Rate Data
+            const acceptanceData = acceptanceRateMap.get(key);
+            acceptanceRateResult.push({
+                program: program.program_full_name,
+                department: program.department,
+                acceptedCount: acceptanceData ? acceptanceData.acceptedCount : 0,
+                rejectedCount: acceptanceData ? acceptanceData.rejectedCount : 0,
+                totalCount: acceptanceData ? acceptanceData.totalCount : 0,
+                acceptanceRate: acceptanceData ? acceptanceData.acceptanceRate : 0,
+                rejectionRate: acceptanceData ? acceptanceData.rejectionRate : 0,
+                hasData: !!acceptanceData
+            });
+        });
+
+        // STEP 5: GET UNIQUE DEPARTMENTS LIST
+        const [departments] = await db.query(`
+          SELECT DISTINCT major AS department
+          FROM program_study
+          WHERE id_kampus = ?
+          ORDER BY major
+        `, [id_kampus]);
+
+        // FINAL RESPONSE
+        res.json({
+            success: true,
+            data: {
+                year: currentYear,
+                department: department || "All Departments",
+                departments: departments.map(d => d.department),
+                responseTime: responseTimeResult,
+                acceptanceRate: acceptanceRateResult
+            }
+        });
+
+    } catch (err) {
+        console.error("Dashboard statistics error:", err);
+        res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: err.message
+        });
+    }
+});
+
+// DASHBOARD SUMMARY
+/**
+ * GET /api/student/dashboard/summary
+ */
+router.get("/dashboard/summary", async (req, res) => {
+  try {
+    const { year } = req.query;
+    const currentYear = year || new Date().getFullYear();
+    const id_kampus = 1; // Polibatam
+
+    // TOTAL SUBMISSIONS
+    const [totalSubmissions] = await db.query(
+      `SELECT COUNT(*) AS total
+       FROM internship_letter il
+       INNER JOIN student_internship si ON il.nim = si.nim
+       WHERE YEAR(il.created_at) = ?
+         AND si.id_kampus = ?`,
+      [currentYear, id_kampus]
+    );
+
+    // STATUS BREAKDOWN
+    const [statusBreakdown] = await db.query(
+      `SELECT il.status, COUNT(*) AS count
+       FROM internship_letter il
+       INNER JOIN student_internship si ON il.nim = si.nim
+       WHERE YEAR(il.created_at) = ?
+         AND si.id_kampus = ?
+       GROUP BY il.status`,
+      [currentYear, id_kampus]
+    );
+
+    // AVERAGE RESPONSE TIME
+    const [avgResponseTime] = await db.query(`
+      SELECT AVG(DATEDIFF(ilh_cdc.timestamp, il.created_at)) AS avg_days
+      FROM internship_letter il
+      INNER JOIN student_internship si ON il.nim = si.nim
+      LEFT JOIN (
+        SELECT id_letter, MIN(timestamp) AS timestamp
+        FROM internship_letter_history
+        WHERE LOWER(approved_by) = 'internship coordinator'
+          AND LOWER(status_approval) = 'accepted'
+        GROUP BY id_letter
+      ) ilh_koor ON il.id_letter = ilh_koor.id_letter
+      LEFT JOIN (
+        SELECT id_letter, MIN(timestamp) AS timestamp
+        FROM internship_letter_history
+        WHERE LOWER(approved_by) = 'cdc administrator'
+          AND LOWER(status_approval) = 'accepted'
+        GROUP BY id_letter
+      ) ilh_cdc ON il.id_letter = ilh_cdc.id_letter
+      WHERE YEAR(il.created_at) = ?
+        AND si.id_kampus = ?
+        AND ilh_koor.timestamp IS NOT NULL
+        AND ilh_cdc.timestamp IS NOT NULL
+    `, [currentYear, id_kampus]);
+
+    const [companyAcceptance] = await db.query(
+      `SELECT il.acceptance_status, COUNT(*) AS count
+       FROM internship_letter il
+       INNER JOIN student_internship si ON il.nim = si.nim
+       WHERE YEAR(il.created_at) = ?
+         AND si.id_kampus = ?
+         AND il.status = 'ACCEPTED'
+       GROUP BY il.acceptance_status`,
+      [currentYear, id_kampus]
+    );
+
+    // FINAL RESPONSE
+    res.json({
+      success: true,
+      data: {
+        year: currentYear,
+        totalSubmissions: totalSubmissions[0].total,
+        statusBreakdown,
+        averageResponseTime: Number(avgResponseTime[0].avg_days || 0).toFixed(2),
+        companyAcceptance
+      }
+    });
+
+  } catch (err) {
+    console.error("Dashboard summary error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message
+    });
+  }
+});
 module.exports = router;
 module.exports.checkAndSetPublishedDate = checkAndSetPublishedDate;
