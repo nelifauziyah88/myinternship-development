@@ -575,26 +575,35 @@ if ($id_kampus) {
     document.querySelector("#within14Section label").textContent =
       "Have 14 days or more passed since you submitted your internship application letter?";
 
-    // === Handle dropdown utama ===
+ // === Handle dropdown utama ===
+submitBtn.disabled = true;
+submitBtn.classList.add("disabled-btn");
+
+responseReceived.addEventListener("change", () => {
+  if (responseReceived.value === "yes") {
+    uploadSection.style.display = "block";
+    within14Section.style.display = "none";
+
+    submitBtn.disabled = false;
+    submitBtn.classList.remove("disabled-btn");
+
+  } else if (responseReceived.value === "no") {
+    uploadSection.style.display = "none";
+    within14Section.style.display = "block";
+    fileInput.value = "";
+
     submitBtn.disabled = true;
     submitBtn.classList.add("disabled-btn");
 
-    responseReceived.addEventListener("change", () => {
-      if (responseReceived.value === "yes") {
-        uploadSection.style.display = "block";
-        within14Section.style.display = "none";
-        submitBtn.disabled = false;
-      } else if (responseReceived.value === "no") {
-        uploadSection.style.display = "none";
-        within14Section.style.display = "block";
-        fileInput.value = "";
-        submitBtn.disabled = true;
-      } else {
-        uploadSection.style.display = "none";
-        within14Section.style.display = "none";
-        submitBtn.disabled = true;
-      }
-    });
+  } else {
+    uploadSection.style.display = "none";
+    within14Section.style.display = "none";
+
+    submitBtn.disabled = true;
+    submitBtn.classList.add("disabled-btn");
+  }
+});
+
 
     // === Handle dropdown pertanyaan 14 hari ===
     responseWithin14Days.addEventListener("change", () => {
