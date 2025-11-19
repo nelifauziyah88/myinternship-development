@@ -59,7 +59,7 @@ if ($id_kampus) {
         "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
         urls: ['./assets/css/fonts.min.css']
       },
-      active: function() {
+      active: function () {
         sessionStorage.fonts = true;
       }
     });
@@ -214,6 +214,20 @@ if ($id_kampus) {
     .disabled-btn {
       opacity: 0.5;
       cursor: not-allowed;
+    }
+
+    .remove-file-btn {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 18px;
+      color: #d9534f;
+      cursor: pointer;
+      display: none;
+    }
+
+    .upload-box-wrapper {
+      position: relative;
     }
   </style>
 </head>
@@ -422,12 +436,18 @@ if ($id_kampus) {
                 <div id="uploadSection" style="display:none;">
                   <div class="form-group">
                     <label>Upload your internship response letter</label>
-                    <div class="upload-box" onclick="document.getElementById('fileInput').click()">
-                      <i class="fa fa-cloud-upload-alt"></i>
-                      <div class="upload-title">Browse Files</div>
-                      <div class="upload-subtitle">Drag and drop files here</div>
+                    <div class="upload-box-wrapper">
+                      <span id="removeFileBtn" class="remove-file-btn" style="display:none;">✖</span>
+
+                      <div class="upload-box" id="uploadBox" onclick="document.getElementById('fileInput').click()">
+                        <i class="fa fa-cloud-upload-alt"></i>
+                        <div class="upload-title">Browse Files</div>
+                        <div class="upload-subtitle">Drag and drop files here</div>
+                      </div>
+
                       <input type="file" id="fileInput" style="display:none;" accept=".pdf,.jpg,.jpeg,.png">
                     </div>
+
                   </div>
                 </div>
 
@@ -485,7 +505,7 @@ if ($id_kampus) {
       <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
       <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
           clock_run();
 
           // === Highlight active menu ===
@@ -513,7 +533,7 @@ if ($id_kampus) {
 
           $("#date").text(curr_date);
 
-          setInterval(function() {
+          setInterval(function () {
             let d = new Date();
             let hours = d.getHours();
             let minutes = d.getMinutes();
@@ -547,11 +567,18 @@ if ($id_kampus) {
     const fileInput = document.getElementById("fileInput");
     const submitBtn = document.getElementById("submitBtn");
     const internshipForm = document.getElementById("internshipForm");
+    const uploadBox = document.getElementById("uploadBox");
+    const removeFileBtn = document.getElementById("removeFileBtn");
+
+
 
     document.querySelector("#within14Section label").textContent =
       "Have 14 days or more passed since you submitted your internship application letter?";
 
     // === Handle dropdown utama ===
+    submitBtn.disabled = true;
+    submitBtn.classList.add("disabled-btn");
+
     responseReceived.addEventListener("change", () => {
       if (responseReceived.value === "yes") {
         uploadSection.style.display = "block";
@@ -592,28 +619,59 @@ if ($id_kampus) {
       }
     });
 
-    // === File preview ===
+    // File preview
     fileInput.addEventListener("change", (e) => {
-      const fileName = e.target.files[0]?.name;
-      if (fileName) {
-        document.querySelector(".upload-box").innerHTML = `
-        <i class="fa fa-file-alt"></i>
-        <div class="upload-title">${fileName}</div>
-        <div class="upload-subtitle">Click to change file</div>
-      `;
+      const file = e.target.files[0];
+
+      if (file) {
+        uploadBox.innerHTML = `
+      <i class="fa fa-file-alt"></i>
+      <div class="upload-title">${file.name}</div>
+      <div class="upload-subtitle">Click to change file</div>
+    `;
+
+        removeFileBtn.style.display = "block";
       }
     });
 
-    // === Submit form ===
-    internshipForm.addEventListener("submit", async (e) => {
+    // === Remove file ===
+    removeFileBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+
+      // reset input
+      fileInput.value = "";
+
+      // reset tampilan
+      uploadBox.innerHTML = `
+    <i class="fa fa-cloud-upload-alt"></i>
+    <div class="upload-title">Browse Files</div>
+    <div class="upload-subtitle">Drag and drop files here</div>
+  `;
+
+      removeFileBtn.style.display = "none";
+    });
+
+
+
+    // Submit form
+internshipForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (submitBtn.disabled) return;
 
+  // === CEK: Jika pilih YES tapi tidak ada file ===
+  if (responseReceived.value === "yes" && fileInput.files.length === 0) {
+    return Swal.fire({
+      icon: "warning",
+      title: "File Required",
+      text: "You must provide proof of rejection of the internship by the company."
+    });
+  }
+
   const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
-  let filePath = "-"; // default jika tidak upload
+  let filePath = "-";
 
   try {
-    // === STEP 1: Upload file ke PHP dahulu ===
+    // Upload file ke PHP
     if (file) {
       const fd = new FormData();
       fd.append("attachment", file);
@@ -636,7 +694,7 @@ if ($id_kampus) {
       filePath = uploadJson.path; // path hasil upload dari PHP
     }
 
-    // === STEP 2: Kirim update ke backend Express ===
+    // Kirim update ke backend Express
     const res = await fetch(`${apiBase}/student/rejected-by-company/${id}`, {
       method: "POST",
       headers: {
@@ -672,6 +730,8 @@ if ($id_kampus) {
     });
   }
 });
+
+
 
   </script>
 
