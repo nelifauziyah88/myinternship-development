@@ -89,6 +89,8 @@ router.get("/cdc/submissions", async (req, res) => {
         il.status,
         il.koor_approval,
         il.cdc_approval,
+        il.company_reply_letter,
+        il.acceptance_status,
         il.created_at,
         il.updated_at
       FROM internship_letter il
@@ -306,6 +308,8 @@ router.get("/cdc/submissions-filtered", async (req, res) => {
         il.status,
         il.koor_approval,
         il.cdc_approval,
+        il.company_reply_letter,
+        il.acceptance_status,
         il.created_at,
         il.updated_at,
         ps.kode_prodi,
@@ -360,11 +364,9 @@ router.get("/cdc/submissions-filtered", async (req, res) => {
     if (company) {
       const companyStatus = company.toUpperCase();
       if (companyStatus === "ACCEPTED") {
-        query += ` AND il.status = 'ACCEPTED'`;
-      } else if (companyStatus === "WAITING") {
-        query += ` AND il.status = 'WAITING'`;
+        query += ` AND il.acceptance_status = 'ACCEPTED'`;
       } else if (companyStatus === "REJECTED") {
-        query += ` AND il.status = 'REJECTED'`;
+        query += ` AND il.acceptance_status = 'REJECTED'`;
       }
     }
 
@@ -448,7 +450,7 @@ router.put("/cdc/submissions/edit/:id_letter", async (req, res) => {
     if (company_email) contactParts.push(company_email);
     const company_contact = contactParts.join(" ");
 
-    // Update data di tabel company 
+    // Update data di tabel company
     if (id_company) {
       await db.query(
         `UPDATE company
@@ -462,7 +464,7 @@ router.put("/cdc/submissions/edit/:id_letter", async (req, res) => {
           company_address,
           company_phone || "-",
           company_email || "-",
-          id_company
+          id_company,
         ]
       );
       console.log(`[CDC] Updated company data for id_company: ${id_company}`);
@@ -479,7 +481,9 @@ router.put("/cdc/submissions/edit/:id_letter", async (req, res) => {
       [company_name, company_address, company_contact, id_letter]
     );
 
-    console.log(`[CDC] Updated internship_letter data for id_letter: ${id_letter}`);
+    console.log(
+      `[CDC] Updated internship_letter data for id_letter: ${id_letter}`
+    );
 
     res.json({
       success: true,
@@ -490,6 +494,70 @@ router.put("/cdc/submissions/edit/:id_letter", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Server error: " + err.message,
+    });
+  }
+});
+
+// Get company reply file info
+router.get("/cdc/company-reply/:id_letter", async (req, res) => {
+  try {
+    const { id_letter } = req.params;
+
+    const [rows] = await db.query(
+      `SELECT 
+         il.id_letter,
+         il.acceptance_status,
+         il.company_reply_letter,
+         il.published_date,
+         il.company_name,
+         il.updated_at,
+         il.nim,
+         s.name AS student_name
+       FROM internship_letter il
+       JOIN student_internship s ON s.nim = il.nim
+       WHERE il.id_letter = ?`,
+      [id_letter]
+    );
+
+    if (!rows.length) {
+      return res.status(404).json({
+        success: false,
+        message: "Submission not found",
+      });
+    }
+
+    const data = rows[0];
+
+    // Hitung apakah sudah lebih dari 14 hari
+    let isOverdue = false;
+    let reason = null;
+
+    if (data.published_date) {
+      const publishedDate = new Date(data.published_date);
+      const currentDate = new Date();
+      const diffTime = currentDate - publishedDate;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays > 14 && !data.company_reply_letter) {
+        isOverdue = true;
+        reason =
+          "Students have not received a response to their internship application within 14 days after completing the internship interview.";
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        ...data,
+        isOverdue,
+        reason,
+      },
+    });
+  } catch (err) {
+    console.error("[LECTURER] Error fetching company reply:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
     });
   }
 });

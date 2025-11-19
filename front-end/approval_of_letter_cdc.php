@@ -639,7 +639,7 @@ if ($id_kampus) {
                         if (studentName) queryParams.append('student_name', studentName);
                         if (coordinator) queryParams.append('coordinator', coordinator);
                         if (cdcFilter) queryParams.append('cdc', cdcFilter);
-                        // if (company) queryParams.append('company', company);
+                        if (company) queryParams.append('company', company);
 
                         apiUrl = `${apiBase}/cdc/submissions-filtered?${queryParams.toString()}`;
                     }
@@ -704,7 +704,7 @@ if ($id_kampus) {
                 const date = formatDate(item.created_at);
                 const koorHtml = buildKoordinatorBadge(item);
                 const cdcHtml = buildCDCApprovalHtml(item);
-                const resultHtml = buildResultBadge(item.status);
+                const resultHtml = buildResultBadge(item);
 
                 return `
         <tr>
@@ -839,13 +839,44 @@ if ($id_kampus) {
             }
 
             /**
-             * Build badge untuk result company
+             * Build badge untuk result company dengan button view reply
              * 
-             * @param {string} status - Status result (ACCEPTED/WAITING/REJECTED)
+             * @param {Object} item - Data submission lengkap
              * @returns {string} HTML string untuk badge result
              */
-            function buildResultBadge(status) {
-                return "-";
+            function buildResultBadge(item) {
+                const acceptance = item.acceptance_status;
+
+                // Jika belum ada acceptance status dari company
+                if (!acceptance || acceptance === '-') {
+                    return `<span class="badge-empty">-</span>`;
+                }
+
+                // Jika ACCEPTED
+                if (acceptance === 'ACCEPTED') {
+                    return `
+            <div class="text-center">
+                <span class="badge approved">Accepted</span>
+                <button class="btn btn-sm btn-info mt-1" onclick="viewCompanyReply(${item.id_letter})">
+                    <i class="fas fa-file-alt"></i> View Reply
+                </button>
+            </div>
+        `;
+                }
+
+                // Jika REJECTED
+                if (acceptance === 'REJECTED') {
+                    return `
+            <div class="text-center">
+                <span class="badge rejected">Rejected</span>
+                <button class="btn btn-sm btn-info mt-1" onclick="viewCompanyReply(${item.id_letter})">
+                    <i class="fas fa-file-alt"></i> View Reply
+                </button>
+            </div>
+        `;
+                }
+
+                return `<span class="badge-empty">-</span>`;
             }
 
             /**
@@ -1190,6 +1221,205 @@ if ($id_kampus) {
                         });
                     }
                 });
+            }
+
+            // ============================================================
+            // FUNGSI VIEW COMPANY REPLY - ENHANCED VERSION
+            // ============================================================
+
+            /**
+             * View company reply - tampilkan file dengan informasi lengkap
+             * 
+             * @param {number} id_letter - ID letter submission
+             */
+            async function viewCompanyReply(id_letter) {
+                try {
+                    // Fetch company reply data dari API
+                    const res = await fetch(`${apiBase}/lecturer/company-reply/${id_letter}`);
+
+                    if (!res.ok) {
+                        const json = await res.json().catch(() => ({
+                            message: 'Unknown error'
+                        }));
+                        return Swal.fire("Error", json.message || "Failed to load company reply", "error");
+                    }
+
+                    const json = await res.json();
+                    const data = json.data;
+
+                    // Case 1: Ada file upload
+                    if (data.company_reply_letter && data.company_reply_letter !== '-') {
+                        const fileName = data.company_reply_letter;
+                        const fileUrl = `./${data.company_reply_letter}`;
+
+                        // Tentukan apakah PDF atau gambar
+                        const isPDF = fileName.toLowerCase().endsWith('.pdf');
+
+                        // Badge styling berdasarkan status
+                        let statusBadge = '';
+                        if (data.acceptance_status === 'ACCEPTED') {
+                            statusBadge = '<span class="badge approved">Accepted</span>';
+                        } else if (data.acceptance_status === 'REJECTED') {
+                            statusBadge = '<span class="badge rejected">Rejected</span>';
+                        } else {
+                            statusBadge = '<span class="badge waiting">Waiting</span>';
+                        }
+
+                        // Format reply date dari updated_at (ketika mahasiswa upload file)
+                        let replyDateFormatted = '-';
+                        if (data.updated_at) {
+                            const date = new Date(data.updated_at);
+                            replyDateFormatted = date.toLocaleDateString('en-GB', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                            });
+                        }
+
+                        // Informasi mahasiswa dan perusahaan
+                        const infoSection = `
+                <div style="background: #ffffff; padding: 25px; border-radius: 10px; margin-bottom: 20px; border: 2px solid #e3e6f0; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #e3e6f0;">
+                        <h4 style="margin: 0; color: #5a5c69; font-weight: 600;">
+                            <i class="fas fa-file-contract" style="color: #4e73df;"></i> Company Reply Letter
+                        </h4>
+                        ${statusBadge}
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                        <div>
+                            <p style="margin: 0 0 8px 0; color: #858796; font-weight: 500; font-size: 13px;">
+                                <i class="fas fa-user-graduate" style="color: #4e73df; width: 18px;"></i> Student Name:
+                            </p>
+                            <p style="margin: 0 0 0 26px; font-size: 15px; color: #5a5c69; font-weight: 500;">${data.student_name || '-'}</p>
+                        </div>
+                        <div>
+                            <p style="margin: 0 0 8px 0; color: #858796; font-weight: 500; font-size: 13px;">
+                                <i class="fas fa-id-card" style="color: #4e73df; width: 18px;"></i> NIM:
+                            </p>
+                            <p style="margin: 0 0 0 26px; font-size: 15px; color: #5a5c69; font-weight: 500;">${data.nim || '-'}</p>
+                        </div>
+                        <div>
+                            <p style="margin: 0 0 8px 0; color: #858796; font-weight: 500; font-size: 13px;">
+                                <i class="fas fa-building" style="color: #4e73df; width: 18px;"></i> Company Name:
+                            </p>
+                            <p style="margin: 0 0 0 26px; font-size: 15px; color: #5a5c69; font-weight: 500;">${data.company_name || '-'}</p>
+                        </div>
+                        <div>
+                            <p style="margin: 0 0 8px 0; color: #858796; font-weight: 500; font-size: 13px;">
+                                <i class="fas fa-calendar-alt" style="color: #4e73df; width: 18px;"></i> Reply Upload Date:
+                            </p>
+                            <p style="margin: 0 0 0 26px; font-size: 15px; color: #5a5c69; font-weight: 500;">${replyDateFormatted}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+                        let modalContent = '';
+
+                        if (isPDF) {
+                            // PDF Preview dengan embed
+                            modalContent = `
+                    ${infoSection}
+                    <div style="border: 2px solid #e0e0e0; border-radius: 8px; overflow: hidden; margin-bottom: 20px;">
+                        <div style="background: #f5f5f5; padding: 10px; border-bottom: 2px solid #e0e0e0;">
+                            <i class="fas fa-file-pdf text-danger"></i> 
+                            <strong>${fileName.split('/').pop()}</strong>
+                        </div>
+                        <div style="width: 100%; height: 500px;">
+                            <embed src="${fileUrl}" type="application/pdf" width="100%" height="100%" />
+                        </div>
+                    </div>
+                    <div class="text-center" style="display: flex; gap: 10px; justify-content: center;">
+                        <button onclick="window.open('${fileUrl}', '_blank')" class="btn btn-info">
+                            <i class="fas fa-external-link-alt"></i> Open in New Tab
+                        </button>
+                        <a href="${fileUrl}" download="${fileName.split('/').pop()}" class="btn btn-primary">
+                            <i class="fas fa-download"></i> Download File
+                        </a>
+                    </div>
+                `;
+                        } else {
+                            // Image Preview
+                            modalContent = `
+                    ${infoSection}
+                    <div style="border: 2px solid #e0e0e0; border-radius: 8px; overflow: hidden; margin-bottom: 20px;">
+                        <div style="background: #f5f5f5; padding: 10px; border-bottom: 2px solid #e0e0e0;">
+                            <i class="fas fa-image text-primary"></i> 
+                            <strong>${fileName.split('/').pop()}</strong>
+                        </div>
+                        <div style="width: 100%; padding: 20px; background: #fafafa;">
+                            <img src="${fileUrl}" alt="Company Reply" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
+                        </div>
+                    </div>
+                    <div class="text-center" style="display: flex; gap: 10px; justify-content: center;">
+                        <button onclick="window.open('${fileUrl}', '_blank')" class="btn btn-info">
+                            <i class="fas fa-external-link-alt"></i> Open in New Tab
+                        </button>
+                        <a href="${fileUrl}" download="${fileName.split('/').pop()}" class="btn btn-primary">
+                            <i class="fas fa-download"></i> Download File
+                        </a>
+                    </div>
+                `;
+                        }
+
+                        // Tampilkan modal dengan file
+                        Swal.fire({
+                            title: '', // Kosongkan karena sudah ada info di dalam content
+                            html: modalContent,
+                            width: '900px',
+                            showConfirmButton: true,
+                            confirmButtonText: 'Close',
+                            customClass: {
+                                popup: 'animated fadeIn'
+                            }
+                        });
+                    }
+                    // Case 2: REJECTED tanpa file (overdue)
+                    else if (data.acceptance_status === 'REJECTED' && data.isOverdue) {
+                        Swal.fire({
+                            title: "Company Reply - REJECTED",
+                            html: `
+                    <div style="background: #fff3cd; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107; margin: 15px 0;">
+                        <div style="text-align: left; margin-bottom: 15px;">
+                            <p style="margin: 5px 0;"><strong><i class="fas fa-user-graduate"></i> Student:</strong> ${data.student_name || '-'}</p>
+                            <p style="margin: 5px 0;"><strong><i class="fas fa-id-card"></i> NIM:</strong> ${data.nim || '-'}</p>
+                            <p style="margin: 5px 0;"><strong><i class="fas fa-building"></i> Company:</strong> ${data.company_name || '-'}</p>
+                        </div>
+                        <hr style="border-color: #ffc107;">
+                        <div style="text-align: left;">
+                            <strong><i class="fas fa-exclamation-triangle text-warning"></i> Reason:</strong>
+                            <p style="margin-top: 10px; line-height: 1.6; color: #856404;">${data.reason}</p>
+                        </div>
+                    </div>
+                `,
+                            icon: 'warning',
+                            confirmButtonText: 'Close'
+                        });
+                    }
+                    // Case 3: Tidak ada data sama sekali
+                    else {
+                        Swal.fire({
+                            title: "No Reply File Yet",
+                            html: `
+                    <div style="text-align: left; padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 15px 0;">
+                        <p style="margin: 5px 0;"><strong><i class="fas fa-user-graduate"></i> Student:</strong> ${data.student_name || '-'}</p>
+                        <p style="margin: 5px 0;"><strong><i class="fas fa-id-card"></i> NIM:</strong> ${data.nim || '-'}</p>
+                        <p style="margin: 5px 0;"><strong><i class="fas fa-building"></i> Company:</strong> ${data.company_name || '-'}</p>
+                        <hr>
+                        <p style="color: #6c757d; margin-top: 15px;">
+                            <i class="fas fa-info-circle"></i> The student has not received a reply letter within 14 days after the internship interview.
+                        </p>
+                    </div>
+                `,
+                            icon: 'info',
+                            confirmButtonText: 'Close'
+                        });
+                    }
+
+                } catch (err) {
+                    console.error("Error viewing company reply:", err);
+                    Swal.fire("Error", "Failed to load company reply: " + err.message, "error");
+                }
             }
         </script>
 </body>

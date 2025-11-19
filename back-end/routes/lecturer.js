@@ -1,15 +1,18 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const db = require('../db');
-const { checkAndSetPublishedDate } = require('./student');
+const bcrypt = require("bcryptjs");
+const db = require("../db");
+const { checkAndSetPublishedDate } = require("./student");
 
 // Login
 router.post("/login_lecturer", async (req, res) => {
   try {
     let { username, password } = req.body || {};
     if (!username || !password) {
-      return res.status(400).json({ success: false, message: "Username and password are required." });
+      return res.status(400).json({
+        success: false,
+        message: "Username and password are required.",
+      });
     }
 
     username = String(username).trim();
@@ -21,26 +24,36 @@ router.post("/login_lecturer", async (req, res) => {
     );
 
     if (!rows || rows.length === 0) {
-      return res.status(401).json({ success: false, message: "Account not found." });
+      return res
+        .status(401)
+        .json({ success: false, message: "Account not found." });
     }
 
     const user = rows[0];
 
     if (user.status && user.status.toLowerCase() !== "active") {
-      return res.status(403).json({ success: false, message: "Account inactive." });
+      return res
+        .status(403)
+        .json({ success: false, message: "Account inactive." });
     }
 
     const stored = (user.password || "").trim();
     let passwordMatch = false;
 
-    if (stored.startsWith("$2a$") || stored.startsWith("$2b$") || stored.startsWith("$2y$")) {
+    if (
+      stored.startsWith("$2a$") ||
+      stored.startsWith("$2b$") ||
+      stored.startsWith("$2y$")
+    ) {
       passwordMatch = await bcrypt.compare(password, stored);
     } else {
       passwordMatch = stored === password;
     }
 
     if (!passwordMatch) {
-      return res.status(401).json({ success: false, message: "Wrong password." });
+      return res
+        .status(401)
+        .json({ success: false, message: "Wrong password." });
     }
 
     return res.status(200).json({
@@ -59,7 +72,9 @@ router.post("/login_lecturer", async (req, res) => {
     });
   } catch (err) {
     console.error("[LOGIN LECTURER] error:", err);
-    return res.status(500).json({ success: false, message: "An error occurred on the server." });
+    return res
+      .status(500)
+      .json({ success: false, message: "An error occurred on the server." });
   }
 });
 
@@ -77,7 +92,10 @@ router.get("/lecturer/submissions/:nim_nik_unit", async (req, res) => {
     );
 
     if (!lecRows.length) {
-      return res.status(403).json({ success: false, message: "You are not the internship coordinator." });
+      return res.status(403).json({
+        success: false,
+        message: "You are not the internship coordinator.",
+      });
     }
 
     const { prodi_koor, id_kampus } = lecRows[0];
@@ -93,6 +111,8 @@ router.get("/lecturer/submissions/:nim_nik_unit", async (req, res) => {
          il.status,
          il.koor_approval,
          il.cdc_approval,
+         il.company_reply_letter,
+         il.acceptance_status,
          il.created_at,
          il.updated_at
        FROM internship_letter il
@@ -129,6 +149,8 @@ router.get("/lecturer/submissions/detail/:id_letter", async (req, res) => {
          il.status,
          il.koor_approval,
          il.cdc_approval,
+         il.company_reply_letter,
+         il.acceptance_status,
          il.created_at,
          il.updated_at
        FROM internship_letter il
@@ -138,7 +160,9 @@ router.get("/lecturer/submissions/detail/:id_letter", async (req, res) => {
     );
 
     if (!rows.length) {
-      return res.status(404).json({ success: false, message: "Submission not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Submission not found" });
     }
 
     res.json({ success: true, data: rows[0] });
@@ -154,12 +178,17 @@ router.post("/lecturer/approval", async (req, res) => {
     const { id_letter, status, user_id, user_name, comment } = req.body;
 
     if (!id_letter || !status) {
-      return res.status(400).json({ success: false, message: "id_letter and status are required." });
+      return res.status(400).json({
+        success: false,
+        message: "id_letter and status are required.",
+      });
     }
 
     const s = status.toUpperCase();
     if (!["ACCEPTED", "REJECTED"].includes(s)) {
-      return res.status(400).json({ success: false, message: "Status invalid." });
+      return res
+        .status(400)
+        .json({ success: false, message: "Status invalid." });
     }
 
     // fetch current letter
@@ -171,14 +200,19 @@ router.post("/lecturer/approval", async (req, res) => {
     );
 
     if (!rows.length) {
-      return res.status(404).json({ success: false, message: "Submission not found." });
+      return res
+        .status(404)
+        .json({ success: false, message: "Submission not found." });
     }
 
     const row = rows[0];
 
     // For lecturer action, ensure current koor_approval is WAITING (so coordinator can act)
-    if ((row.koor_approval || '').toUpperCase() !== "WAITING") {
-      return res.status(400).json({ success: false, message: "The submission is not awaiting Coordinator approval." });
+    if ((row.koor_approval || "").toUpperCase() !== "WAITING") {
+      return res.status(400).json({
+        success: false,
+        message: "The submission is not awaiting Coordinator approval.",
+      });
     }
 
     // Apply update to internship_letter (koor's action)
@@ -214,7 +248,10 @@ router.post("/lecturer/approval", async (req, res) => {
       const actor = req.user || req.session?.user || null;
       if (actor) {
         // If you keep lecturer session with nim_nik_unit stored, try to look it up
-        if (actor.role && actor.role.toLowerCase().includes("lecturer") || actor.is_koor) {
+        if (
+          (actor.role && actor.role.toLowerCase().includes("lecturer")) ||
+          actor.is_koor
+        ) {
           const [lrows] = await db.query(
             `SELECT nim_nik_unit, name FROM lecturer WHERE nim_nik_unit = ? LIMIT 1`,
             [actor.nim_nik_unit || actor.id]
@@ -234,14 +271,23 @@ router.post("/lecturer/approval", async (req, res) => {
     }
 
     // fallback to values sent by client if server-side lookup missing
-    const final_user_id = (user_id_val && user_id_val !== "-") ? user_id_val : (user_id || "-");
-    const final_user_name = (user_name_val && user_name_val !== "-") ? user_name_val : (user_name || "-");
+    const final_user_id =
+      user_id_val && user_id_val !== "-" ? user_id_val : user_id || "-";
+    const final_user_name =
+      user_name_val && user_name_val !== "-" ? user_name_val : user_name || "-";
 
     await db.query(
       `INSERT INTO internship_letter_history 
        (id_letter, approved_by, user_id, user_name, status_approval, timestamp, comment)
        VALUES (?, ?, ?, ?, ?, NOW(), ?)`,
-      [id_letter, approved_by, final_user_id, final_user_name, s, comment || null]
+      [
+        id_letter,
+        approved_by,
+        final_user_id,
+        final_user_name,
+        s,
+        comment || null,
+      ]
     );
 
     // Cek dan set published_date jika kedua approval sudah ACCEPTED
@@ -271,8 +317,15 @@ router.get("/lecturer/reason/:id", async (req, res) => {
        ORDER BY timestamp DESC LIMIT 1`,
       [id]
     );
-    if (!rows.length) return res.status(404).json({ success: false, message: "Reason not found." });
-    res.json({ success: true, comment: rows[0].comment, meta: { user_name: rows[0].user_name, timestamp: rows[0].timestamp } });
+    if (!rows.length)
+      return res
+        .status(404)
+        .json({ success: false, message: "Reason not found." });
+    res.json({
+      success: true,
+      comment: rows[0].comment,
+      meta: { user_name: rows[0].user_name, timestamp: rows[0].timestamp },
+    });
   } catch (err) {
     console.error("[CDC] reason fetch error:", err);
     res.status(500).json({ success: false, message: "Server error" });
@@ -284,7 +337,10 @@ router.post("/lecturer/history/:id/edit", async (req, res) => {
   try {
     const id = req.params.id;
     const { comment } = req.body;
-    if (!comment || !comment.trim()) return res.status(400).json({ success: false, message: "Comment is required." });
+    if (!comment || !comment.trim())
+      return res
+        .status(400)
+        .json({ success: false, message: "Comment is required." });
 
     // Find the latest history row to update
     const [rows] = await db.query(
@@ -293,7 +349,10 @@ router.post("/lecturer/history/:id/edit", async (req, res) => {
        ORDER BY timestamp DESC LIMIT 1`,
       [id]
     );
-    if (!rows.length) return res.status(404).json({ success: false, message: "History record not found." });
+    if (!rows.length)
+      return res
+        .status(404)
+        .json({ success: false, message: "History record not found." });
 
     const id_history = rows[0].id_history;
     await db.query(
@@ -307,6 +366,70 @@ router.post("/lecturer/history/:id/edit", async (req, res) => {
   } catch (err) {
     console.error("[CDC] history edit error:", err);
     res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Get company reply file info
+router.get("/lecturer/company-reply/:id_letter", async (req, res) => {
+  try {
+    const { id_letter } = req.params;
+
+    const [rows] = await db.query(
+      `SELECT 
+         il.id_letter,
+         il.acceptance_status,
+         il.company_reply_letter,
+         il.published_date,
+         il.company_name,
+         il.updated_at,
+         il.nim,
+         s.name AS student_name
+       FROM internship_letter il
+       JOIN student_internship s ON s.nim = il.nim
+       WHERE il.id_letter = ?`,
+      [id_letter]
+    );
+
+    if (!rows.length) {
+      return res.status(404).json({
+        success: false,
+        message: "Submission not found",
+      });
+    }
+
+    const data = rows[0];
+
+    // Hitung apakah sudah lebih dari 14 hari
+    let isOverdue = false;
+    let reason = null;
+
+    if (data.published_date) {
+      const publishedDate = new Date(data.published_date);
+      const currentDate = new Date();
+      const diffTime = currentDate - publishedDate;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays > 14 && !data.company_reply_letter) {
+        isOverdue = true;
+        reason =
+          "Students have not received a response to their internship application within 14 days after completing the internship interview.";
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        ...data,
+        isOverdue,
+        reason,
+      },
+    });
+  } catch (err) {
+    console.error("[LECTURER] Error fetching company reply:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 });
 

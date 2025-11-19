@@ -264,7 +264,23 @@ router.post("/form-submission", async (req, res) => {
         `INSERT INTO company (name, type, phone, email, website, facebook, twitter, instagram, linkedin, logo,
         address, province, city, description, status, access_type, id_kampus
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'not verified', 1, ?)`,
-        [company_name, "General", body.company_contact || "", "", "", "", "", "", "", "", company_address || "", "", "", "", id_kampus]
+        [
+          company_name,
+          "General",
+          body.company_contact || "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          company_address || "",
+          "",
+          "",
+          "",
+          id_kampus,
+        ]
       );
 
       // Set id_company dengan id yang baru dibuat
@@ -674,8 +690,9 @@ router.get("/letter/:id/download", async (req, res) => {
     });
     await browser.close();
 
-    const filename = `internship_letter_${letter.nim || letter.id_letter
-      }_${year}.pdf`;
+    const filename = `internship_letter_${
+      letter.nim || letter.id_letter
+    }_${year}.pdf`;
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     res.send(pdfBuffer);
@@ -685,7 +702,7 @@ router.get("/letter/:id/download", async (req, res) => {
   }
 });
 
-router.post('/rejected-by-company/:id', async (req, res) => {
+router.post("/rejected-by-company/:id", async (req, res) => {
   try {
     const { acceptance_status, company_reply_letter } = req.body;
     const id = req.params.id;
@@ -693,7 +710,7 @@ router.post('/rejected-by-company/:id', async (req, res) => {
     if (acceptance_status !== "REJECTED") {
       return res.status(400).json({
         success: false,
-        message: "Invalid acceptance status"
+        message: "Invalid acceptance status",
       });
     }
 
@@ -709,24 +726,22 @@ router.post('/rejected-by-company/:id', async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({
         success: false,
-        message: "Letter not found"
+        message: "Letter not found",
       });
     }
 
     res.json({
       success: true,
-      message: "Company rejection recorded"
+      message: "Company rejection recorded",
     });
-
   } catch (error) {
     console.error("Error in /rejected-by-company:", error);
     res.status(500).json({
       success: false,
-      message: "Server error"
+      message: "Server error",
     });
   }
 });
-
 
 // helper untuk format ke YYYY-MM-DD tanpa timezone offset
 function formatDate(dateValue) {
@@ -742,7 +757,8 @@ function formatDate(dateValue) {
 router.get("/accepted-by-company/autofill/:nim", async (req, res) => {
   const nim = req.params.nim;
   try {
-    const [rows] = await db.query(`
+    const [rows] = await db.query(
+      `
       SELECT 
         s.nim,
         s.name,
@@ -776,9 +792,12 @@ router.get("/accepted-by-company/autofill/:nim", async (req, res) => {
       LEFT JOIN lecturer lec ON s.program_study = lec.prodi_koor AND s.id_kampus = lec.id_kampus AND lec.is_koor = 1
       WHERE s.nim = ?
       ORDER BY l.id_letter DESC LIMIT 1
-    `, [nim]);
+    `,
+      [nim]
+    );
 
-    if (rows.length === 0) return res.json({ success: false, message: "Data not found" });
+    if (rows.length === 0)
+      return res.json({ success: false, message: "Data not found" });
 
     const d = rows[0];
 
@@ -796,9 +815,10 @@ router.get("/accepted-by-company/autofill/:nim", async (req, res) => {
 });
 
 // POST: Submit accepted_by_company
-router.post("/accepted-by-company/submit", async (req, res) => {
+router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
   try {
     const fields = req.body;
+    const id_letter = req.params?.id_letter || req.body?.id_letter;
 
     const {
       nim,
@@ -817,10 +837,11 @@ router.post("/accepted-by-company/submit", async (req, res) => {
       email,
       whatsapp,
       company_not_exist,
-      company_reply_letter
+      company_reply_letter,
     } = fields;
 
     const conn = await db.getConnection();
+    console.log("DEBUG: id_letter =", id_letter);
     await conn.beginTransaction();
 
     try {
@@ -834,8 +855,10 @@ router.post("/accepted-by-company/submit", async (req, res) => {
       let id_user_company = null;
 
       // 2. Jika company_not_exist = 1 → insert ke company baru
-      if (company_not_exist === "1" || (letter && letter.company_not_exist === 1)) {
-
+      if (
+        company_not_exist === "1" ||
+        (letter && letter.company_not_exist === 1)
+      ) {
         // Ambil phone/email dari internship_letter.company_contact (jika ada)
         let phone = "-";
         let email_c = "-"; // Menggunakan email_c agar tidak bentrok dengan email mahasiswa
@@ -844,7 +867,10 @@ router.post("/accepted-by-company/submit", async (req, res) => {
           const contact = letter.company_contact.trim();
 
           // jika hanya angka atau +62 = nomor telepon
-          if (/^[+0-9\s-]+$/.test(contact) && contact.replace(/\D/g, "").length >= 8) {
+          if (
+            /^[+0-9\s-]+$/.test(contact) &&
+            contact.replace(/\D/g, "").length >= 8
+          ) {
             phone = contact;
           }
 
@@ -862,20 +888,23 @@ router.post("/accepted-by-company/submit", async (req, res) => {
         const id_kampus = studRows.length > 0 ? studRows[0].id_kampus : 1;
 
         // Insert ke tabel company lengkap
-        const [result] = await conn.query(`
+        const [result] = await conn.query(
+          `
     INSERT INTO company 
     (name, type, type_other, phone, email, website, facebook, twitter, instagram, linkedin, logo, address, province, city, country, description, status, access_type, id_kampus)
     VALUES (?, '-', NULL, ?, ?, '-', '-', '-', '-', '-', '-', ?, ?, ?, ?, '-', 'verified', '1', ?)
-  `, [
-          company_name,
-          phone,
-          email_c,
-          company_address,
-          province,
-          city,
-          country,
-          id_kampus
-        ]);
+  `,
+          [
+            company_name,
+            phone,
+            email_c,
+            company_address,
+            province,
+            city,
+            country,
+            id_kampus,
+          ]
+        );
 
         id_company = result.insertId;
 
@@ -892,7 +921,13 @@ router.post("/accepted-by-company/submit", async (req, res) => {
         // Insert user_company baru dengan username dan password placeholder
         const [userResult] = await conn.query(
           "INSERT INTO user_company (id_company, user_fullname, user_email, user_phone, user_type, username, password) VALUES (?, ?, ?, ?, 'HRD', 'TEMP', ?)",
-          [id_company, hrd_name, hrd_email, hrd_whatsapp, existingPassword || "-"]
+          [
+            id_company,
+            hrd_name,
+            hrd_email,
+            hrd_whatsapp,
+            existingPassword || "-",
+          ]
         );
         id_user_company = userResult.insertId;
 
@@ -961,7 +996,15 @@ router.post("/accepted-by-company/submit", async (req, res) => {
         `INSERT INTO internship 
           (nim, id_company, start_date, end_date, id_user_company, status, internship_position, internship_period, timestamp_register)
           VALUES (?, ?, ?, ?, ?, 'ongoing', ?, ?, NOW())`,
-        [nim, id_company, start_date, end_date, id_user_company, placement_department, internship_period]
+        [
+          nim,
+          id_company,
+          start_date,
+          end_date,
+          id_user_company,
+          placement_department,
+          internship_period,
+        ]
       );
       const id_internship = internshipResult.insertId;
 
@@ -975,27 +1018,31 @@ router.post("/accepted-by-company/submit", async (req, res) => {
       // 8. Update internship_letter (company_reply_letter + acceptance_status)
       if (company_reply_letter) {
         await conn.query(
-          "UPDATE internship_letter SET company_reply_letter = ?, acceptance_status = 'ACCEPTED' WHERE nim = ?",
-          [company_reply_letter, nim]
+          "UPDATE internship_letter SET company_reply_letter = ?, acceptance_status = 'ACCEPTED' WHERE nim = ? AND id_letter = ?",
+          [company_reply_letter, nim, id_letter]
         );
       } else {
         // Accepted without upload files
         await conn.query(
-          "UPDATE internship_letter SET acceptance_status = 'ACCEPTED' WHERE nim = ?",
-          [nim]
+          "UPDATE internship_letter SET acceptance_status = 'ACCEPTED' WHERE nim = ? AND id_letter = ?",
+          [nim, id_letter]
         );
       }
 
       await conn.commit();
-      res.json({ success: true, message: "Internship claim submitted successfully!" });
+      res.json({
+        success: true,
+        message: "Internship claim submitted successfully!",
+      });
     } catch (err) {
       await conn.rollback();
       console.error("Transaction error:", err);
-      res.status(500).json({ success: false, error: "Database transaction failed" });
+      res
+        .status(500)
+        .json({ success: false, error: "Database transaction failed" });
     } finally {
       conn.release();
     }
-
   } catch (err) {
     console.error("Upload error:", err);
     res.status(500).json({ success: false, error: "File upload failed" });

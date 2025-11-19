@@ -9,6 +9,7 @@ if (!isset($_SESSION['student']) || empty($_SESSION['student']['nim'])) {
 $student = $_SESSION['student'];
 $user = $student;
 
+$id_letter = $_GET['id'] ?? null;
 $id_kampus = $user['id_kampus'] ?? null;
 $nama_kampus = "Unknown";
 
@@ -567,6 +568,7 @@ if ($id_kampus) {
                         <div class="form-container">
                             <form id="acceptedForm" method="POST" enctype="multipart/form-data">
                                 <!-- hidden helper fields (important) -->
+                                 <input type="hidden" name="id_letter" value="<?= $id_letter ?>">
                                 <input type="hidden" name="company_not_exist" value="0"> <!-- akan di-update oleh JS -->
                                 <input type="hidden" name="id_company" value=""> <!-- id_company jika company sudah ada -->
                                 <input type="hidden" name="company_name_hidden" value="">
@@ -1247,7 +1249,7 @@ if ($id_kampus) {
 
                 // DELETE BUTTON
                 document.querySelector(".delete-file").addEventListener("click", () => {
-                    fileInput.value = ""; // reset
+                    fileInput.value = "";
                     fileList.style.display = "none";
                     dropzone.style.display = "block";
                 });
@@ -1265,12 +1267,14 @@ if ($id_kampus) {
 
                     if (width >= 100) {
                         clearInterval(timer);
-                        bar.parentElement.style.display = "none"; // Hide bar when complete
+                        bar.parentElement.style.display = "none";
                     }
                 }, 80);
             }
 
             // === SUBMISSION ===
+            const id_letter = form.querySelector("[name='id_letter']").value;
+
             form.addEventListener("submit", async (e) => {
                 e.preventDefault();
 
@@ -1412,7 +1416,8 @@ if ($id_kampus) {
                     };
 
                     // 3. Kirim ke Node
-                    const res = await fetch(`${API_BASE}/accepted-by-company/submit`, {
+                    console.log("DEBUG: id_letter =", id_letter);
+                    const res = await fetch(`${API_BASE}/accepted-by-company/submit/${id_letter}`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"
