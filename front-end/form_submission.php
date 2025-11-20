@@ -53,42 +53,30 @@ $user = $student;
     <script src="./library/ckeditor/ckeditor.js"></script>
 
     <script src='./core/component/jquery.min.js'></script>
-    <script>
-        $(function() {});
-    </script>
-    <script defer src='./core/component/sweetalert2.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script defer src='./core/component/soloalert.js'></script>
 
     <style type="text/css">
         /* Posisi relatif untuk ikon agar badge bisa ditempatkan relatif terhadapnya */
         .notification-icon {
             position: relative;
-            /* Sesuaikan ukuran ikon jika diperlukan */
         }
 
-        /* Badge notifikasi kecil hijau */
         .custom-notification-badge {
             position: absolute;
             top: -8px;
-            /* Sesuaikan posisi badge secara vertikal */
             right: -8px;
-            /* Sesuaikan posisi badge secara horizontal */
             color: white;
             border-radius: 50%;
             padding: 2px 6px;
-            /* Ukuran badge */
             font-size: 10px;
-            /* Ukuran angka */
             line-height: 1;
             min-width: 16px;
-            /* Pastikan ukuran minimal badge */
             text-align: center;
-            /* Pusatkan angka di dalam badge */
         }
 
         .fc-sun {
             color: red;
-            /* Mengubah warna font menjadi merah pada hari Minggu */
         }
 
         .disabled2 {
@@ -152,7 +140,6 @@ $user = $student;
 
         .required {
             color: #d9534f;
-            /* merah */
             margin-left: 6px;
             font-weight: 700;
         }
@@ -168,7 +155,6 @@ $user = $student;
 <body>
 
     <div class="wrapper">
-
         <div class="modal fade" id="Modalkalender" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -437,7 +423,7 @@ $user = $student;
 
             <!-- Content -->
             <div class="page-inner mt--5">
-                <div class="form-container" style="background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); padding: 40px;">
+                <div id="form-blocker-wrapper" class="form-container" style="background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); padding: 40px; position: relative;">
                     <form id="submissionForm">
                         <div class="form-group" style="margin-bottom: 15px;">
                             <label style="font-weight: 500;">NIM</label>
@@ -607,9 +593,7 @@ $user = $student;
 
             <script>
                 $(document).ready(function() {
-
                     clock_run();
-
                     show_calendar();
                 });
 
@@ -703,45 +687,7 @@ $user = $student;
                     return true;
                 }
 
-                function logout_confirm() {
-
-                    let _token = $('meta[name="csrf-token"]').attr('content');
-
-                    Swal.fire({
-                        title: 'Logout from your account ?',
-                        text: 'Are you sure you want to end the current session?',
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: "#DD6B55",
-                        confirmButtonText: "Yes, I\'m sure!",
-                        cancelButtonText: "Cancel"
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // AJAX logout ke PHP
-                            $.ajax({
-                                url: "session_logout.php", // Ganti ke file logout kamu yang sebenarnya
-                                type: "POST",
-                                data: {
-                                    'token': _token
-                                },
-                                success: function() {
-                                    setTimeout(function() {
-                                        localStorage.removeItem('first');
-                                        localStorage.removeItem('first_chime');
-                                        localStorage.removeItem('next_chime');
-                                        window.location.href = 'role_login.php';
-                                    }, 200);
-                                },
-                                error: function() {
-                                    Swal.fire('Error', 'Logout failed, please try again.', 'error');
-                                }
-                            });
-                        }
-                    });
-                }
-
                 function konfirmasi(notif, lokasi) {
-
                     var x = confirm(notif);
                     if (x === true) {
                         window.location.href = lokasi;
@@ -769,7 +715,7 @@ $user = $student;
                     $('#companySelect').select2({
                         placeholder: "Choose Company",
                         allowClear: true,
-                        width: '70%' // biar lebar pas
+                        width: '70%'
                     });
                 });
 
@@ -787,7 +733,7 @@ $user = $student;
                         });
                     });
 
-                    // --- BONUS: agar aktif sesuai halaman yang dibuka ---
+                    // Aktif sesuai halaman yang dibuka
                     const currentPage = window.location.href;
                     navItems.forEach(item => {
                         const link = item.querySelector("a");
@@ -800,6 +746,7 @@ $user = $student;
             </script>
         </div>
     </div>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container-fluid">
@@ -811,50 +758,43 @@ $user = $student;
 
     <script>
         (function() {
-            // ambil nim dari PHP session
-            const nim = <?= json_encode($student['nim']) ?>;
 
-            // base API
+            const nim = <?= json_encode($student['nim']) ?>;
             const API_BASE = 'http://localhost:8000/api/student';
 
             let __formBlockerElement = null;
 
             function createFormBlocker() {
-                // pastikan form ada
-                const form = document.getElementById('submissionForm');
-                if (!form) return;
-
-                // jika blocker sudah ada, jangan buat lagi
+                const wrapper = document.getElementById('form-blocker-wrapper');
+                if (!wrapper) return;
                 if (__formBlockerElement) return;
 
-                // hitung posisi & ukuran form relatif ke viewport
-                const rect = form.getBoundingClientRect();
-
-                // buat elemen blocker
                 const blocker = document.createElement('div');
                 blocker.id = 'form-blocker';
-                // gaya blocker: menutupi form, semi-transparent, pointer-events enabled (so it blocks)
                 Object.assign(blocker.style, {
-                    position: 'fixed',
-                    top: `${rect.top}px`,
-                    left: `${rect.left}px`,
-                    width: `${rect.width}px`,
-                    height: `${rect.height}px`,
-                    background: 'rgba(255,255,255,0.0)', // transparan
-                    zIndex: 20000, // harus lebih rendah dari swal popup, tapi lebih tinggi dari form
-                    pointerEvents: 'auto', // menangkap klik sehingga form tidak bisa di-klik
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(255,255,255,0)',
+                    zIndex: 50,
+                    pointerEvents: 'auto',
+                    cursor: 'not-allowed'
                 });
 
-                // kursor not-allowed
-                blocker.style.cursor = 'default';
-
-                // append ke body
-                document.body.appendChild(blocker);
+                wrapper.style.position = "relative";
+                wrapper.appendChild(blocker);
                 __formBlockerElement = blocker;
+            }
 
-                // bila user scroll/resize, update posisi blocker supaya tetap menutupi form
-                window.addEventListener('resize', updateFormBlockerPosition);
-                window.addEventListener('scroll', updateFormBlockerPosition, true);
+            function resetSwalState() {
+                // Hapus manual container lama
+                const old = document.querySelector('.swal2-container');
+                if (old) old.remove();
+
+                // Reset otomatis SweetAlert2 internal state
+                if (Swal && Swal.close) Swal.close();
             }
 
             function updateFormBlockerPosition() {
@@ -872,46 +812,68 @@ $user = $student;
                 if (!__formBlockerElement) return;
                 __formBlockerElement.remove();
                 __formBlockerElement = null;
-                window.removeEventListener('resize', updateFormBlockerPosition);
-                window.removeEventListener('scroll', updateFormBlockerPosition, true);
             }
 
-            // Tampilkan swal, lalu buat blocker + biarkan swal container melewatkan klik
+            window.logout_confirm = function() {
+                let _token = $('meta[name="csrf-token"]').attr('content');
+                Swal.fire({
+                    title: 'Logout from your account ?',
+                    text: 'Are you sure you want to end the current session?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Yes, I\'m sure!",
+                    cancelButtonText: "Cancel"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "session_logout.php",
+                            type: "POST",
+                            data: {
+                                'token': _token
+                            },
+                            success: function() {
+                                setTimeout(function() {
+                                    localStorage.removeItem('first');
+                                    localStorage.removeItem('first_chime');
+                                    localStorage.removeItem('next_chime');
+                                    window.location.href = 'role_login.php';
+                                }, 200);
+                            }
+                        });
+                    } else {
+                        setTimeout(() => {
+                            resetSwalState();
+                            checkActive();
+                        }, 50);
+                        removeFormBlocker();
+                    }
+                });
+            };
+
+            // Tampilkan swal, lalu buat blocker dan biarkan swal container melewatkan klik
             function showActiveSubmissionAlertAndBlockForm() {
-                // tampilkan swal non-closable (visual)
+                if (__formBlockerElement) return;
+                if (Swal && Swal.close) Swal.close();
+                createFormBlocker();
+
                 Swal.fire({
                     title: 'You have an active internship submission',
                     html: '<p>You cannot submit a new application until your current submission is processed.</p>',
                     icon: 'info',
-                    allowOutsideClick: false, // tetap false agar swal tidak bisa di-close dgn klik di luar
+                    allowOutsideClick: false,
                     allowEscapeKey: false,
                     showConfirmButton: false,
-                    // didOpen callback akan terpanggil setelah popup ter-render
-                    didOpen: () => {
-                        // 1) Biarkan swal tetap terlihat tapi IZINKAN klik menembus overlay swal:
-                        //    set pointer-events: none pada swal container supaya klik bisa menembus ke halaman di bawah.
-                        //    (ini membuat popup tetap visible tapi tidak menyekop pointer events)
-                        const cont = document.querySelector('.swal2-container');
-                        if (cont) {
-                            cont.style.pointerEvents = 'none';
-                            const popup = cont.querySelector('.swal2-popup');
-                            if (popup) {
-                                popup.style.zIndex = 30000; // ensure above blocker
-                            }
-                        }
-
-                        // 2) Buat blocker khusus di atas form (mencegah interaksi hanya pada area form)
-                        createFormBlocker();
-                    },
+                    backdrop: true
                 });
+                createFormBlocker();
             }
 
-            // Saat ingin menonaktifkan alert dan blok, panggil:
+            // Dipanggil Saat ingin menonaktifkan alert dan blok
             function closeActiveSubmissionAlertAndUnblock() {
-                // close SweetAlert popup
+                // close SweetAlert popup (in case)
                 if (Swal && Swal.close) Swal.close();
 
-                // hapus form blocker
                 removeFormBlocker();
             }
 
@@ -929,7 +891,9 @@ $user = $student;
                     const finalStatus = j.last?.status ? j.last.status.toUpperCase() : '-';
 
                     if (finalStatus === 'WAITING') {
-                        showActiveSubmissionAlertAndBlockForm();
+                        if (!__formBlockerElement && !(Swal && Swal.isVisible && Swal.isVisible())) {
+                            showActiveSubmissionAlertAndBlockForm();
+                        }
                         return;
                     }
 
@@ -990,12 +954,10 @@ $user = $student;
                         });
                         return;
                     }
-
                     if (acceptanceStatus === '-') {
                         showActiveSubmissionAlertAndBlockForm();
                         return;
                     }
-
                 } catch (err) {
                     console.error('checkActive error', err);
                 }
@@ -1011,7 +973,7 @@ $user = $student;
                     if (!res.ok) return;
                     const j = await res.json();
 
-                    // fill auto-fields (ensure elements exist)
+                    // fill auto-fields
                     const s = j.student || {};
                     if (document.getElementById('nimField')) document.getElementById('nimField').value = s.nim || '';
                     if (document.getElementById('nameField')) document.getElementById('nameField').value = s.name || '';
@@ -1025,7 +987,7 @@ $user = $student;
                 }
             }
 
-            // load company list for dropdown (and configure select2 if you want)
+            // load company list for dropdown
             async function loadCompanies() {
                 try {
                     const res = await fetch(`${API_BASE}/company`);
@@ -1090,7 +1052,7 @@ $user = $student;
                         const addrEl = document.getElementById('companyAddress');
                         if (addrEl) {
                             addrEl.value = c.address || '';
-                            addrEl.disabled = true; // address not editable when selecting existing company
+                            addrEl.disabled = true;
                         }
                     } catch (err) {
                         console.error('company detail error', err);
@@ -1108,11 +1070,9 @@ $user = $student;
                     const sel = document.getElementById('companySelect');
                     const addrEl = document.getElementById('companyAddress');
 
-                    // toggle visibility of new company inputs (their parent element in markup)
+                    // toggle visibility of new company inputs
                     if (newFields && newFields.parentElement) newFields.parentElement.style.display = checked ? '' : 'none';
-                    if (newContact) {
-                        // newContact is in same parent, but ensure value reset
-                    }
+                    if (newContact) {}
 
                     // disable companySelect when checked, and reset selection
                     if (sel) {
@@ -1124,7 +1084,7 @@ $user = $student;
                             if (window.jQuery && jQuery().select2) {
                                 $('#companySelect').val(null).trigger('change');
                             }
-                            // clear address (will be editable)
+                            // clear address
                             if (addrEl) {
                                 addrEl.value = '';
                                 addrEl.readOnly = false;
@@ -1271,7 +1231,7 @@ $user = $student;
                 await loadStudentProfile();
                 await loadCompanies();
 
-                // hide new company fields by default (they exist in markup)
+                // hide new company fields by default
                 const newFields = document.getElementById('newCompanyName');
                 if (newFields && newFields.parentElement) newFields.parentElement.style.display = 'none';
             })();
@@ -1286,14 +1246,13 @@ $user = $student;
                 if (newCompanyNameStar) newCompanyNameStar.style.display = 'none';
                 if (newCompanyContactStar) newCompanyContactStar.style.display = 'none';
                 if (companyAddressStar) companyAddressStar.style.display = 'none';
-                // companySelectStar: visible by default only if you want the dropdown to be flagged required when not checked
                 if (companySelectStar) companySelectStar.style.display = 'inline-block';
             })();
 
             const startDateInput = document.getElementById('startDate');
             const endDateInput = document.getElementById('endDate');
 
-            // Fungsi bantu untuk format tanggal ke yyyy-mm-dd
+            // Format tanggal ke yyyy-mm-dd
             function formatDate(date) {
                 const year = date.getFullYear();
                 const month = String(date.getMonth() + 1).padStart(2, '0');
