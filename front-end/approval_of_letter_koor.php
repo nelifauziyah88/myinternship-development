@@ -1644,7 +1644,7 @@ if ($id_kampus) {
                         </div>
                         <div>
                             <p style="margin: 0 0 8px 0; color: #858796; font-weight: 500; font-size: 13px;">
-                                <i class="fas fa-calendar-alt" style="color: #4e73df; width: 18px;"></i> Reply Upload Date:
+                                <i class="fas fa-calendar-alt" style="color: #4e73df; width: 18px;"></i> Upload Date:
                             </p>
                             <p style="margin: 0 0 0 26px; font-size: 15px; color: #5a5c69; font-weight: 500;">${replyDateFormatted}</p>
                         </div>
