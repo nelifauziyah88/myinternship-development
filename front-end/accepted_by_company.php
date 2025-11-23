@@ -699,7 +699,7 @@ if ($id_kampus) {
                                     <div class="radio-options">
                                         <label><input type="radio" name="info_source" value="self-observation"> Self-observation</label>
                                         <label><input type="radio" name="info_source" value="cdc"> From CDC Polibatam</label>
-                                        <label><input type="radio" name="info_source" value="coordinator"> From Coordinator</label>
+                                        <label><input type="radio" name="info_source" value="coordinator"> From Internship Coordinator</label>
                                         <label><input type="radio" name="info_source" value="myinternship"> From MyInternship</label>
                                         <label><input type="radio" name="info_source" value="workplace"> Interning at the Workplace</label>
                                     </div>
