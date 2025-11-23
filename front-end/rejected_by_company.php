@@ -458,7 +458,7 @@ if ($id_kampus) {
                   </button>
 
                   <button type="submit" id="submitBtn" class="btn-submit">
-                    Claim Internship <i class="fas fa-arrow-right" style="margin-left:6px;"></i>
+                    Submit <i class="fas fa-arrow-right" style="margin-left:6px;"></i>
                   </button>
                 </div>
               </form>
