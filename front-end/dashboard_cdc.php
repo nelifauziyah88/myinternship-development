@@ -919,6 +919,8 @@ function logout_confirm() {
                         localStorage.removeItem('first');
                         localStorage.removeItem('first_chime');
                         localStorage.removeItem('next_chime');
+                        localStorage.removeItem('dashboard_dept_index');
+                        localStorage.removeItem('dashboard_year');
                         window.location.href = 'role_login.php';
                     }, 200);
                 },
@@ -1001,7 +1003,7 @@ function initSidebarHighlight() {
 }
 
 // ============================================
-// DEPARTMENT DASHBOARD DATA - FETCH FROM API
+// GLOBAL VARIABLES
 // ============================================
 let departmentsData = {};
 let departments = [];
@@ -1009,11 +1011,50 @@ let currentDeptIndex = 0;
 let responseChart = null;
 let pieCharts = [];
 
-// ==================================================================================
-// FETCH DASHBOARD DATA - SIMPLIFIED (NO HARDCODE REFERENCE NEEDED)
-// ==================================================================================
-async function fetchDashboardData(year = 2025) {
+// ============================================
+// LOCAL STORAGE - PERSISTENT STATE
+// ============================================
+function saveDashboardState() {
     try {
+        localStorage.setItem('dashboard_dept_index', currentDeptIndex.toString());
+        const yearSelect = document.getElementById('yearFilter');
+        if (yearSelect) {
+            localStorage.setItem('dashboard_year', yearSelect.value);
+        }
+        console.log('State saved: Department Index ' + currentDeptIndex + ', Year ' + (yearSelect ? yearSelect.value : 'N/A'));
+    } catch (e) {
+        console.error('Error saving dashboard state:', e);
+    }
+}
+
+function loadDashboardState() {
+    try {
+        const savedIndex = localStorage.getItem('dashboard_dept_index');
+        const savedYear = localStorage.getItem('dashboard_year');
+        
+        const state = {
+            deptIndex: savedIndex !== null ? parseInt(savedIndex) : 0,
+            year: savedYear || new Date().getFullYear().toString()
+        };
+        
+        console.log('State loaded: Department Index ' + state.deptIndex + ', Year ' + state.year);
+        return state;
+    } catch (e) {
+        console.error('Error loading dashboard state:', e);
+        return {
+            deptIndex: 0,
+            year: new Date().getFullYear().toString()
+        };
+    }
+}
+
+// ============================================
+// FETCH DASHBOARD DATA FROM API
+// ============================================
+async function fetchDashboardData(year) {
+    try {
+        console.log('Fetching data for year: ' + year);
+        
         const response = await fetch(`http://localhost:8000/api/student/dashboard/statistics?year=${year}`);
         const result = await response.json();
 
@@ -1026,20 +1067,19 @@ async function fetchDashboardData(year = 2025) {
                 return false;
             }
             
+            console.log('Found ' + departments.length + ' departments:', departments);
+            
             departmentsData = {};
             
             // Group data by department
             departments.forEach(dept => {
-                // Filter data for this department
                 const deptResponseTime = data.responseTime.filter(r => r.department === dept);
                 const deptAcceptanceRate = data.acceptanceRate.filter(r => r.department === dept);
                 
-                // Extract programs, response times, and acceptance rates
                 const programs = deptResponseTime.map(r => r.program);
-                const responseTimes = deptResponseTime.map(r => parseFloat(r.avgTotalResponseTime));
+                const responseTimes = deptResponseTime.map(r => parseFloat(r.avgResponseTimeKoor)); 
                 const acceptanceRates = deptAcceptanceRate.map(r => [r.acceptanceRate, r.rejectionRate]);
                 
-                // Store in departmentsData
                 departmentsData[dept] = {
                     programs: programs,
                     responseTime: responseTimes,
@@ -1047,16 +1087,16 @@ async function fetchDashboardData(year = 2025) {
                     hasData: deptResponseTime.some(r => r.hasData) || deptAcceptanceRate.some(r => r.hasData)
                 };
                 
-                console.log(`Department: ${dept}, Programs: ${programs.length}, Has Data: ${departmentsData[dept].hasData}`);
+                console.log('  ' + dept + ': ' + programs.length + ' programs, Has Data: ' + departmentsData[dept].hasData);
             });
             
             return true;
         } else {
-            console.error('Failed to fetch dashboard data:', result.message);
+            console.error('API Error:', result.message);
             return false;
         }
     } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        console.error('Fetch Error:', error);
         Swal.fire({
             icon: 'error',
             title: 'Connection Error',
@@ -1068,7 +1108,7 @@ async function fetchDashboardData(year = 2025) {
 }
 
 // ============================================
-// BAR CHART - Response Time (IMPROVED)
+// BAR CHART - Response Time
 // ============================================
 function createResponseChart(labels, data) {
     const canvas = document.getElementById('responseChart');
@@ -1077,40 +1117,37 @@ function createResponseChart(labels, data) {
         return;
     }
 
-    // 1. DESTROY previous chart COMPLETELY
+    // Destroy previous chart
     if (responseChart) {
         try {
             responseChart.destroy();
-            console.log('Previous bar chart destroyed');
         } catch (e) {
-            console.error('Error destroying previous chart:', e);
+            console.error('Error destroying chart:', e);
         }
         responseChart = null;
     }
 
-    // 2. CLEAR canvas attributes
+    // Clear canvas
     canvas.removeAttribute('width');
     canvas.removeAttribute('height');
     canvas.removeAttribute('style');
 
     const ctx = canvas.getContext('2d');
-    
-    // 3. Clear canvas content
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 4. Calculate dimensions
+    // Calculate dimensions
     const barHeight = 80;
     const minHeight = 400;
     const chartHeight = Math.max(minHeight, labels.length * barHeight);
     const containerWidth = canvas.parentElement.offsetWidth;
 
-    // 5. Set canvas size
+    // Set canvas size
     canvas.width = containerWidth;
     canvas.height = chartHeight;
     canvas.style.width = '100%';
     canvas.style.height = chartHeight + 'px';
 
-    // 6. Create new chart
+    // Create chart
     responseChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -1153,11 +1190,11 @@ function createResponseChart(labels, data) {
         }
     });
     
-    console.log(`Bar chart created with ${labels.length} programs`);
+    console.log('Bar chart created: ' + labels.length + ' programs');
 }
 
 // ============================================
-// PIE CHARTS - Acceptance Rate (IMPROVED)
+// PIE CHARTS - Acceptance Rate
 // ============================================
 function updatePieCharts(pieData) {
     const container = document.getElementById('pieContainer');
@@ -1166,21 +1203,20 @@ function updatePieCharts(pieData) {
         return;
     }
 
-    // 1. DESTROY ALL old pie charts
+    // Destroy old charts
     pieCharts.forEach((c, index) => {
         try {
             c.destroy();
-            console.log(`Pie chart ${index} destroyed`);
         } catch (e) {
-            console.error(`Error destroying pie chart ${index}:`, e);
+            console.error('Error destroying pie chart ' + index + ':', e);
         }
     });
     pieCharts = [];
 
-    // 2. CLEAR container
+    // Clear container
     container.innerHTML = '';
 
-    // 3. Create new pie charts
+    // Create new pie charts
     pieData.forEach((item, i) => {
         const pieDiv = document.createElement('div');
         pieDiv.className = 'pie-item mb-3';
@@ -1228,20 +1264,26 @@ function updatePieCharts(pieData) {
         pieCharts.push(chart);
     });
     
-    console.log(`Created ${pieData.length} pie charts`);
+    console.log('Created ' + pieData.length + ' pie charts');
 }
 
 // ============================================
-// NAVIGATION & UPDATE FUNCTIONS
+// NAVIGATION FUNCTIONS
 // ============================================
 function navigateDepartment(dir) {
     currentDeptIndex += dir;
     if (currentDeptIndex < 0) currentDeptIndex = 0;
     if (currentDeptIndex >= departments.length) currentDeptIndex = departments.length - 1;
 
+    console.log('Navigating to department index: ' + currentDeptIndex);
+
+    // SAVE state immediately
+    saveDashboardState();
+
     updateDashboard();
     updateNavButtons();
 
+    // Scroll to chart
     const chartRow = document.querySelector('#responseChart')?.closest('.row');
     if (chartRow) {
         chartRow.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1268,21 +1310,23 @@ function updateDashboard() {
     const dept = departments[currentDeptIndex];
     const data = departmentsData[dept];
 
-    // Update title
+    console.log('Updating dashboard for: ' + dept + ' (index ' + currentDeptIndex + ')');
+
+    // Update department title
     const currentDeptEl = document.getElementById('currentDept');
     if (currentDeptEl) {
         currentDeptEl.textContent = dept + ' Department';
     }
 
-    // Check if department has any programs
+    // Check if department has programs
     if (!data || !data.programs || data.programs.length === 0) {
-        console.log(`Department "${dept}" has no programs - showing empty state`);
+        console.log('No programs found for ' + dept);
         showNoDataState();
         return;
     }
 
-    // Department has programs - render charts
-    console.log(`Department "${dept}" has ${data.programs.length} programs - rendering charts`);
+    // Render charts
+    console.log('Rendering charts for ' + dept + ': ' + data.programs.length + ' programs');
     createResponseChart(data.programs, data.responseTime);
 
     const pies = data.programs.map((p, i) => ({
@@ -1297,22 +1341,16 @@ function updateDashboard() {
     }
 }
 
-// ============================================
-// SHOW NO DATA STATE (BLANK - NO MESSAGE)
-// ============================================
 function showNoDataState() {
-    // 1. DESTROY bar chart if exists
+    // Destroy bar chart
     if (responseChart) {
         try {
             responseChart.destroy();
-            console.log('Bar chart destroyed');
-        } catch (e) {
-            console.error('Error destroying bar chart:', e);
-        }
+        } catch (e) {}
         responseChart = null;
     }
 
-    // 2. DESTROY all pie charts if exist
+    // Destroy pie charts
     pieCharts.forEach(c => {
         try {
             c.destroy();
@@ -1320,45 +1358,90 @@ function showNoDataState() {
     });
     pieCharts = [];
 
-    // 3. CLEAR bar chart canvas - BLANK (no text)
+    // Clear bar chart canvas
     const responseCanvas = document.getElementById('responseChart');
     if (responseCanvas) {
         const ctx = responseCanvas.getContext('2d');
-        
-        // Reset canvas size
         responseCanvas.width = responseCanvas.parentElement.offsetWidth;
         responseCanvas.height = 400;
         responseCanvas.style.width = '100%';
         responseCanvas.style.height = '400px';
-        
-        // Just clear - NO TEXT
         ctx.clearRect(0, 0, responseCanvas.width, responseCanvas.height);
     }
     
-    // 4. CLEAR pie container - BLANK (no text)
+    // Clear pie container
     const pieContainer = document.getElementById('pieContainer');
     if (pieContainer) {
         pieContainer.innerHTML = '';
     }
     
-    console.log('Blank state rendered (no message)');
+    console.log('Blank state rendered');
 }
 
+// ============================================
+// FILTER BY YEAR - KEEP CURRENT DEPARTMENT
+// ============================================
 async function filterByYear() {
     const yearSelect = document.getElementById('yearFilter');
+    if (!yearSelect) {
+        console.error('Year filter not found!');
+        return;
+    }
+    
     const selectedYear = yearSelect.value === 'all' ? new Date().getFullYear() : yearSelect.value;
     
+    console.log('Filter changed to year: ' + selectedYear);
+    console.log('Current department before filter: ' + (departments[currentDeptIndex] || 'N/A') + ' (index ' + currentDeptIndex + ')');
+    
+    // Show loading indicator
+    const currentDeptEl = document.getElementById('currentDept');
+    const originalText = currentDeptEl ? currentDeptEl.textContent : '';
+    if (currentDeptEl) {
+        currentDeptEl.textContent = 'Loading...';
+    }
+    
+    // CRITICAL: Remember current department NAME (not just index)
+    const currentDeptName = departments[currentDeptIndex];
+    
+    // Fetch new data
     const success = await fetchDashboardData(selectedYear);
     
     if (success && departments.length > 0) {
-        currentDeptIndex = 0;
+        // TRY to find the same department in new data
+        const newIndex = departments.findIndex(dept => dept === currentDeptName);
+        
+        if (newIndex !== -1) {
+            // Department exists in new year data - STAY at this department
+            currentDeptIndex = newIndex;
+            console.log('Department "' + currentDeptName + '" found at index ' + newIndex + ' - STAYING HERE');
+        } else {
+            // Department doesn't exist in new year - go to first department
+            currentDeptIndex = 0;
+            console.log('Department "' + currentDeptName + '" not found in year ' + selectedYear + ' - Reset to first department');
+        }
+        
+        // SAVE state to localStorage
+        saveDashboardState();
+        
+        // Update UI
         updateDashboard();
         updateNavButtons();
+        
+        console.log('Filter complete: Now at ' + departments[currentDeptIndex] + ' (index ' + currentDeptIndex + ')');
     } else {
+        // No data found
         departments = [];
         departmentsData = {};
-        updateDashboard();
+        currentDeptIndex = 0;
+        
+        if (currentDeptEl) {
+            currentDeptEl.textContent = 'No Data Available';
+        }
+        
+        showNoDataState();
         updateNavButtons();
+        
+        console.log('No data available for selected year');
     }
 }
 
@@ -1423,27 +1506,58 @@ $(document).ready(function() {
 });
 
 document.addEventListener('DOMContentLoaded', async function() {
+    console.log('Dashboard initialization started');
+    
     initSidebarHighlight();
     setupNavigationUI();
     setupBrowserSecurity();
     
-    // Show loading state
+    // Load saved state
+    const savedState = loadDashboardState();
+    
+    // Set year filter to saved value
+    const yearSelect = document.getElementById('yearFilter');
+    if (yearSelect) {
+        yearSelect.value = savedState.year;
+        console.log('Year filter set to: ' + savedState.year);
+    }
+    
+    // Show loading
     const currentDeptEl = document.getElementById('currentDept');
     if (currentDeptEl) {
         currentDeptEl.textContent = 'Loading...';
     }
     
-    const success = await fetchDashboardData(2025);
+    // Fetch data with saved year
+    const success = await fetchDashboardData(savedState.year);
     
     if (success && departments.length > 0) {
-        currentDeptIndex = 0;
+        // Validate saved index
+        if (savedState.deptIndex >= 0 && savedState.deptIndex < departments.length) {
+            currentDeptIndex = savedState.deptIndex;
+            console.log('Restored to department: ' + departments[currentDeptIndex] + ' (index ' + currentDeptIndex + ')');
+        } else {
+            currentDeptIndex = 0;
+            console.log('Saved index ' + savedState.deptIndex + ' out of bounds - Reset to first department');
+        }
+        
+        // Render dashboard
         updateDashboard();
         updateNavButtons();
+        
+        console.log('Dashboard initialized successfully');
     } else {
+        // No data
+        currentDeptIndex = 0;
+        
         if (currentDeptEl) {
             currentDeptEl.textContent = 'No Data Available';
         }
+        
         showNoDataState();
+        updateNavButtons();
+        
+        console.log('Dashboard initialized with no data');
     }
 });
 </script>
