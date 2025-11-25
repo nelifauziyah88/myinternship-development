@@ -75,7 +75,7 @@ router.post("/login_cdc", async (req, res) => {
   }
 });
 
-// List semua submission
+// Detail Submission (CDC)
 router.get("/cdc/submissions", async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -83,6 +83,7 @@ router.get("/cdc/submissions", async (req, res) => {
         il.id_letter,
         il.nim,
         s.name AS student_name,
+        sp.study_program AS program_study,
         il.company_name,
         il.start_date,
         il.end_date,
@@ -95,14 +96,17 @@ router.get("/cdc/submissions", async (req, res) => {
         il.updated_at
       FROM internship_letter il
       JOIN student_internship s ON s.nim = il.nim
+      JOIN program_study sp ON sp.kode_prodi = s.program_study
       ORDER BY il.created_at DESC
     `);
+
     res.json({ success: true, data: rows });
   } catch (err) {
     console.error("[CDC] Error fetching submissions:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 // Approve/Reject submission
 router.post("/cdc/approval", async (req, res) => {

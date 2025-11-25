@@ -172,7 +172,6 @@ if (!$id_letter) {
       margin-left: 8px;
     }
 
-    /* Form field styles */
     .form-group {
       margin-bottom: 15px;
       text-align: left;
@@ -215,7 +214,6 @@ if (!$id_letter) {
       margin: 0 !important;
     }
 
-    /* SweetAlert2 buttons */
     .swal2-confirm,
     .swal2-cancel {
       padding: 8px 16px !important;
@@ -340,13 +338,13 @@ if (!$id_letter) {
       const tbody = document.querySelector("#detailTable tbody");
       tbody.innerHTML = `
     <tr><th>NIM</th><td>${d.nim}</td></tr>
-    <tr><th>Nama Mahasiswa</th><td>${d.student_name}</td></tr>
-    <tr><th>Program Studi</th><td>${d.program_study}</td></tr>
-    <tr><th>Nama Perusahaan</th><td>${d.company_name}</td></tr>
-    <tr><th>Alamat Perusahaan</th><td>${d.company_address}</td></tr>
-    <tr><th>Kontak Perusahaan</th><td>${formatContact(d.company_contact)}</td></tr>
-    <tr><th>Tanggal Mulai</th><td>${new Date(d.start_date).toLocaleDateString("en-GB")}</td></tr>
-    <tr><th>Tanggal Selesai</th><td>${new Date(d.end_date).toLocaleDateString("en-GB")}</td></tr>
+    <tr><th>Student Name</th><td>${d.student_name}</td></tr>
+    <tr><th>Study Program</th><td>${d.study_program}</td></tr>
+    <tr><th>Company Name</th><td>${d.company_name}</td></tr>
+    <tr><th>Company Address</th><td>${d.company_address}</td></tr>
+    <tr><th>Company Contact</th><td>${formatContact(d.company_contact)}</td></tr>
+    <tr><th>Start Date</th><td>${new Date(d.start_date).toLocaleDateString("en-GB")}</td></tr>
+    <tr><th>End Date</th><td>${new Date(d.end_date).toLocaleDateString("en-GB")}</td></tr>
     <tr><th>Status</th><td>${badge(d.status)}</td></tr>
     <tr>
       <th>Koordinator Approval</th>
@@ -366,8 +364,8 @@ if (!$id_letter) {
           : ""}
       </td>
     </tr>
-    <tr><th>Dibuat Pada</th><td>${new Date(d.created_at).toLocaleString()}</td></tr>
-    ${d.updated_at ? `<tr><th>Diperbarui Pada</th><td>${new Date(d.updated_at).toLocaleString()}</td></tr>` : ""}
+    <tr><th>Created at</th><td>${new Date(d.created_at).toLocaleString()}</td></tr>
+    ${d.updated_at ? `<tr><th>Updated at</th><td>${new Date(d.updated_at).toLocaleString()}</td></tr>` : ""}
   `;
     }
 
@@ -422,37 +420,37 @@ if (!$id_letter) {
         <input id="edit-nim" class="swal2-input" value="${currentData.nim}" disabled>
       </div>
       <div class="form-group">
-        <label>Nama Mahasiswa</label>
+        <label>Student Name</label>
         <input id="edit-student-name" class="swal2-input" value="${currentData.student_name}" disabled>
       </div>
       <div class="form-group">
-        <label>Program Studi</label>
+        <label>Study Program</label>
         <input id="edit-program-study" class="swal2-input" value="${currentData.program_study}" disabled>
       </div>
       
       <div class="form-group">
-        <label>Nama Perusahaan</label>
+        <label>Company Name</label>
         <input id="edit-company-name" class="swal2-input" value="${currentData.company_name}">
       </div>
       <div class="form-group">
-        <label>Alamat Perusahaan</label>
+        <label>Company Address</label>
         <textarea id="edit-company-address" class="swal2-input">${currentData.company_address}</textarea>
       </div>
       <div class="form-group">
-        <label>Phone Perusahaan</label>
+        <label>Company Phone</label>
         <input id="edit-company-phone" class="swal2-input" value="${contactData.phone}" placeholder="e.g., +6281234567890">
       </div>
       <div class="form-group">
-        <label>Email Perusahaan</label>
+        <label>Company Email</label>
         <input id="edit-company-email" type="email" class="swal2-input" value="${contactData.email}" placeholder="e.g., company@example.com">
       </div>
       
       <div class="form-group">
-        <label>Tanggal Mulai</label>
+        <label>Start Date</label>
         <input type="date" id="edit-start-date" class="swal2-input" value="${formatDateForInput(currentData.start_date)}" disabled>
       </div>
       <div class="form-group">
-        <label>Tanggal Selesai</label>
+        <label>End Date</label>
         <input type="date" id="edit-end-date" class="swal2-input" value="${formatDateForInput(currentData.end_date)}" disabled>
       </div>
     `,

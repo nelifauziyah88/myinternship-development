@@ -7,6 +7,7 @@ if (!$id_letter) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Detail Submission - Koordinator</title>
@@ -83,9 +84,17 @@ if (!$id_letter) {
       text-align: center;
     }
 
-    .badge-status.waiting { background-color: #f6c23e; }
-    .badge-status.accepted { background-color: #28a745; }
-    .badge-status.rejected { background-color: #e74a3b; }
+    .badge-status.waiting {
+      background-color: #f6c23e;
+    }
+
+    .badge-status.accepted {
+      background-color: #28a745;
+    }
+
+    .badge-status.rejected {
+      background-color: #e74a3b;
+    }
 
     .approval-time {
       display: block;
@@ -126,6 +135,7 @@ if (!$id_letter) {
     }
   </style>
 </head>
+
 <body>
 
   <div class="container">
@@ -151,68 +161,68 @@ if (!$id_letter) {
   </div>
 
   <script>
-const id = "<?php echo $id_letter; ?>";
-const apiBase = "http://localhost:8000/api";
+    const id = "<?php echo $id_letter; ?>";
+    const apiBase = "http://localhost:8000/api";
 
-async function loadDetail() {
-  try {
-    const res = await fetch(`${apiBase}/lecturer/submissions/detail/${id}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    if (!json.success) throw new Error(json.message);
+    async function loadDetail() {
+      try {
+        const res = await fetch(`${apiBase}/lecturer/submissions/detail/${id}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        if (!json.success) throw new Error(json.message);
 
-    renderTable(json.data);
+        renderTable(json.data);
 
-    document.getElementById("loading").style.display = "none";
-    document.getElementById("detailTable").style.display = "table";
-  } catch (err) {
-    console.error(err);
-    Swal.fire({
-      icon: "error",
-      title: "Error loading data",
-      text: err.message,
-    });
-    document.getElementById("loading").innerHTML = `<span class="text-danger">${err.message}</span>`;
-  }
-}
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("detailTable").style.display = "table";
+      } catch (err) {
+        console.error(err);
+        Swal.fire({
+          icon: "error",
+          title: "Error loading data",
+          text: err.message,
+        });
+        document.getElementById("loading").innerHTML = `<span class="text-danger">${err.message}</span>`;
+      }
+    }
 
-function renderTable(d) {
-  const badge = (status) => {
-    const s = status?.toUpperCase() || "WAITING";
-    if (s.includes("REJECT"))
-      return `<span class='badge-status rejected'>Rejected</span>`;
-    if (s.includes("ACCEPT") || s.includes("APPROVE"))
-      return `<span class='badge-status accepted'>Approved</span>`;
-    return `<span class='badge-status waiting'>Waiting</span>`;
-  };
+    function renderTable(d) {
+      const badge = (status) => {
+        const s = status?.toUpperCase() || "WAITING";
+        if (s.includes("REJECT"))
+          return `<span class='badge-status rejected'>Rejected</span>`;
+        if (s.includes("ACCEPT") || s.includes("APPROVE"))
+          return `<span class='badge-status accepted'>Approved</span>`;
+        return `<span class='badge-status waiting'>Waiting</span>`;
+      };
 
-  const formatTime = (datetime) => {
-    if (!datetime) return "";
-    const d = new Date(datetime);
-    return d.toLocaleDateString("en-GB");
-  };
+      const formatTime = (datetime) => {
+        if (!datetime) return "";
+        const d = new Date(datetime);
+        return d.toLocaleDateString("en-GB");
+      };
 
-  function formatContact(contact) {
-    if (!contact) return '-';
-    const parts = contact.split(/\s+/);
-    let phone = parts.find(p => /^[0-9+]/.test(p));
-    let email = parts.find(p => p.includes('@'));
-    let html = '';
-    if (phone) html += `${phone} (phone)<br>`;
-    if (email) html += `${email} (email)`;
-    return html || contact;
-  }
+      function formatContact(contact) {
+        if (!contact) return '-';
+        const parts = contact.split(/\s+/);
+        let phone = parts.find(p => /^[0-9+]/.test(p));
+        let email = parts.find(p => p.includes('@'));
+        let html = '';
+        if (phone) html += `${phone} (phone)<br>`;
+        if (email) html += `${email} (email)`;
+        return html || contact;
+      }
 
-  const tbody = document.querySelector("#detailTable tbody");
-  tbody.innerHTML = `
+      const tbody = document.querySelector("#detailTable tbody");
+      tbody.innerHTML = `
     <tr><th>NIM</th><td>${d.nim}</td></tr>
-    <tr><th>Nama Mahasiswa</th><td>${d.student_name}</td></tr>
-    <tr><th>Program Studi</th><td>${d.program_study}</td></tr>
-    <tr><th>Nama Perusahaan</th><td>${d.company_name}</td></tr>
-    <tr><th>Alamat Perusahaan</th><td>${d.company_address}</td></tr>
-    <tr><th>Kontak Perusahaan</th><td>${formatContact(d.company_contact)}</td></tr>
-    <tr><th>Tanggal Mulai</th><td>${new Date(d.start_date).toLocaleDateString("en-GB")}</td></tr>
-    <tr><th>Tanggal Selesai</th><td>${new Date(d.end_date).toLocaleDateString("en-GB")}</td></tr>
+    <tr><th>Student Name</th><td>${d.student_name}</td></tr>
+   <tr><th>Study Program</th><td>${d.study_program}</td></tr>
+    <tr><th>Company Name</th><td>${d.company_name}</td></tr>
+    <tr><th>Company Address</th><td>${d.company_address}</td></tr>
+    <tr><th>Company Contact</th><td>${formatContact(d.company_contact)}</td></tr>
+    <tr><th>Start Date</th><td>${new Date(d.start_date).toLocaleDateString("en-GB")}</td></tr>
+    <tr><th>End Date</th><td>${new Date(d.end_date).toLocaleDateString("en-GB")}</td></tr>
     <tr><th>Status</th><td>${badge(d.status)}</td></tr>
     <tr>
       <th>Koordinator Approval</th>
@@ -232,13 +242,14 @@ function renderTable(d) {
           : ""}
       </td>
     </tr>
-    <tr><th>Dibuat Pada</th><td>${new Date(d.created_at).toLocaleString()}</td></tr>
-    ${d.updated_at ? `<tr><th>Diperbarui Pada</th><td>${new Date(d.updated_at).toLocaleString()}</td></tr>` : ""}
+    <tr><th>Created at</th><td>${new Date(d.created_at).toLocaleString()}</td></tr>
+    ${d.updated_at ? `<tr><th>Updated at</th><td>${new Date(d.updated_at).toLocaleString()}</td></tr>` : ""}
   `;
-}
+    }
 
-loadDetail();
-</script>
+    loadDetail();
+  </script>
 
 </body>
+
 </html>

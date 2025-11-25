@@ -140,7 +140,10 @@ router.get("/lecturer/submissions/detail/:id_letter", async (req, res) => {
          il.id_letter,
          il.nim,
          s.name AS student_name,
-         s.program_study,
+
+         -- AMBIL NAMA STUDY PROGRAM DARI TABEL program_study
+         ps.study_program AS study_program,
+
          il.company_name,
          il.company_address,
          il.company_contact,
@@ -155,14 +158,19 @@ router.get("/lecturer/submissions/detail/:id_letter", async (req, res) => {
          il.updated_at
        FROM internship_letter il
        JOIN student_internship s ON s.nim = il.nim
+
+       -- JOIN BARU
+       JOIN program_study ps ON ps.kode_prodi = s.program_study
+
        WHERE il.id_letter = ?`,
       [id_letter]
     );
 
     if (!rows.length) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Submission not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Submission not found",
+      });
     }
 
     res.json({ success: true, data: rows[0] });
@@ -172,7 +180,9 @@ router.get("/lecturer/submissions/detail/:id_letter", async (req, res) => {
   }
 });
 
-// Approve/Reject submission (Lecturer / Coordinator)
+
+
+// Approve/Reject submission
 router.post("/lecturer/approval", async (req, res) => {
   try {
     const { id_letter, status, user_id, user_name, comment } = req.body;
