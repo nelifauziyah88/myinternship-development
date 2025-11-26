@@ -57,6 +57,10 @@ if ($id_kampus) {
     <link rel="icon" href="./assets/img/iconM.png" type="image/x-icon" />
     <link href="./assets/img/iconM.png" rel="apple-touch-icon" type="image/x-icon">
 
+    <!-- JS PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
     <link rel='stylesheet' href='./core/component/sweetalert2.min.css'>
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -80,7 +84,7 @@ if ($id_kampus) {
                 "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
                 urls: ['./assets/css/fonts.min.css']
             },
-            active: function () {
+            active: function() {
                 sessionStorage.fonts = true;
             }
         });
@@ -91,7 +95,7 @@ if ($id_kampus) {
 
     <script src='./core/component/jquery.min.js'></script>
     <script>
-        $(function () { });
+        $(function() {});
     </script>
     <script defer src='./core/component/sweetalert2.min.js'></script>
     <script defer src='./core/component/soloalert.js'></script>
@@ -210,7 +214,6 @@ if ($id_kampus) {
         .badge-empty {
             display: inline-block;
             background-color: #adb5bd;
-            /* abu-abu */
             color: #fff;
             border-radius: 8px;
             padding: 5px 10px;
@@ -220,7 +223,10 @@ if ($id_kampus) {
             pointer-events: none;
             opacity: 0.85;
             min-width: 60px;
-            /* supaya tetap rata tengah walau cuma strip */
+        }
+
+        .same-width {
+            max-width: 243px;
         }
     </style>
 
@@ -537,16 +543,14 @@ if ($id_kampus) {
                                                 <option value="rejected">Rejected</option>
                                             </select>
                                         </div>
-
                                     </div>
                                     <!-- Filter Tahun -->
-                                    <div class="col-md-3 mb-3">
-                                        <label for="filter_year" class="form-label">
-                                            Select by Year
-                                        </label>
-                                        <select class="form-control" id="filter_year" name="year"
-                                            onchange="applyFilter()">
-                                        </select>
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3 same-width">
+                                            <label for="filter_year" class="form-label">Select by Year</label>
+                                            <select class="form-control" id="filter_year" name="year" onchange="applyFilter()">
+                                            </select>
+                                        </div>
                                     </div>
                                 </form>
                             </div>
@@ -649,7 +653,7 @@ if ($id_kampus) {
             // EVENT LISTENER - LOAD AWAL
             // ============================================
 
-            document.addEventListener("DOMContentLoaded", function () {
+            document.addEventListener("DOMContentLoaded", function() {
                 loadStudyPrograms(); // Load dropdown study program untuk filter
                 loadSubmissions(); // Load data submissions default (tanpa filter)
                 loadYears(); // Load dropdown tahun untuk filter
@@ -1258,15 +1262,15 @@ if ($id_kampus) {
                             data: {
                                 'token': _token
                             },
-                            success: function () {
-                                setTimeout(function () {
+                            success: function() {
+                                setTimeout(function() {
                                     localStorage.removeItem('first');
                                     localStorage.removeItem('first_chime');
                                     localStorage.removeItem('next_chime');
                                     window.location.href = 'role_login.php';
                                 }, 200);
                             },
-                            error: function () {
+                            error: function() {
                                 Swal.fire('Error', 'Logout failed, please try again.', 'error');
                             }
                         });
@@ -1472,9 +1476,51 @@ if ($id_kampus) {
                     Swal.fire("Error", "Failed to load company reply: " + err.message, "error");
                 }
             }
+
+            /**
+             * Fetch internship data dengan filter dari API
+             * 
+             * @returns {Array|null} Array of internship data atau null jika error/no data
+             */
             async function fetchInternshipData() {
                 const year = document.getElementById("filter_year").value;
-                const studyProgram = document.getElementById("filter_study_program").value; // Ambil dari filter
+                const studyProgram = document.getElementById("filter_study_program").value;
+
+                // Display values untuk pesan
+                const yearDisplay = year ? year : "All Year";
+
+                // Mapping program studi untuk pesan yang lebih readable
+                const programMap = {
+                    "AB": "Administrasi Bisnis Terapan",
+                    "AK": "Akuntansi",
+                    "AM": "Akuntansi Manajerial",
+                    "AN": "Animasi",
+                    "Bengkalis-IF": "Teknik Informatika",
+                    "DBG": "Distribusi Barang",
+                    "EM": "Teknik Elektronika Manufaktur",
+                    "GM": "Teknik Geomatika",
+                    "IF": "Teknik Informatika",
+                    "IF-FR": "Teknik Informatika",
+                    "INS": "Teknik Instrumentasi",
+                    "LPI": "Logistik Perdagangan Internasional",
+                    "ME-FR": "Teknik Mesin",
+                    "MJ": "Teknologi Rekayasa Multimedia",
+                    "MK": "Teknik Mekatronika",
+                    "MS": "Teknik Mesin",
+                    "OT": "Teknik Otomasi",
+                    "PPI": "Program Profesi Insinyur",
+                    "RE": "Teknik Robotika",
+                    "RKS": "Rekayasa Keamanan Siber",
+                    "RPE": "Teknologi Rekayasa Pembangkit Energi",
+                    "TPKP": "Teknik Perancangan dan Konstruksi Kapal",
+                    "TPPU": "Teknik Perawatan Pesawat Udara",
+                    "TRE": "Teknologi Rekayasa Elektronika",
+                    "TRPL": "Teknologi Rekayasa Perangkat Lunak"
+                };
+
+                const programDisplay = studyProgram ?
+                    (programMap[studyProgram] || studyProgram) :
+                    "All Programs";
 
                 try {
                     // Build URL dengan query params
@@ -1489,28 +1535,59 @@ if ($id_kampus) {
                     const json = await res.json();
 
                     if (!json.success) {
+                        // Generate pesan berdasarkan kombinasi filter
+                        let message = "";
+
+                        if (studyProgram && year) {
+                            // Ada prodi DAN ada tahun
+                            message = `No internship data found for ${programDisplay} in ${yearDisplay}`;
+                        } else if (studyProgram && !year) {
+                            // Ada prodi tapi TIDAK ada tahun (All Year)
+                            message = `No internship data found for ${programDisplay} across all years`;
+                        } else if (!studyProgram && year) {
+                            // Tidak ada prodi (All Programs) tapi ADA tahun
+                            message = `No internship data found for all programs in ${yearDisplay}`;
+                        } else {
+                            // Tidak ada filter sama sekali
+                            message = `No internship data found`;
+                        }
+
                         Swal.fire({
                             icon: "info",
                             title: "No Data Found",
-                            text: json.message || `No internship data found`,
+                            text: message,
                             confirmButtonText: "OK"
                         });
                         return null;
                     }
 
                     if (!json.data || json.data.length === 0) {
+                        // Generate pesan untuk data kosong (sama seperti di atas)
+                        let message = "";
+
+                        if (studyProgram && year) {
+                            message = `No active internship students found for ${programDisplay} in ${yearDisplay}`;
+                        } else if (studyProgram && !year) {
+                            message = `No active internship students found for ${programDisplay} across all years`;
+                        } else if (!studyProgram && year) {
+                            message = `No active internship students found for all programs in ${yearDisplay}`;
+                        } else {
+                            message = `No active internship students found`;
+                        }
+
                         Swal.fire({
                             icon: "info",
                             title: "No Data Found",
-                            text: `No active internship students found`,
+                            text: message,
                             confirmButtonText: "OK"
                         });
                         return null;
                     }
 
-                    console.log(`✅ Export data loaded: ${json.count} students`);
-                    console.log(`📊 Filter: ${json.filter}`);
+                    console.log(` Export data loaded: ${json.count} students`);
+                    console.log(` Filter: ${json.filter}`);
                     return json.data;
+
                 } catch (err) {
                     Swal.fire({
                         icon: "error",
@@ -1535,10 +1612,18 @@ if ($id_kampus) {
             }
 
             /**
+             * Get display text untuk tahun
+             */
+            function getYearDisplay() {
+                const year = document.getElementById("filter_year").value;
+                return year ? year : "All Year";
+            }
+
+            /**
              * Export to PDF - CDC VERSION (15 COLUMNS)
              */
             async function exportToPDF() {
-                const year = document.getElementById("filter_year").value;
+                const yearDisplay = getYearDisplay();
                 const studyProgram = document.getElementById("filter_study_program").value;
                 const filterText = studyProgram ? `Program: ${studyProgram}` : 'All Programs';
 
@@ -1578,7 +1663,7 @@ if ($id_kampus) {
 
                     doc.setFontSize(12);
                     doc.setFont(undefined, 'normal');
-                    doc.text(`Year: ${year}`, doc.internal.pageSize.getWidth() / 2, 22, {
+                    doc.text(`Year: ${yearDisplay}`, doc.internal.pageSize.getWidth() / 2, 22, {
                         align: 'center'
                     });
                     doc.text(`Filter: ${filterText}`, doc.internal.pageSize.getWidth() / 2, 28, {
@@ -1694,7 +1779,8 @@ if ($id_kampus) {
                         });
                     }
 
-                    doc.save(`Data_Magang_${year}_${filterText.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+                    const fileName = yearDisplay === "All Year" ? "Data_Magang_All_Year.pdf" : `Data_Magang_${yearDisplay}.pdf`;
+                    doc.save(fileName);
 
                     Swal.fire({
                         icon: "success",
@@ -1718,7 +1804,7 @@ if ($id_kampus) {
              * Export to Excel - CDC VERSION WITH FULL STYLING (15 COLUMNS)
              */
             async function exportToExcel() {
-                const year = document.getElementById("filter_year").value;
+                const yearDisplay = getYearDisplay();
                 const studyProgram = document.getElementById("filter_study_program").value;
 
                 // UBAH didOpen menjadi onOpen
@@ -1783,7 +1869,7 @@ if ($id_kampus) {
                     // ✅ UBAH: Excel Data - 15 KOLOM
                     const excelData = [
                         ['INTERNSHIP DATA REPORT'],
-                        [`Year: ${year}`],
+                        [`Year: ${yearDisplay}`],
                         [`Filter: ${filterText}`],
                         [`Total Students: ${data.length}`],
                         [],
@@ -1811,93 +1897,93 @@ if ($id_kampus) {
 
                     // ✅ UBAH: Column widths - 15 KOLOM
                     ws['!cols'] = [{
-                        wch: 5
-                    }, // No
-                    {
-                        wch: 15
-                    }, // NIM
-                    {
-                        wch: 25
-                    }, // Name
-                    {
-                        wch: 35
-                    }, // Study Program
-                    {
-                        wch: 20
-                    }, // Department
-                    {
-                        wch: 25
-                    }, // Class
-                    {
-                        wch: 10
-                    }, // Semester
-                    {
-                        wch: 25
-                    }, // Coordinator
-                    {
-                        wch: 30
-                    }, // Company
-                    {
-                        wch: 20
-                    }, // Contact
-                    {
-                        wch: 100
-                    }, // Address
-                    {
-                        wch: 12
-                    }, // Start Date
-                    {
-                        wch: 12
-                    }, // End Date
-                    {
-                        wch: 25
-                    }, // Email
-                    {
-                        wch: 18
-                    } // WhatsApp
+                            wch: 5
+                        }, // No
+                        {
+                            wch: 15
+                        }, // NIM
+                        {
+                            wch: 25
+                        }, // Name
+                        {
+                            wch: 35
+                        }, // Study Program
+                        {
+                            wch: 20
+                        }, // Department
+                        {
+                            wch: 25
+                        }, // Class
+                        {
+                            wch: 10
+                        }, // Semester
+                        {
+                            wch: 25
+                        }, // Coordinator
+                        {
+                            wch: 30
+                        }, // Company
+                        {
+                            wch: 20
+                        }, // Contact
+                        {
+                            wch: 100
+                        }, // Address
+                        {
+                            wch: 12
+                        }, // Start Date
+                        {
+                            wch: 12
+                        }, // End Date
+                        {
+                            wch: 25
+                        }, // Email
+                        {
+                            wch: 18
+                        } // WhatsApp
                     ];
 
                     // ✅ UBAH: Merges - EXTEND to column 14 (O)
                     ws['!merges'] = [{
-                        s: {
-                            r: 0,
-                            c: 0
+                            s: {
+                                r: 0,
+                                c: 0
+                            },
+                            e: {
+                                r: 0,
+                                c: 14
+                            }
+                        }, // ✅ 0-14 (bukan 0-9)
+                        {
+                            s: {
+                                r: 1,
+                                c: 0
+                            },
+                            e: {
+                                r: 1,
+                                c: 14
+                            }
                         },
-                        e: {
-                            r: 0,
-                            c: 14
-                        }
-                    }, // ✅ 0-14 (bukan 0-9)
-                    {
-                        s: {
-                            r: 1,
-                            c: 0
+                        {
+                            s: {
+                                r: 2,
+                                c: 0
+                            },
+                            e: {
+                                r: 2,
+                                c: 14
+                            }
                         },
-                        e: {
-                            r: 1,
-                            c: 14
+                        {
+                            s: {
+                                r: 3,
+                                c: 0
+                            },
+                            e: {
+                                r: 3,
+                                c: 14
+                            }
                         }
-                    },
-                    {
-                        s: {
-                            r: 2,
-                            c: 0
-                        },
-                        e: {
-                            r: 2,
-                            c: 14
-                        }
-                    },
-                    {
-                        s: {
-                            r: 3,
-                            c: 0
-                        },
-                        e: {
-                            r: 3,
-                            c: 14
-                        }
-                    }
                     ];
 
                     const borderStyle = {
@@ -2037,10 +2123,12 @@ if ($id_kampus) {
                         });
                     }
 
-                    XLSX.utils.book_append_sheet(wb, ws, `Internship ${year}`);
+                    // Sheet name dinamis
+                    const sheetName = yearDisplay === "All Year" ? "Internship All Year" : `Internship ${yearDisplay}`;
+                    XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
-                    // Filename dengan filter info
-                    const fileName = `Data_Magang_${year}_${filterText.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`;
+                    // Nama file dinamis
+                    const fileName = yearDisplay === "All Year" ? "Internship_Data_All_Year.xlsx" : `Internship_Data_${yearDisplay}.xlsx`;
                     XLSX.writeFile(wb, fileName);
 
                     Swal.fire({

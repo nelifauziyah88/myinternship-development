@@ -583,7 +583,7 @@ if ($id_kampus) {
                                         </div>
 
                                         <!-- Filter Tahun -->
-                                        <div class="col-md-3 mb-3">
+                                        <div class="col-md mb-3">
                                             <label for="filter_year" class="form-label">
                                                 Select by Year
                                             </label>
@@ -1112,7 +1112,7 @@ if ($id_kampus) {
             // ============================================================
 
             // Initialize on page load
-            document.addEventListener("DOMContentLoaded",() => {
+            document.addEventListener("DOMContentLoaded", () => {
                 loadSubmissions();
                 loadYears();
             });
@@ -1859,16 +1859,23 @@ if ($id_kampus) {
              */
             async function fetchInternshipData() {
                 const year = document.getElementById("filter_year").value;
+                const yearDisplay = year ? year : "All Year"; // ← BARIS BARU INI
 
                 try {
-                    const res = await fetch(`${apiBase}/lecturer/export-internship?year=${year}&nim_nik_unit=${lecturerId}`);
+                    // Jika year kosong (ALL), kirim parameter kosong ke API
+                    const yearParam = year ? `year=${year}` : '';
+                    const res = await fetch(`${apiBase}/lecturer/export-internship?${yearParam}&nim_nik_unit=${lecturerId}`);
                     const json = await res.json();
 
                     if (!json.success) {
+                        const message = year ?
+                            `No internship data found for year ${yearDisplay}` :
+                            `No internship data found for all years`;
+
                         Swal.fire({
                             icon: "info",
                             title: "No Data Found",
-                            text: json.message || `No internship data found for year ${year}`,
+                            text: message, // ← Pakai variable message
                             confirmButtonText: "OK"
                         });
                         return null;
@@ -1878,7 +1885,7 @@ if ($id_kampus) {
                         Swal.fire({
                             icon: "info",
                             title: "No Data Found",
-                            text: `No students are doing internships in ${year}`,
+                            text: `No students are doing internships`,
                             confirmButtonText: "OK"
                         });
                         return null;
@@ -1910,10 +1917,18 @@ if ($id_kampus) {
             }
 
             /**
+             * Get display text untuk tahun
+             */
+            function getYearDisplay() {
+                const year = document.getElementById("filter_year").value;
+                return year ? year : "All Year";
+            }
+
+            /**
              * Export to PDF - COMPATIBLE VERSION
              */
             async function exportToPDF() {
-                const year = document.getElementById("filter_year").value;
+                const yearDisplay = getYearDisplay();
 
                 Swal.fire({
                     title: 'Generating PDF...',
@@ -1947,7 +1962,7 @@ if ($id_kampus) {
 
                     doc.setFontSize(12);
                     doc.setFont(undefined, 'normal');
-                    doc.text(`Year: ${year}`, doc.internal.pageSize.getWidth() / 2, 22, {
+                    doc.text(`Year: ${yearDisplay}`, doc.internal.pageSize.getWidth() / 2, 22, {
                         align: 'center'
                     });
                     doc.text(`Total Students: ${data.length}`, doc.internal.pageSize.getWidth() / 2, 28, {
@@ -1991,36 +2006,28 @@ if ($id_kampus) {
                         columnStyles: {
                             0: {
                                 cellWidth: 8
-                            },
-                            // Nomor
+                            }, // Nomor
                             1: {
                                 cellWidth: 18
-                            },
-                            // NIM
+                            }, // NIM
                             2: {
                                 cellWidth: 28
-                            },
-                            // Name
+                            }, // Name
                             3: {
                                 cellWidth: 30
-                            },
-                            // Study Program
+                            }, // Study Program
                             4: {
                                 cellWidth: 20
-                            },
-                            // Class
+                            }, // Class
                             5: {
                                 cellWidth: 14
-                            },
-                            // Semester
+                            }, // Semester
                             6: {
                                 cellWidth: 18
-                            },
-                            // Start Date
+                            }, // Start Date
                             7: {
                                 cellWidth: 18
-                            },
-                            // End Date
+                            }, // End Date
                             8: {
                                 cellWidth: 28
                             }, // Company Name
@@ -2055,7 +2062,9 @@ if ($id_kampus) {
                         });
                     }
 
-                    doc.save(`Data_Magang_${year}.pdf`);
+                    // Nama file dinamis berdasarkan filter
+                    const fileName = yearDisplay === "All Year" ? "Data_Magang_All_Year.pdf" : `Data_Magang_${yearDisplay}.pdf`;
+                    doc.save(fileName);
 
                     Swal.fire({
                         icon: "success",
@@ -2079,7 +2088,7 @@ if ($id_kampus) {
              * Export to Excel - COMPATIBLE VERSION
              */
             async function exportToExcel() {
-                const year = document.getElementById("filter_year").value;
+                const yearDisplay = getYearDisplay();
 
                 Swal.fire({
                     title: 'Generating Excel...',
@@ -2104,7 +2113,7 @@ if ($id_kampus) {
                     // KOLOM DISESUAIKAN DENGAN API BACKEND
                     const excelData = [
                         ['INTERNSHIP DATA REPORT'],
-                        [`Year: ${year}`],
+                        [`Year: ${yearDisplay}`],
                         [`Total Students: ${data.length}`],
                         [],
                         ['No', 'NIM', 'Name', 'Study Program', 'Class', 'Semester', 'Start Date', 'End Date', 'Company Name', 'Company Contact', 'Company Address', 'Email', 'WhatsApp'],
@@ -2329,8 +2338,13 @@ if ($id_kampus) {
                         });
                     }
 
-                    XLSX.utils.book_append_sheet(wb, ws, `Internship ${year}`);
-                    XLSX.writeFile(wb, `Data_Magang_${year}.xlsx`);
+                    // Sheet name dinamis
+                    const sheetName = yearDisplay === "All Year" ? "Internship All Year" : `Internship ${yearDisplay}`;
+                    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+                    // Nama file dinamis
+                    const fileName = yearDisplay === "All Year" ? "Internship_Data_All_Year.xlsx" : `Internship_Data_${yearDisplay}.xlsx`;
+                    XLSX.writeFile(wb, fileName);
 
                     Swal.fire({
                         icon: "success",
