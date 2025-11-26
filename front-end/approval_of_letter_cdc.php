@@ -67,6 +67,7 @@ if ($id_kampus) {
 
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <!-- Fonts and icons -->
     <script src="./assets/js/plugin/webfont/webfont.min.js"></script>
@@ -79,7 +80,7 @@ if ($id_kampus) {
                 "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
                 urls: ['./assets/css/fonts.min.css']
             },
-            active: function() {
+            active: function () {
                 sessionStorage.fonts = true;
             }
         });
@@ -90,7 +91,7 @@ if ($id_kampus) {
 
     <script src='./core/component/jquery.min.js'></script>
     <script>
-        $(function() {});
+        $(function () { });
     </script>
     <script defer src='./core/component/sweetalert2.min.js'></script>
     <script defer src='./core/component/soloalert.js'></script>
@@ -255,9 +256,11 @@ if ($id_kampus) {
             <!-- Logo Header -->
             <div class="logo-header" data-background-color="blue2">
                 <a href="#" class="logo">
-                    <img src="./assets/img/my_internship_logo_grey5.png" alt="navbar brand" class="navbar-brand" style="width: 180px; height: auto;">
+                    <img src="./assets/img/my_internship_logo_grey5.png" alt="navbar brand" class="navbar-brand"
+                        style="width: 180px; height: auto;">
                 </a>
-                <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse" data-target="collapse" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse"
+                    data-target="collapse" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon">
                         <i class="icon-menu"></i>
                     </span>
@@ -279,7 +282,8 @@ if ($id_kampus) {
 
                             <!-- Tanggal -->
                             <li class="nav-item dropdown hidden-caret">
-                                <a aria-label="Current Date and Calendar" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+                                <a aria-label="Current Date and Calendar" class="nav-link dropdown-toggle"
+                                    data-toggle="dropdown" href="#" aria-expanded="false">
                                     <span id="date">Wed, 08 Oct 2025</span>
                                 </a>
                                 <ul class="float-right dropdown-menu dropdown-calendar dropdown-user animated fadeIn">
@@ -293,7 +297,8 @@ if ($id_kampus) {
 
                             <!-- Jam -->
                             <li class="nav-item dropdown hidden-caret">
-                                <a aria-label="Current Time" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+                                <a aria-label="Current Time" class="nav-link dropdown-toggle" data-toggle="dropdown"
+                                    href="#" aria-expanded="false">
                                     <span id="clock">22 : 12 : 24</span>
                                 </a>
                                 <ul class="float-right dropdown-menu dropdown-calendar dropdown-user animated fadeIn">
@@ -311,23 +316,27 @@ if ($id_kampus) {
                     </div>
                     <ul class="navbar-nav topbar-nav ml-md-auto align-items-center">
                         <li class="nav-item toggle-nav-search hidden-caret">
-                            <a class="nav-link" data-toggle="collapse" href="#search-nav" role="button" aria-expanded="false" aria-controls="search-nav">
+                            <a class="nav-link" data-toggle="collapse" href="#search-nav" role="button"
+                                aria-expanded="false" aria-controls="search-nav">
                                 <i class="fa fa-clock"></i>
                             </a>
                         </li>
                         <li class="nav-item dropdown hidden-caret">
-                            <a class="nav-link" href="#" role="button" data-toggle="modal" data-target="#Modalkalender" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link" href="#" role="button" data-toggle="modal" data-target="#Modalkalender"
+                                aria-haspopup="true" aria-expanded="false">
                                 <i class="fa fa-calendar"></i>
                             </a>
                         </li>
 
                         <!-- Notification -->
                         <li class="nav-item dropdown hidden-caret" id="notification">
-                            <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fa fa-bell"></i>
                                 <span id="count_notification"></span>
                             </a>
-                            <ul class='dropdown-menu messages-notif-box animated fadeIn' aria-labelledby='notifDropdown' id=''>
+                            <ul class='dropdown-menu messages-notif-box animated fadeIn' aria-labelledby='notifDropdown'
+                                id=''>
                                 <li>
                                     <div class='dropdown-title'>New Notification</div>
                                 </li>
@@ -339,7 +348,8 @@ if ($id_kampus) {
 
                         <!-- Profil -->
                         <li class="nav-item dropdown hidden-caret">
-                            <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#" aria-expanded="false">
+                            <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#"
+                                aria-expanded="false">
                                 <div class="avatar-sm">
                                     <img src="assets/img/profile.png" alt="..." class="avatar-img rounded-circle">
                                 </div>
@@ -348,10 +358,12 @@ if ($id_kampus) {
                                 <div class="dropdown-user-scroll scrollbar-outer">
                                     <li>
                                         <div class="user-box">
-                                            <div class="avatar-lg"><img src="./assets/img/profile.png" alt="image profile" class="avatar-img rounded"></div>
+                                            <div class="avatar-lg"><img src="./assets/img/profile.png"
+                                                    alt="image profile" class="avatar-img rounded"></div>
                                             <div class="u-text">
                                                 <h5><?php echo htmlspecialchars($user['name']); ?></h5>
-                                                <p class="text-muted"> CDC at :<br><?= htmlspecialchars($nama_kampus) ?></p>
+                                                <p class="text-muted"> CDC at :<br><?= htmlspecialchars($nama_kampus) ?>
+                                                </p>
                                                 <a href="#" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
                                             </div>
                                         </div>
@@ -389,7 +401,8 @@ if ($id_kampus) {
                             <a data-toggle="collapse" href="#collapseExample" aria-expanded="true">
                                 <span>
                                     <span class="wrap2"><?php echo htmlspecialchars($user['name']); ?></span>
-                                    <span class="user-level wrap2">CDC at : <br><?php echo htmlspecialchars($nama_kampus); ?></span>
+                                    <span class="user-level wrap2">CDC at :
+                                        <br><?php echo htmlspecialchars($nama_kampus); ?></span>
                                 </span>
                             </a>
                             <div class="clearfix"></div>
@@ -471,22 +484,29 @@ if ($id_kampus) {
                                     <div class="row align-items-end">
                                         <!-- Filter By Study Program -->
                                         <div class="col-md mb-3">
-                                            <label for="filter_study_program" class="form-label">Filter By Study Program</label>
-                                            <select class="form-control" id="filter_study_program" name="study_program" onchange="applyFilter()">
+                                            <label for="filter_study_program" class="form-label">Filter By Study
+                                                Program</label>
+                                            <select class="form-control" id="filter_study_program" name="study_program"
+                                                onchange="applyFilter()">
                                                 <option value="">Select Study Program</option>
                                             </select>
                                         </div>
 
                                         <!-- Filter By Student Name -->
                                         <div class="col-md mb-3">
-                                            <label for="filter_student_name" class="form-label">Filter by Student Name</label>
-                                            <input type="text" class="form-control" id="filter_student_name" name="student_name" placeholder="Enter Student Name" onkeyup="applyFilter()">
+                                            <label for="filter_student_name" class="form-label">Filter by Student
+                                                Name</label>
+                                            <input type="text" class="form-control" id="filter_student_name"
+                                                name="student_name" placeholder="Enter Student Name"
+                                                onkeyup="applyFilter()">
                                         </div>
 
                                         <!-- Filter By Approval Coordinator -->
                                         <div class="col-md mb-3">
-                                            <label for="filter_coordinator" class="form-label">Filter by Approval Coordinator</label>
-                                            <select class="form-control" id="filter_coordinator" name="coordinator" onchange="applyFilter()">
+                                            <label for="filter_coordinator" class="form-label">Filter by Approval
+                                                Coordinator</label>
+                                            <select class="form-control" id="filter_coordinator" name="coordinator"
+                                                onchange="applyFilter()">
                                                 <option value="">ALL</option>
                                                 <option value="approved">Approved</option>
                                                 <option value="waiting">Waiting</option>
@@ -497,7 +517,8 @@ if ($id_kampus) {
                                         <!-- Filter By Approval CDC -->
                                         <div class="col-md mb-3">
                                             <label for="filter_cdc" class="form-label">Filter by Approval CDC</label>
-                                            <select class="form-control" id="filter_cdc" name="cdc" onchange="applyFilter()">
+                                            <select class="form-control" id="filter_cdc" name="cdc"
+                                                onchange="applyFilter()">
                                                 <option value="">ALL</option>
                                                 <option value="approve">Approve</option>
                                                 <option value="waiting">Waiting</option>
@@ -507,16 +528,40 @@ if ($id_kampus) {
 
                                         <!-- Filter By Result Company -->
                                         <div class="col-md mb-3">
-                                            <label for="filter_company" class="form-label">Filter by Result Company</label>
-                                            <select class="form-control" id="filter_company" name="company" onchange="applyFilter()">
+                                            <label for="filter_company" class="form-label">Filter by Result
+                                                Company</label>
+                                            <select class="form-control" id="filter_company" name="company"
+                                                onchange="applyFilter()">
                                                 <option value="">ALL</option>
                                                 <option value="accepted">Accepted</option>
                                                 <option value="rejected">Rejected</option>
                                             </select>
                                         </div>
+
+                                    </div>
+                                    <!-- Filter Tahun -->
+                                    <div class="col-md-3 mb-3">
+                                        <label for="filter_year" class="form-label">
+                                            Select by Year
+                                        </label>
+                                        <select class="form-control" id="filter_year" name="year"
+                                            onchange="applyFilter()">
+                                        </select>
                                     </div>
                                 </form>
                             </div>
+                        </div>
+                        <!-- Button Export Excel -->
+                        <div class="col-md-2 mb-3" style="float: right;">
+                            <button class="btn btn-success btn-block" onclick="exportToExcel()">
+                                <i class="fas fa-file-excel"></i> Export to Excel
+                            </button>
+                        </div>
+                        <!-- Button Export PDF -->
+                        <div class="col-md-2 mb-3" style="float: right;">
+                            <button class="btn btn-danger btn-block" onclick="exportToPDF()">
+                                <i class="fas fa-file-pdf"></i> Export to PDF
+                            </button>
                         </div>
                     </div>
 
@@ -569,7 +614,8 @@ if ($id_kampus) {
                     <nav class="pull-left">
                     </nav>
                     <div class="copyright ml-auto">
-                        © 2025, made with <i class="fa fa-heart heart text-danger"></i> by <a href="https://github.com/nelifauziyah88/myinternship-development">PBLIFPagi3A-3</a>
+                        © 2025, made with <i class="fa fa-heart heart text-danger"></i> by <a
+                            href="https://github.com/nelifauziyah88/myinternship-development">PBLIFPagi3A-3</a>
                     </div>
                 </div>
             </footer>
@@ -579,6 +625,8 @@ if ($id_kampus) {
         <script src="./assets/js/core/popper.min.js"></script>
         <script src="./assets/js/core/bootstrap.min.js"></script>
         <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style/dist/xlsx.min.js"></script>
 
         <script>
             // ============================================
@@ -601,10 +649,22 @@ if ($id_kampus) {
             // EVENT LISTENER - LOAD AWAL
             // ============================================
 
-            document.addEventListener("DOMContentLoaded", function() {
+            document.addEventListener("DOMContentLoaded", function () {
                 loadStudyPrograms(); // Load dropdown study program untuk filter
                 loadSubmissions(); // Load data submissions default (tanpa filter)
+                loadYears(); // Load dropdown tahun untuk filter
             });
+
+            function loadYears() {
+                const yearSelect = document.getElementById("filter_year");
+                const currentYear = new Date().getFullYear();
+
+                yearSelect.innerHTML = `<option value="">ALL</option>`; // Default option
+
+                for (let y = currentYear; y >= 2021; y--) {
+                    yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+                }
+            }
 
 
             // ============================================
@@ -631,6 +691,7 @@ if ($id_kampus) {
                         const coordinator = document.getElementById("filter_coordinator").value;
                         const cdcFilter = document.getElementById("filter_cdc").value;
                         const company = document.getElementById("filter_company").value;
+                        const year = document.getElementById("filter_year").value;
 
                         let queryParams = new URLSearchParams();
                         queryParams.append('id_kampus', cdcKampusId);
@@ -640,6 +701,7 @@ if ($id_kampus) {
                         if (coordinator) queryParams.append('coordinator', coordinator);
                         if (cdcFilter) queryParams.append('cdc', cdcFilter);
                         if (company) queryParams.append('company', company);
+                        if (year) queryParams.append('year', year);
 
                         apiUrl = `${apiBase}/cdc/submissions-filtered?${queryParams.toString()}`;
                     }
@@ -724,17 +786,6 @@ if ($id_kampus) {
     `;
             }
 
-
-            // ============================================
-            // FUNGSI HELPER - BUILD BADGE STATUS
-            // ============================================
-
-            /**
-             * Build badge untuk status approval koordinator
-             * 
-             * @param {Object} item - Data submission
-             * @returns {string} HTML string untuk badge koordinator
-             */
             function buildKoordinatorBadge(item) {
                 const updatedDate = formatDate(item.updated_at);
 
@@ -1207,15 +1258,15 @@ if ($id_kampus) {
                             data: {
                                 'token': _token
                             },
-                            success: function() {
-                                setTimeout(function() {
+                            success: function () {
+                                setTimeout(function () {
                                     localStorage.removeItem('first');
                                     localStorage.removeItem('first_chime');
                                     localStorage.removeItem('next_chime');
                                     window.location.href = 'role_login.php';
                                 }, 200);
                             },
-                            error: function() {
+                            error: function () {
                                 Swal.fire('Error', 'Logout failed, please try again.', 'error');
                             }
                         });
@@ -1419,6 +1470,594 @@ if ($id_kampus) {
                 } catch (err) {
                     console.error("Error viewing company reply:", err);
                     Swal.fire("Error", "Failed to load company reply: " + err.message, "error");
+                }
+            }
+            async function fetchInternshipData() {
+                const year = document.getElementById("filter_year").value;
+                const studyProgram = document.getElementById("filter_study_program").value; // Ambil dari filter
+
+                try {
+                    // Build URL dengan query params
+                    let url = `${apiBase}/cdc/export-internship?year=${year}`;
+
+                    // Jika ada filter prodi, tambahkan ke URL
+                    if (studyProgram && studyProgram.trim() !== '') {
+                        url += `&study_program=${encodeURIComponent(studyProgram)}`;
+                    }
+
+                    const res = await fetch(url);
+                    const json = await res.json();
+
+                    if (!json.success) {
+                        Swal.fire({
+                            icon: "info",
+                            title: "No Data Found",
+                            text: json.message || `No internship data found`,
+                            confirmButtonText: "OK"
+                        });
+                        return null;
+                    }
+
+                    if (!json.data || json.data.length === 0) {
+                        Swal.fire({
+                            icon: "info",
+                            title: "No Data Found",
+                            text: `No active internship students found`,
+                            confirmButtonText: "OK"
+                        });
+                        return null;
+                    }
+
+                    console.log(`✅ Export data loaded: ${json.count} students`);
+                    console.log(`📊 Filter: ${json.filter}`);
+                    return json.data;
+                } catch (err) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Failed to fetch data: " + err.message,
+                        confirmButtonText: "OK"
+                    });
+                    return null;
+                }
+            }
+
+            /**
+             * Format tanggal ke DD/MM/YYYY
+             */
+            function formatDate(dateString) {
+                if (!dateString) return "-";
+                const date = new Date(dateString);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}/${month}/${year}`;
+            }
+
+            /**
+             * Export to PDF - CDC VERSION (15 COLUMNS)
+             */
+            async function exportToPDF() {
+                const year = document.getElementById("filter_year").value;
+                const studyProgram = document.getElementById("filter_study_program").value;
+                const filterText = studyProgram ? `Program: ${studyProgram}` : 'All Programs';
+
+                Swal.fire({
+                    title: 'Generating PDF...',
+                    text: 'Please wait',
+                    allowOutsideClick: false,
+                    onOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const data = await fetchInternshipData();
+
+                if (!data) {
+                    return; // HENTIKAN! JANGAN TUTUP SWEET ALERT
+                }
+
+                Swal.close();
+
+                if (!data || data.length === 0) {
+                    return;
+                }
+
+                try {
+                    const {
+                        jsPDF
+                    } = window.jspdf;
+                    const doc = new jsPDF('landscape', 'mm', 'a4');
+
+                    // Header
+                    doc.setFontSize(16);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('INTERNSHIP DATA REPORT', doc.internal.pageSize.getWidth() / 2, 15, {
+                        align: 'center'
+                    });
+
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, 'normal');
+                    doc.text(`Year: ${year}`, doc.internal.pageSize.getWidth() / 2, 22, {
+                        align: 'center'
+                    });
+                    doc.text(`Filter: ${filterText}`, doc.internal.pageSize.getWidth() / 2, 28, {
+                        align: 'center'
+                    });
+                    doc.text(`Total Students: ${data.length}`, doc.internal.pageSize.getWidth() / 2, 34, {
+                        align: 'center'
+                    });
+
+
+
+                    // ✅ UBAH: Table Data - 15 KOLOM
+                    const tableData = data.map((item, index) => [
+                        index + 1,
+                        item.nim || '-',
+                        item.student_name || '-',
+                        item.program_study || '-',
+                        item.department || '-',
+                        item.class || '-',
+                        item.semester || '-',
+                        item.internship_coordinator || '-',
+                        item.company_name || '-',
+                        item.company_contact || '-',
+                        item.company_address || '-',
+                        formatDate(item.start_date),
+                        formatDate(item.end_date),
+                        item.email || '-',
+                        item.whatsapp_number || '-'
+                    ]);
+
+                    // ✅ UBAH: autoTable Config - 15 KOLOM
+                    doc.autoTable({
+                        startY: 40,
+                        head: [
+                            ['No', 'NIM', 'Name', 'Study Program', 'Class', 'Semester', 'Start Date', 'End Date', 'Company Name', 'Company Contact', 'Company Address', 'Email', 'WhatsApp']
+                        ],
+                        body: tableData,
+                        styles: {
+                            fontSize: 6,
+                            cellPadding: 2,
+                            overflow: 'linebreak'
+                        },
+                        headStyles: {
+                            fillColor: [41, 128, 185],
+                            textColor: 255,
+                            fontStyle: 'bold',
+                            halign: 'center'
+                        },
+                        columnStyles: {
+                            0: {
+                                cellWidth: 8
+                            },
+                            // Nomor
+                            1: {
+                                cellWidth: 18
+                            },
+                            // NIM
+                            2: {
+                                cellWidth: 28
+                            },
+                            // Name
+                            3: {
+                                cellWidth: 30
+                            },
+                            // Study Program
+                            4: {
+                                cellWidth: 20
+                            },
+                            // Class
+                            5: {
+                                cellWidth: 14
+                            },
+                            // Semester
+                            6: {
+                                cellWidth: 18
+                            },
+                            // Start Date
+                            7: {
+                                cellWidth: 18
+                            },
+                            // End Date
+                            8: {
+                                cellWidth: 28
+                            }, // Company Name
+                            9: {
+                                cellWidth: 18
+                            }, // Company Contact
+                            10: {
+                                cellWidth: 28
+                            }, // Company Address
+                            11: {
+                                cellWidth: 18
+                            }, // Email
+                            12: {
+                                cellWidth: 18
+                            } // WhatsApp
+                        },
+                        alternateRowStyles: {
+                            fillColor: [245, 245, 245]
+                        }
+                    });
+
+                    // Footer
+                    const pageCount = doc.internal.getNumberOfPages();
+                    for (let i = 1; i <= pageCount; i++) {
+                        doc.setPage(i);
+                        doc.setFontSize(8);
+                        doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, {
+                            align: 'center'
+                        });
+                        doc.text(`Generated on ${new Date().toLocaleDateString('en-GB')}`, doc.internal.pageSize.getWidth() - 15, doc.internal.pageSize.getHeight() - 10, {
+                            align: 'right'
+                        });
+                    }
+
+                    doc.save(`Data_Magang_${year}_${filterText.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Success",
+                        text: "PDF downloaded successfully!",
+                        confirmButtonText: "OK"
+                    });
+
+                } catch (err) {
+                    console.error("PDF generation error:", err);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Failed to generate PDF: " + err.message,
+                        confirmButtonText: "OK"
+                    });
+                }
+            }
+
+            /**
+             * Export to Excel - CDC VERSION WITH FULL STYLING (15 COLUMNS)
+             */
+            async function exportToExcel() {
+                const year = document.getElementById("filter_year").value;
+                const studyProgram = document.getElementById("filter_study_program").value;
+
+                // UBAH didOpen menjadi onOpen
+                Swal.fire({
+                    title: 'Generating Excel...',
+                    text: 'Please wait',
+                    allowOutsideClick: false,
+                    onOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const data = await fetchInternshipData();
+
+                if (!data) {
+                    return; // HENTIKAN! JANGAN TUTUP SWEET ALERT
+                }
+
+                Swal.close();
+
+                if (!data || data.length === 0) {
+                    return;
+                }
+
+                try {
+                    const wb = XLSX.utils.book_new();
+
+                    // Mapping program studi
+                    const programMap = {
+                        "AB": "Administrasi Bisnis Terapan",
+                        "AK": "Akuntansi",
+                        "AM": "Akuntansi Manajerial",
+                        "AN": "Animasi",
+                        "Bengkalis-IF": "Teknik Informatika",
+                        "DBG": "Distribusi Barang",
+                        "EM": "Teknik Elektronika Manufaktur",
+                        "GM": "Teknik Geomatika",
+                        "IF": "Teknik Informatika",
+                        "IF-FR": "Teknik Informatika",
+                        "INS": "Teknik Instrumentasi",
+                        "LPI": "Logistik Perdagangan Internasional",
+                        "ME-FR": "Teknik Mesin",
+                        "MJ": "Teknologi Rekayasa Multimedia",
+                        "MK": "Teknik Mekatronika",
+                        "MS": "Teknik Mesin",
+                        "OT": "Teknik Otomasi",
+                        "PPI": "Program Profesi Insinyur",
+                        "RE": "Teknik Robotika",
+                        "RKS": "Rekayasa Keamanan Siber",
+                        "RPE": "Teknologi Rekayasa Pembangkit Energi",
+                        "TPKP": "Teknik Perancangan dan Konstruksi Kapal",
+                        "TPPU": "Teknik Perawatan Pesawat Udara",
+                        "TRE": "Teknologi Rekayasa Elektronika",
+                        "TRPL": "Teknologi Rekayasa Perangkat Lunak",
+                        "All": "All Program Study",
+                        "ALL": "All Program Study"
+                    };
+
+                    const selectedStudyProgram = document.getElementById("filter_study_program")?.value || "ALL";
+                    let filterText = programMap[selectedStudyProgram] || selectedStudyProgram;
+
+                    // ✅ UBAH: Excel Data - 15 KOLOM
+                    const excelData = [
+                        ['INTERNSHIP DATA REPORT'],
+                        [`Year: ${year}`],
+                        [`Filter: ${filterText}`],
+                        [`Total Students: ${data.length}`],
+                        [],
+                        ['No', 'NIM', 'Name', 'Study Program', 'Department', 'Class', 'Semester', 'Coordinator', 'Company Name', 'Company Contact', 'Company Address', 'Start Date', 'End Date', 'Email', 'WhatsApp'],
+                        ...data.map((item, index) => [
+                            index + 1,
+                            item.nim || '-',
+                            item.student_name || '-',
+                            item.program_study || '-',
+                            item.department || '-',
+                            item.class || '-',
+                            item.semester || '-',
+                            item.internship_coordinator || '-',
+                            item.company_name || '-',
+                            item.company_contact || '-',
+                            item.company_address || '-',
+                            formatDate(item.start_date),
+                            formatDate(item.end_date),
+                            item.email || '-',
+                            item.whatsapp_number || '-'
+                        ])
+                    ];
+
+                    const ws = XLSX.utils.aoa_to_sheet(excelData);
+
+                    // ✅ UBAH: Column widths - 15 KOLOM
+                    ws['!cols'] = [{
+                        wch: 5
+                    }, // No
+                    {
+                        wch: 15
+                    }, // NIM
+                    {
+                        wch: 25
+                    }, // Name
+                    {
+                        wch: 35
+                    }, // Study Program
+                    {
+                        wch: 20
+                    }, // Department
+                    {
+                        wch: 25
+                    }, // Class
+                    {
+                        wch: 10
+                    }, // Semester
+                    {
+                        wch: 25
+                    }, // Coordinator
+                    {
+                        wch: 30
+                    }, // Company
+                    {
+                        wch: 20
+                    }, // Contact
+                    {
+                        wch: 100
+                    }, // Address
+                    {
+                        wch: 12
+                    }, // Start Date
+                    {
+                        wch: 12
+                    }, // End Date
+                    {
+                        wch: 25
+                    }, // Email
+                    {
+                        wch: 18
+                    } // WhatsApp
+                    ];
+
+                    // ✅ UBAH: Merges - EXTEND to column 14 (O)
+                    ws['!merges'] = [{
+                        s: {
+                            r: 0,
+                            c: 0
+                        },
+                        e: {
+                            r: 0,
+                            c: 14
+                        }
+                    }, // ✅ 0-14 (bukan 0-9)
+                    {
+                        s: {
+                            r: 1,
+                            c: 0
+                        },
+                        e: {
+                            r: 1,
+                            c: 14
+                        }
+                    },
+                    {
+                        s: {
+                            r: 2,
+                            c: 0
+                        },
+                        e: {
+                            r: 2,
+                            c: 14
+                        }
+                    },
+                    {
+                        s: {
+                            r: 3,
+                            c: 0
+                        },
+                        e: {
+                            r: 3,
+                            c: 14
+                        }
+                    }
+                    ];
+
+                    const borderStyle = {
+                        top: {
+                            style: 'thin',
+                            color: {
+                                rgb: '000000'
+                            }
+                        },
+                        bottom: {
+                            style: 'thin',
+                            color: {
+                                rgb: '000000'
+                            }
+                        },
+                        left: {
+                            style: 'thin',
+                            color: {
+                                rgb: '000000'
+                            }
+                        },
+                        right: {
+                            style: 'thin',
+                            color: {
+                                rgb: '000000'
+                            }
+                        }
+                    };
+
+                    const headerStyle = {
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 11,
+                            bold: true,
+                            color: {
+                                rgb: 'FFFFFF'
+                            }
+                        },
+                        fill: {
+                            fgColor: {
+                                rgb: '4472C4'
+                            }
+                        },
+                        alignment: {
+                            horizontal: 'center',
+                            vertical: 'center'
+                        },
+                        border: borderStyle
+                    };
+
+                    const dataStyle = {
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 11
+                        },
+                        alignment: {
+                            vertical: 'center'
+                        },
+                        border: borderStyle
+                    };
+
+                    const dataCenterStyle = {
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 11
+                        },
+                        alignment: {
+                            horizontal: 'center',
+                            vertical: 'center'
+                        },
+                        border: borderStyle
+                    };
+
+                    // === TITLE & SUBTITLE CENTER ===
+                    ws['A1'].s = {
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 16,
+                            bold: true
+                        },
+                        alignment: {
+                            horizontal: 'center',
+                            vertical: 'center'
+                        }
+                    };
+                    ws['A2'].s = {
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 12
+                        },
+                        alignment: {
+                            horizontal: 'center',
+                            vertical: 'center'
+                        }
+                    };
+                    ws['A3'].s = {
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 12
+                        },
+                        alignment: {
+                            horizontal: 'center',
+                            vertical: 'center'
+                        }
+                    };
+                    ws['A4'].s = {
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 12
+                        },
+                        alignment: {
+                            horizontal: 'center',
+                            vertical: 'center'
+                        }
+                    };
+
+                    // ✅ UBAH: HEADER ROW STYLING - 15 KOLOM (A-O)
+                    const headerCols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
+                    headerCols.forEach(col => {
+                        const cellRef = col + '6'; // Row 6 adalah header
+                        if (ws[cellRef]) ws[cellRef].s = headerStyle;
+                    });
+
+                    // === DATA ROWS STYLING ===
+                    const dataStartRow = 7; // Row 7 mulai data
+                    for (let row = dataStartRow; row < dataStartRow + data.length; row++) {
+                        headerCols.forEach((col, colIndex) => {
+                            const cellRef = col + row;
+                            if (ws[cellRef]) {
+                                // ✅ UBAH: Kolom yang center: No (0), NIM (1), Class (5), Semester (6), Start Date (11), End Date (12)
+                                if (colIndex === 0 || colIndex === 1 || colIndex === 5 || colIndex === 6 || colIndex === 11 || colIndex === 12) {
+                                    ws[cellRef].s = dataCenterStyle;
+                                } else {
+                                    ws[cellRef].s = dataStyle;
+                                }
+                            }
+                        });
+                    }
+
+                    XLSX.utils.book_append_sheet(wb, ws, `Internship ${year}`);
+
+                    // Filename dengan filter info
+                    const fileName = `Data_Magang_${year}_${filterText.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`;
+                    XLSX.writeFile(wb, fileName);
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Success",
+                        text: "Excel downloaded successfully!",
+                        confirmButtonText: "OK"
+                    });
+
+                } catch (err) {
+                    console.error("Excel generation error:", err);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Failed to generate Excel: " + err.message,
+                        confirmButtonText: "OK"
+                    });
                 }
             }
         </script>

@@ -298,6 +298,7 @@ router.get("/cdc/submissions-filtered", async (req, res) => {
       cdc,
       company,
       id_kampus,
+      year
     } = req.query;
 
     let query = `
@@ -373,6 +374,13 @@ router.get("/cdc/submissions-filtered", async (req, res) => {
         query += ` AND il.acceptance_status = 'REJECTED'`;
       }
     }
+
+    // Filter by year (start_date)
+if (year) {
+  query += ` AND YEAR(il.start_date) = ?`;
+  params.push(year);
+}
+
 
     query += ` ORDER BY il.created_at DESC`;
 
@@ -836,4 +844,139 @@ router.get("/dashboard/summary", async (req, res) => {
     });
   }
 });
+
+// ============================================================
+// EXPORT DATA MAGANG - CDC (ALL PRODI OR FILTERED)
+// ============================================================
+
+/**
+ * GET /api/cdc/export-internship
+ * Export data magang untuk CDC
+ * Query params: year, study_program (optional)
+ *
+ * LOGIC:
+ * 1. Ambil data dari tabel internship (mahasiswa aktif magang)
+ * 2. Jika kolom kosong di internship, fallback ke internship_letter
+ */
+router.get("/cdc/export-internship", async (req, res) => {
+  try {
+    const { year, study_program } = req.query;
+
+    const isAllYears = !year || year.toLowerCase() === "all";
+    const id_kampus = 1; // Polibatam
+
+    // =======================================================
+    // DYNAMIC YEAR FILTER (DIHILANGKAN JIKA "all")
+    // =======================================================
+    let yearFilterInternship = "";
+    let yearFilterLetter = "";
+
+    if (!isAllYears) {
+      yearFilterInternship = `AND YEAR(i.start_date) = ${db.escape(year)}`;
+      yearFilterLetter = `AND YEAR(il.start_date) = ${db.escape(year)}`;
+    }
+
+    // =======================================================
+    // MAIN QUERY
+    // =======================================================
+    let query = `
+      SELECT 
+        i.nim,
+        si.name AS student_name,
+        CONCAT(ps.jenjang, ' ', ps.study_program) AS program_study,
+        ps.major AS department,
+
+        COALESCE(NULLIF(MAX(il.class), ''), '-') AS class,
+        COALESCE(NULLIF(MAX(il.semester), ''), '-') AS semester,
+
+        l.name AS internship_coordinator,
+
+        COALESCE(
+          NULLIF(MAX(c.name), ''),
+          NULLIF(MAX(il.company_name), ''),
+          '-'
+        ) AS company_name,
+
+        COALESCE(
+          NULLIF(MAX(c.phone), ''),
+          NULLIF(MAX(il.company_contact), ''),
+          '-'
+        ) AS company_contact,
+
+        COALESCE(
+          NULLIF(MAX(c.address), ''),
+          NULLIF(MAX(il.company_address), ''),
+          '-'
+        ) AS company_address,
+
+        i.start_date,
+        i.end_date,
+        COALESCE(NULLIF(si.email, ''), '-') AS email,
+        COALESCE(NULLIF(si.no_whatsapp, ''), '-') AS whatsapp_number
+
+      FROM internship i
+      INNER JOIN student_internship si ON i.nim = si.nim
+      LEFT JOIN company c ON i.id_company = c.id_company
+      LEFT JOIN program_study ps 
+        ON si.program_study = ps.kode_prodi 
+        AND si.id_kampus = ps.id_kampus
+      LEFT JOIN lecturer l 
+        ON l.prodi_koor = si.program_study
+        AND l.is_koor = 1
+
+      LEFT JOIN internship_letter il ON i.nim = il.nim
+        AND il.acceptance_status = 'ACCEPTED'
+        ${yearFilterLetter}
+
+      WHERE i.status = 'ONGOING'
+        ${yearFilterInternship}
+        AND si.id_kampus = ?
+    `;
+
+    const params = [id_kampus];
+
+    // FILTER STUDY PROGRAM (OPTIONAL)
+    if (study_program && study_program.trim() !== "") {
+      query += ` AND si.program_study = ?`;
+      params.push(study_program);
+    }
+
+    query += `
+      GROUP BY 
+        i.nim, si.name, ps.jenjang, ps.study_program, ps.major, 
+        l.name, i.start_date, i.end_date, si.email, si.no_whatsapp
+      ORDER BY i.start_date DESC, si.name ASC
+    `;
+
+    // EXECUTE QUERY
+    const [rows] = await db.query(query, params);
+
+    // NO DATA
+    if (!rows.length) {
+      return res.status(404).json({
+        success: false,
+        message: `No internship data found in year: ${year || "all"}`,
+      });
+    }
+
+    // SUCCESS
+    res.json({
+      success: true,
+      year: isAllYears ? "all" : year,
+      study_program: study_program || "All Programs",
+      count: rows.length,
+      data: rows,
+    });
+
+  } catch (err) {
+    console.error("[CDC EXPORT] Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
+    });
+  }
+});
+
+
 module.exports = router;

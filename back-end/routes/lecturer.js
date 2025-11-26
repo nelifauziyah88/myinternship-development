@@ -713,4 +713,140 @@ router.get("/dashboard/summary", async (req, res) => {
     });
   }
 });
+
+router.get("/lecturer/export-internship", async (req, res) => {
+  try {
+    const { year, nim_nik_unit } = req.query;
+    const isAllYears = !year || year.toLowerCase() === "all"; 
+    const currentYear = isAllYears ? null : year;
+
+    if (!nim_nik_unit) {
+      return res.status(400).json({
+        success: false,
+        message: "Lecturer ID (nim_nik_unit) is required",
+      });
+    }
+
+    // Get coordinator info
+    const [lecRows] = await db.query(
+      `SELECT prodi_koor, id_kampus, is_koor, name
+       FROM lecturer 
+       WHERE nim_nik_unit = ? AND is_koor = 1 
+       LIMIT 1`,
+      [nim_nik_unit]
+    );
+
+    if (!lecRows.length) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized as internship coordinator",
+      });
+    }
+
+    const { prodi_koor, id_kampus, name } = lecRows[0];
+
+    // =====================================================
+    // DYNAMIC YEAR FILTER
+    // =====================================================
+    let yearFilterInternship = "";
+    let yearFilterLetter = "";
+
+    if (!isAllYears) {
+      yearFilterInternship = `AND YEAR(i.start_date) = ${db.escape(currentYear)}`;
+      yearFilterLetter = `AND YEAR(il.start_date) = ${db.escape(currentYear)}`;
+    }
+
+    // =====================================================
+    // FINAL QUERY
+    // =====================================================
+    const query = `
+      SELECT 
+        i.nim,
+        si.name AS student_name,
+        CONCAT(ps.jenjang, ' ', ps.study_program) AS program_study,
+        ps.major AS department,
+
+        COALESCE(NULLIF(MAX(il.class), ''), '-') AS class,
+        COALESCE(NULLIF(MAX(il.semester), ''), '-') AS semester,
+
+        ? AS internship_coordinator,
+
+        COALESCE(
+          NULLIF(MAX(c.name), ''),
+          NULLIF(MAX(il.company_name), ''),
+          '-'
+        ) AS company_name,
+
+        COALESCE(
+          NULLIF(MAX(c.phone), ''),
+          NULLIF(MAX(il.company_contact), ''),
+          '-'
+        ) AS company_contact,
+
+        COALESCE(
+          NULLIF(MAX(c.address), ''),
+          NULLIF(MAX(il.company_address), ''),
+          '-'
+        ) AS company_address,
+
+        i.start_date,
+        i.end_date,
+        COALESCE(NULLIF(si.email, ''), '-') AS email,
+        COALESCE(NULLIF(si.no_whatsapp, ''), '-') AS whatsapp_number
+
+      FROM internship i
+      INNER JOIN student_internship si ON i.nim = si.nim
+      LEFT JOIN company c ON i.id_company = c.id_company
+      LEFT JOIN program_study ps 
+        ON si.program_study = ps.kode_prodi 
+        AND si.id_kampus = ps.id_kampus
+
+      LEFT JOIN internship_letter il ON i.nim = il.nim
+        AND il.acceptance_status = 'ACCEPTED'
+        ${yearFilterLetter}
+
+      WHERE i.status = 'ONGOING'
+        ${yearFilterInternship}
+        AND si.program_study LIKE CONCAT('%', ?, '%')
+        AND si.id_kampus = ?
+
+      GROUP BY i.nim, si.name, ps.jenjang, ps.study_program, ps.major, 
+               i.start_date, i.end_date, si.email, si.no_whatsapp
+
+      ORDER BY i.start_date DESC, si.name ASC
+    `;
+
+    const [rows] = await db.query(query, [
+      name,
+      prodi_koor,
+      id_kampus,
+    ]);
+
+    if (!rows.length) {
+      return res.status(404).json({
+        success: false,
+        message: `No internship data found for filter: year=${year || "all"}`,
+      });
+    }
+
+    res.json({
+      success: true,
+      year: isAllYears ? "all" : currentYear,
+      coordinator: name,
+      prodi: prodi_koor,
+      total_data: rows.length,
+      data: rows,
+    });
+
+  } catch (err) {
+    console.error("[EXPORT] Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
+    });
+  }
+});
+
+
 module.exports = router;
