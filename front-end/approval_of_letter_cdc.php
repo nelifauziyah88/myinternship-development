@@ -84,7 +84,7 @@ if ($id_kampus) {
                 "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
                 urls: ['./assets/css/fonts.min.css']
             },
-            active: function() {
+            active: function () {
                 sessionStorage.fonts = true;
             }
         });
@@ -95,7 +95,7 @@ if ($id_kampus) {
 
     <script src='./core/component/jquery.min.js'></script>
     <script>
-        $(function() {});
+        $(function () { });
     </script>
     <script defer src='./core/component/sweetalert2.min.js'></script>
     <script defer src='./core/component/soloalert.js'></script>
@@ -209,20 +209,6 @@ if ($id_kampus) {
             border-radius: 8px;
             padding: 5px 10px;
             font-weight: 500;
-        }
-
-        .badge-empty {
-            display: inline-block;
-            background-color: #adb5bd;
-            color: #fff;
-            border-radius: 8px;
-            padding: 5px 10px;
-            font-weight: 500;
-            text-align: center;
-            cursor: default;
-            pointer-events: none;
-            opacity: 0.85;
-            min-width: 60px;
         }
 
         .same-width {
@@ -500,7 +486,8 @@ if ($id_kampus) {
 
                                         <!-- Filter By Department -->
                                         <div class="col-md mb-3">
-                                            <label for="filter_department" class="form-label">Filter By Department</label>
+                                            <label for="filter_department" class="form-label">Filter By
+                                                Department</label>
                                             <select class="form-control" id="filter_department" name="department"
                                                 onchange="onDepartmentChange()">
                                                 <option value="">All Departments</option>
@@ -535,9 +522,9 @@ if ($id_kampus) {
                                             <select class="form-control" id="filter_cdc" name="cdc"
                                                 onchange="applyFilter()">
                                                 <option value="">ALL</option>
-                                                <option value="approve">Approve</option>
+                                                <option value="approved">Approved</option>
                                                 <option value="waiting">Waiting</option>
-                                                <option value="reject">Reject</option>
+                                                <option value="rejected">Reject</option>
                                             </select>
                                         </div>
                                     </div>
@@ -554,11 +541,6 @@ if ($id_kampus) {
                                                 <option value="rejected">Rejected</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-3 mb-3 same-width">
-                                            <label for="filter_year" class="form-label">Select by Year</label>
-                                            <select class="form-control" id="filter_year" name="year" onchange="applyFilter()">
-                                            </select>
-                                        </div>
                                     </div>
                                 </form>
                             </div>
@@ -567,12 +549,6 @@ if ($id_kampus) {
                         <div class="col-md-2 mb-3" style="float: right;">
                             <button class="btn btn-success btn-block" onclick="exportToExcel()">
                                 <i class="fas fa-file-excel"></i> Export to Excel
-                            </button>
-                        </div>
-                        <!-- Button Export PDF -->
-                        <div class="col-md-2 mb-3" style="float: right;">
-                            <button class="btn btn-danger btn-block" onclick="exportToPDF()">
-                                <i class="fas fa-file-pdf"></i> Export to PDF
                             </button>
                         </div>
                     </div>
@@ -661,7 +637,7 @@ if ($id_kampus) {
             // EVENT LISTENER - LOAD AWAL
             // ============================================
 
-            document.addEventListener("DOMContentLoaded", function() {
+            document.addEventListener("DOMContentLoaded", function () {
                 loadDepartments(); // Load dropdown department untuk filter
                 loadStudyPrograms(); // Load dropdown study program untuk filter
                 loadSubmissions(); // Load data submissions default (tanpa filter)
@@ -986,7 +962,7 @@ if ($id_kampus) {
 
                 // Jika belum ada acceptance status dari company
                 if (!acceptance || acceptance === '-') {
-                    return `<span class="badge-empty">-</span>`;
+                    return `<span>-</span>`;
                 }
 
                 // Jika ACCEPTED
@@ -1013,7 +989,7 @@ if ($id_kampus) {
         `;
                 }
 
-                return `<span class="badge-empty">-</span>`;
+                return `<span>-</span>`;
             }
 
             /**
@@ -1344,15 +1320,15 @@ if ($id_kampus) {
                             data: {
                                 'token': _token
                             },
-                            success: function() {
-                                setTimeout(function() {
+                            success: function () {
+                                setTimeout(function () {
                                     localStorage.removeItem('first');
                                     localStorage.removeItem('first_chime');
                                     localStorage.removeItem('next_chime');
                                     window.location.href = 'role_login.php';
                                 }, 200);
                             },
-                            error: function() {
+                            error: function () {
                                 Swal.fire('Error', 'Logout failed, please try again.', 'error');
                             }
                         });
@@ -1501,7 +1477,7 @@ if ($id_kampus) {
 
                         // Tampilkan modal dengan file
                         Swal.fire({
-                            title: '', // Kosongkan karena sudah ada info di dalam content
+                            title: '',
                             html: modalContent,
                             width: '900px',
                             showConfirmButton: true,
@@ -1511,7 +1487,7 @@ if ($id_kampus) {
                             }
                         });
                     }
-                    // Case 2: REJECTED tanpa file (overdue)
+                    // REJECTED tanpa file
                     else if (data.acceptance_status === 'REJECTED' && data.isOverdue) {
                         Swal.fire({
                             title: "Company Reply - REJECTED",
@@ -1726,259 +1702,151 @@ if ($id_kampus) {
             }
 
             /**
-             * Get display text untuk tahun
+             * Fetch internship data (CDC) with start/end + optional filters
+             * @param {string} startDate YYYY-MM-DD
+             * @param {string} endDate YYYY-MM-DD
+             * @returns {Array|null}
              */
-            function getYearDisplay() {
-                const year = document.getElementById("filter_year").value;
-                return year ? year : "All Year";
-            }
-
-            /**
-             * Export to PDF - CDC VERSION (15 COLUMNS)
-             */
-            async function exportToPDF() {
-                const yearDisplay = getYearDisplay();
+            async function fetchInternshipData(startDate, endDate) {
+                const yearDisplay = (startDate && endDate) ? `${startDate} to ${endDate}` : "All Range";
                 const studyProgram = document.getElementById("filter_study_program").value;
-                const filterText = studyProgram ? `Program: ${studyProgram}` : 'All Study Programs';
-
-                Swal.fire({
-                    title: 'Generating PDF...',
-                    text: 'Please wait',
-                    allowOutsideClick: false,
-                    onOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                const data = await fetchInternshipData();
-
-                if (!data) {
-                    return; // HENTIKAN! JANGAN TUTUP SWEET ALERT
-                }
-
-                Swal.close();
-
-                if (!data || data.length === 0) {
-                    return;
-                }
+                const department = document.getElementById("filter_department").value;
 
                 try {
-                    const {
-                        jsPDF
-                    } = window.jspdf;
-                    const doc = new jsPDF('landscape', 'mm', 'a4');
+                    let params = new URLSearchParams();
+                    params.append('start_date', startDate);
+                    params.append('end_date', endDate);
+                    params.append('id_kampus', cdcKampusId);
 
-                    // Header
-                    doc.setFontSize(16);
-                    doc.setFont(undefined, 'bold');
-                    doc.text('INTERNSHIP DATA REPORT', doc.internal.pageSize.getWidth() / 2, 15, {
-                        align: 'center'
-                    });
+                    if (department && department.trim() !== '') params.append('department', department);
+                    if (studyProgram && studyProgram.trim() !== '') params.append('study_program', studyProgram);
 
-                    doc.setFontSize(12);
-                    doc.setFont(undefined, 'normal');
-                    doc.text(`Year: ${yearDisplay}`, doc.internal.pageSize.getWidth() / 2, 22, {
-                        align: 'center'
-                    });
-                    doc.text(`Filter: ${filterText}`, doc.internal.pageSize.getWidth() / 2, 28, {
-                        align: 'center'
-                    });
-                    doc.text(`Total Students: ${data.length}`, doc.internal.pageSize.getWidth() / 2, 34, {
-                        align: 'center'
-                    });
+                    const res = await fetch(`${apiBase}/cdc/export-internship?${params.toString()}`);
+                    const json = await res.json();
 
-                    // ✅ Table Data - 15 KOLOM (urutan disesuaikan dengan head)
-                    const tableData = data.map((item, index) => [
-                        index + 1, // No
-                        item.nim || '-', // NIM
-                        item.student_name || '-', // Name
-                        item.program_study || '-', // Study Program
-                        item.class || '-', // Class
-                        item.semester || '-', // Semester
-                        item.internship_coordinator || '-', // Internship Coordinator
-                        item.company_name || '-', // Company Name
-                        item.company_contact || '-', // Company Contact
-                        item.company_address || '-', // Company Address
-                        formatDate(item.start_date), // Start Date
-                        formatDate(item.end_date), // End Date
-                        item.email || '-', // Email
-                        item.whatsapp_number || '-' // WhatsApp
-                    ]);
-
-                    // ✅ autoTable Config - 14 KOLOM (Department dihapus karena tidak ada di head)
-                    doc.autoTable({
-                        startY: 40,
-                        head: [
-                            ['No', 'NIM', 'Name', 'Study Program', 'Class', 'Semester', 'Internship Coordinator', 'Company Name', 'Company Contact', 'Company Address', 'Start Date', 'End Date', 'Email', 'WhatsApp']
-                        ],
-                        body: tableData,
-                        styles: {
-                            fontSize: 6,
-                            cellPadding: 2,
-                            overflow: 'linebreak'
-                        },
-                        headStyles: {
-                            fillColor: [41, 128, 185],
-                            textColor: 255,
-                            fontStyle: 'bold',
-                            halign: 'center'
-                        },
-                        columnStyles: {
-                            0: {
-                                cellWidth: 7
-                            }, // No
-                            1: {
-                                cellWidth: 18
-                            }, // NIM
-                            2: {
-                                cellWidth: 22
-                            }, // Name
-                            3: {
-                                cellWidth: 26
-                            }, // Study Program
-                            4: {
-                                cellWidth: 16
-                            }, // Class
-                            5: {
-                                cellWidth: 14
-                            }, // Semester
-                            6: {
-                                cellWidth: 26
-                            }, // Internship Coordinator
-                            7: {
-                                cellWidth: 18
-                            }, // Company Name
-                            8: {
-                                cellWidth: 18
-                            }, // Company Contact
-                            9: {
-                                cellWidth: 30
-                            }, // Company Address (paling panjang)
-                            10: {
-                                cellWidth: 18
-                            }, // Start Date
-                            11: {
-                                cellWidth: 18
-                            }, // End Date
-                            12: {
-                                cellWidth: 22
-                            }, // Email
-                            13: {
-                                cellWidth: 16
-                            } // WhatsApp
-                        },
-                        alternateRowStyles: {
-                            fillColor: [245, 245, 245]
-                        }
-                    });
-
-                    // Footer
-                    const pageCount = doc.internal.getNumberOfPages();
-                    for (let i = 1; i <= pageCount; i++) {
-                        doc.setPage(i);
-                        doc.setFontSize(8);
-                        doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, {
-                            align: 'center'
+                    if (!json.success) {
+                        Swal.fire({
+                            icon: "info",
+                            title: "No Data Found",
+                            text: json.message || `No internship data found for the selected date range (${startDate} - ${endDate})`,
+                            confirmButtonText: "OK"
                         });
-                        doc.text(`Generated on ${new Date().toLocaleDateString('en-GB')}`, doc.internal.pageSize.getWidth() - 15, doc.internal.pageSize.getHeight() - 10, {
-                            align: 'right'
-                        });
+                        return null;
                     }
 
-                    const fileName = yearDisplay === "All Year" ? "Internship_Data_All_Year.pdf" : `Internship_Data_${yearDisplay}.pdf`;
-                    doc.save(fileName);
+                    if (!json.data || json.data.length === 0) {
+                        Swal.fire({
+                            icon: "info",
+                            title: "No Data Found",
+                            text: `No students are doing internships in the selected date range (${startDate} - ${endDate})`,
+                            confirmButtonText: "OK"
+                        });
+                        return null;
+                    }
 
-                    Swal.fire({
-                        icon: "success",
-                        title: "Success",
-                        text: "PDF downloaded successfully!",
-                        confirmButtonText: "OK"
-                    });
-
+                    console.log(`Export data loaded: ${json.count || json.total_data || json.data.length} students`);
+                    return json.data;
                 } catch (err) {
-                    console.error("PDF generation error:", err);
                     Swal.fire({
                         icon: "error",
                         title: "Error",
-                        text: "Failed to generate PDF: " + err.message,
+                        text: "Failed to fetch data: " + err.message,
                         confirmButtonText: "OK"
                     });
+                    return null;
                 }
             }
 
-            /**
-             * Export to Excel - CDC VERSION WITH FULL STYLING (15 COLUMNS)
-             */
             async function exportToExcel() {
-                const yearDisplay = getYearDisplay();
-                const studyProgram = document.getElementById("filter_study_program").value;
+                const { value: formValues } = await Swal.fire({
+                    title: 'Select Date Range',
+                    html:
+                        '<label for="swal-start" style="display:block;text-align:left;margin-bottom:6px">Start date</label>' +
+                        '<input id="swal-start" type="date" class="swal2-input" style="margin:0 auto;">' +
+                        '<label for="swal-end" style="display:block;text-align:left;margin-top:8px;margin-bottom:6px">End date</label>' +
+                        '<input id="swal-end" type="date" class="swal2-input" style="margin:0 auto;">',
+                    focusConfirm: false,
+                    showCancelButton: true,
+                    confirmButtonText: 'Export',
+                    didOpen: () => {
 
-                // UBAH didOpen menjadi onOpen
+                        const startInput = document.getElementById("swal-start");
+                        const endInput = document.getElementById("swal-end");
+
+                        // 🔥 Saat start date dipilih → lock semua tanggal sebelumnya di end date
+                        startInput.addEventListener("change", () => {
+                            endInput.min = startInput.value;
+                            endInput.value = ""; // reset jika user sudah memilih sebelumnya
+                        });
+
+                    },
+                    preConfirm: () => {
+                        const start = document.getElementById('swal-start').value;
+                        const end = document.getElementById('swal-end').value;
+
+                        if (!start) {
+                            Swal.showValidationMessage('Start date is required');
+                            return false;
+                        }
+                        if (!end) {
+                            Swal.showValidationMessage('End date is required');
+                            return false;
+                        }
+                        if (new Date(start) > new Date(end)) {
+                            Swal.showValidationMessage('Start date must be before or equal to End date');
+                            return false;
+                        }
+
+                        return { start, end };
+                    }
+                });
+
+
+                if (!formValues) return;
+
+                const { start, end } = formValues;
+
                 Swal.fire({
                     title: 'Generating Excel...',
                     text: 'Please wait',
                     allowOutsideClick: false,
-                    onOpen: () => {
-                        Swal.showLoading();
-                    }
+                    didOpen: () => Swal.showLoading()
                 });
 
-                const data = await fetchInternshipData();
-
-                if (!data) {
-                    return; // HENTIKAN! JANGAN TUTUP SWEET ALERT
-                }
-
-                Swal.close();
+                const data = await fetchInternshipData(start, end);
 
                 if (!data || data.length === 0) {
+                    Swal.close();
+                    Swal.fire({
+                        icon: "info",
+                        title: "No Data Found",
+                        text: "No internship records were found within the selected date range.",
+                        confirmButtonText: "OK"
+                    });
                     return;
                 }
 
+
                 try {
+                    // ============================================
+                    //  START BUILDING EXCEL
+                    // ============================================
                     const wb = XLSX.utils.book_new();
 
-                    // Mapping program studi
-                    const programMap = {
-                        "AB": "Applied Business Administration",
-                        "AK": "Accounting",
-                        "AM": "Managerial Accounting",
-                        "AN": "Animation",
-                        "Bengkalis-IF": "Informatics Engineering",
-                        "DBG": "Goods Distribution",
-                        "EM": "Manufacturing Electronics Engineering",
-                        "GM": "Geomatics Engineering",
-                        "IF": "Informatics Engineering",
-                        "IF-FR": "Informatics",
-                        "INS": "Instrumentation Engineering",
-                        "LPI": "International Trade Logistics",
-                        "ME-FR": "Mechanical engineering",
-                        "MJ": "Multimedia Engineering",
-                        "MK": "Mechatronic Engineering",
-                        "MS": "Mechanical Engineering",
-                        "OT": "Automation Engineering",
-                        "PPI": "Program Profesi Insinyur",
-                        "RE": "Robotics Engineering",
-                        "RKS": "Cyber Security Engineering",
-                        "RPE": "Energy Generation Engineering Technology",
-                        "TPKP": "Ship Design and Construction Engineering",
-                        "TPPU": "Aircraft Maintenance Engineering",
-                        "TRE": "Electrical Engineering",
-                        "TRPL": "Software Development Engineering",
-                        "All": "All Study Programs",
-                        "ALL": "All Study Programs"
-                    };
+                    const yearDisplay = `${start} to ${end}`;
                     const selectedStudyProgram = document.getElementById("filter_study_program")?.value || "ALL";
-                    let filterText = programMap[selectedStudyProgram] || selectedStudyProgram;
 
-                    // ✅ UBAH: Excel Data - 15 KOLOM
                     const excelData = [
                         ['INTERNSHIP DATA REPORT'],
                         [`Year: ${yearDisplay}`],
-                        [`Filter: ${filterText}`],
+                        [`Filter: ${selectedStudyProgram}`],
                         [`Total Students: ${data.length}`],
                         [],
-                        ['No', 'NIM', 'Name', 'Study Program', 'Department', 'Class', 'Semester', 'Coordinator', 'Company Name', 'Company Contact', 'Company Address', 'Start Date', 'End Date', 'Email', 'WhatsApp'],
+                        [
+                            'No', 'NIM', 'Name', 'Study Program', 'Department', 'Class', 'Semester',
+                            'Coordinator', 'Company Name', 'Company Contact', 'Company Address',
+                            'Start Date', 'End Date', 'Email', 'WhatsApp'
+                        ],
                         ...data.map((item, index) => [
                             index + 1,
                             item.nim || '-',
@@ -2000,259 +1868,98 @@ if ($id_kampus) {
 
                     const ws = XLSX.utils.aoa_to_sheet(excelData);
 
-                    // ✅ UBAH: Column widths - 15 KOLOM
-                    ws['!cols'] = [{
-                            wch: 5
-                        }, // No
-                        {
-                            wch: 15
-                        }, // NIM
-                        {
-                            wch: 25
-                        }, // Name
-                        {
-                            wch: 35
-                        }, // Study Program
-                        {
-                            wch: 20
-                        }, // Department
-                        {
-                            wch: 25
-                        }, // Class
-                        {
-                            wch: 10
-                        }, // Semester
-                        {
-                            wch: 25
-                        }, // Coordinator
-                        {
-                            wch: 50
-                        }, // Company
-                        {
-                            wch: 20
-                        }, // Contact
-                        {
-                            wch: 100
-                        }, // Address
-                        {
-                            wch: 12
-                        }, // Start Date
-                        {
-                            wch: 12
-                        }, // End Date
-                        {
-                            wch: 25
-                        }, // Email
-                        {
-                            wch: 18
-                        } // WhatsApp
+                    // Column widths
+                    ws['!cols'] = [
+                        { wch: 5 }, { wch: 15 }, { wch: 25 }, { wch: 35 }, { wch: 20 },
+                        { wch: 25 }, { wch: 10 }, { wch: 25 }, { wch: 50 }, { wch: 20 },
+                        { wch: 100 }, { wch: 12 }, { wch: 12 }, { wch: 25 }, { wch: 18 }
                     ];
 
-                    // ✅ UBAH: Merges - EXTEND to column 14 (O)
-                    ws['!merges'] = [{
-                            s: {
-                                r: 0,
-                                c: 0
-                            },
-                            e: {
-                                r: 0,
-                                c: 14
-                            }
-                        }, // ✅ 0-14 (bukan 0-9)
-                        {
-                            s: {
-                                r: 1,
-                                c: 0
-                            },
-                            e: {
-                                r: 1,
-                                c: 14
-                            }
-                        },
-                        {
-                            s: {
-                                r: 2,
-                                c: 0
-                            },
-                            e: {
-                                r: 2,
-                                c: 14
-                            }
-                        },
-                        {
-                            s: {
-                                r: 3,
-                                c: 0
-                            },
-                            e: {
-                                r: 3,
-                                c: 14
-                            }
-                        }
+                    // Merges
+                    ws['!merges'] = [
+                        { s: { r: 0, c: 0 }, e: { r: 0, c: 14 } },
+                        { s: { r: 1, c: 0 }, e: { r: 1, c: 14 } },
+                        { s: { r: 2, c: 0 }, e: { r: 2, c: 14 } },
+                        { s: { r: 3, c: 0 }, e: { r: 3, c: 14 } }
                     ];
 
-                    const borderStyle = {
-                        top: {
-                            style: 'thin',
-                            color: {
-                                rgb: '000000'
-                            }
-                        },
-                        bottom: {
-                            style: 'thin',
-                            color: {
-                                rgb: '000000'
-                            }
-                        },
-                        left: {
-                            style: 'thin',
-                            color: {
-                                rgb: '000000'
-                            }
-                        },
-                        right: {
-                            style: 'thin',
-                            color: {
-                                rgb: '000000'
-                            }
-                        }
+                    // Styling
+                    const border = {
+                        top: { style: 'thin', color: { rgb: '000000' } },
+                        bottom: { style: 'thin', color: { rgb: '000000' } },
+                        left: { style: 'thin', color: { rgb: '000000' } },
+                        right: { style: 'thin', color: { rgb: '000000' } }
                     };
 
                     const headerStyle = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 11,
-                            bold: true,
-                            color: {
-                                rgb: 'FFFFFF'
-                            }
-                        },
-                        fill: {
-                            fgColor: {
-                                rgb: '4472C4'
-                            }
-                        },
-                        alignment: {
-                            horizontal: 'center',
-                            vertical: 'center'
-                        },
-                        border: borderStyle
+                        font: { name: 'Times New Roman', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
+                        fill: { fgColor: { rgb: '4472C4' } },
+                        alignment: { horizontal: 'center', vertical: 'center' },
+                        border
                     };
 
-                    const dataStyle = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 11
-                        },
-                        alignment: {
-                            vertical: 'center'
-                        },
-                        border: borderStyle
+                    const dataLeft = {
+                        font: { name: 'Times New Roman', sz: 11 },
+                        alignment: { vertical: 'center' },
+                        border
                     };
 
-                    const dataCenterStyle = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 11
-                        },
-                        alignment: {
-                            horizontal: 'center',
-                            vertical: 'center'
-                        },
-                        border: borderStyle
+                    const dataCenter = {
+                        font: { name: 'Times New Roman', sz: 11 },
+                        alignment: { horizontal: 'center', vertical: 'center' },
+                        border
                     };
 
-                    // === TITLE & SUBTITLE CENTER ===
-                    ws['A1'].s = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 16,
-                            bold: true
-                        },
-                        alignment: {
-                            horizontal: 'center',
-                            vertical: 'center'
-                        }
-                    };
-                    ws['A2'].s = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 12
-                        },
-                        alignment: {
-                            horizontal: 'center',
-                            vertical: 'center'
-                        }
-                    };
-                    ws['A3'].s = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 12
-                        },
-                        alignment: {
-                            horizontal: 'center',
-                            vertical: 'center'
-                        }
-                    };
-                    ws['A4'].s = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 12
-                        },
-                        alignment: {
-                            horizontal: 'center',
-                            vertical: 'center'
-                        }
-                    };
+                    // Title styles
+                    ws['A1'].s = { font: { name: 'Times New Roman', sz: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'center' } };
+                    ws['A2'].s = ws['A3'].s = ws['A4'].s =
+                        { font: { name: 'Times New Roman', sz: 12 }, alignment: { horizontal: 'center', vertical: 'center' } };
 
-                    // ✅ UBAH: HEADER ROW STYLING - 15 KOLOM (A-O)
+                    // Header row styling
                     const headerCols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
                     headerCols.forEach(col => {
-                        const cellRef = col + '6'; // Row 6 adalah header
-                        if (ws[cellRef]) ws[cellRef].s = headerStyle;
+                        if (ws[col + '6']) ws[col + '6'].s = headerStyle;
                     });
 
-                    // === DATA ROWS STYLING ===
-                    const dataStartRow = 7; // Row 7 mulai data
-                    for (let row = dataStartRow; row < dataStartRow + data.length; row++) {
-                        headerCols.forEach((col, colIndex) => {
-                            const cellRef = col + row;
-                            if (ws[cellRef]) {
-                                // ✅ UBAH: Kolom yang center: No (0), NIM (1), Class (5), Semester (6), Start Date (11), End Date (12)
-                                if (colIndex === 0 || colIndex === 1 || colIndex === 5 || colIndex === 6 || colIndex === 11 || colIndex === 12) {
-                                    ws[cellRef].s = dataCenterStyle;
-                                } else {
-                                    ws[cellRef].s = dataStyle;
-                                }
-                            }
+                    // Data row styling
+                    const startRow = 7;
+                    for (let r = startRow; r < startRow + data.length; r++) {
+                        headerCols.forEach((col, idx) => {
+                            if (!ws[col + r]) return;
+
+                            // Center specific cols
+                            if ([0, 1, 5, 6, 11, 12].includes(idx))
+                                ws[col + r].s = dataCenter;
+                            else
+                                ws[col + r].s = dataLeft;
                         });
                     }
 
-                    // Sheet name dinamis
-                    const sheetName = yearDisplay === "All Year" ? "Internship All Year" : `Internship ${yearDisplay}`;
+                    // Fix sheetname (prevent >31 chars)
+                    let sheetName = `Internship_${start}_${end}`;
+                    if (sheetName.length > 31)
+                        sheetName = `Internship_${start.substring(5)}_${end.substring(5)}`;
+
                     XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
-                    // Nama file dinamis
-                    const fileName = yearDisplay === "All Year" ? "Internship_Data_All_Year.xlsx" : `Internship_Data_${yearDisplay}.xlsx`;
+                    // Filename
+                    const fileName = `Internship_${start}_to_${end}.xlsx`;
+
                     XLSX.writeFile(wb, fileName);
 
                     Swal.fire({
                         icon: "success",
                         title: "Success",
-                        text: "Excel downloaded successfully!",
+                        text: "Excel downloaded successfully",
                         confirmButtonText: "OK"
                     });
 
                 } catch (err) {
                     console.error("Excel generation error:", err);
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: "Failed to generate Excel: " + err.message,
-                        confirmButtonText: "OK"
-                    });
+                    Swal.fire("Error", "Failed to generate Excel: " + err.message, "error");
                 }
             }
+
         </script>
 </body>
 

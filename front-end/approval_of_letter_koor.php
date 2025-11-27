@@ -71,7 +71,7 @@ if ($id_kampus) {
                 "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
                 urls: ['./assets/css/fonts.min.css']
             },
-            active: function() {
+            active: function () {
                 sessionStorage.fonts = true;
             }
         });
@@ -82,41 +82,31 @@ if ($id_kampus) {
 
     <script src='./core/component/jquery.min.js'></script>
     <script>
-        $(function() {});
+        $(function () { });
     </script>
     <script defer src='./core/component/sweetalert2.min.js'></script>
     <script defer src='./core/component/soloalert.js'></script>
 
     <style type="text/css">
-        /* Posisi relatif untuk ikon agar badge bisa ditempatkan relatif terhadapnya */
         .notification-icon {
             position: relative;
-            /* Sesuaikan ukuran ikon jika diperlukan */
         }
 
-        /* Badge notifikasi kecil hijau */
         .custom-notification-badge {
             position: absolute;
             top: -8px;
-            /* Sesuaikan posisi badge secara vertikal */
             right: -8px;
-            /* Sesuaikan posisi badge secara horizontal */
             color: white;
             border-radius: 50%;
             padding: 2px 6px;
-            /* Ukuran badge */
             font-size: 10px;
-            /* Ukuran angka */
             line-height: 1;
             min-width: 16px;
-            /* Pastikan ukuran minimal badge */
             text-align: center;
-            /* Pusatkan angka di dalam badge */
         }
 
         .fc-sun {
             color: red;
-            /* Mengubah warna font menjadi merah pada hari Minggu */
         }
 
         .disabled2 {
@@ -196,21 +186,6 @@ if ($id_kampus) {
             border-radius: 8px;
             padding: 5px 10px;
             font-weight: 500;
-        }
-
-        .badge-empty {
-            display: inline-block;
-            background-color: #adb5bd;
-            /* abu-abu */
-            color: #fff;
-            border-radius: 8px;
-            padding: 5px 10px;
-            font-weight: 500;
-            text-align: center;
-            cursor: default;
-            pointer-events: none;
-            opacity: 0.85;
-            min-width: 60px;
         }
 
         /* Export Button Styling */
@@ -564,9 +539,9 @@ if ($id_kampus) {
                                             <select class="form-control" id="filter_cdc" name="cdc"
                                                 onchange="applyFilter()">
                                                 <option value="">ALL</option>
-                                                <option value="approve">Approve</option>
+                                                <option value="approved">Approved</option>
                                                 <option value="waiting">Waiting</option>
-                                                <option value="reject">Reject</option>
+                                                <option value="rejected">Rejected</option>
                                             </select>
                                         </div>
 
@@ -581,15 +556,6 @@ if ($id_kampus) {
                                                 <option value="rejected">Rejected</option>
                                             </select>
                                         </div>
-
-                                        <!-- Filter Tahun -->
-                                        <div class="col-md mb-3">
-                                            <label for="filter_year" class="form-label">
-                                                Select by Year
-                                            </label>
-                                            <select class="form-control" id="filter_year" name="year" onchange="applyFilter()">
-                                            </select>
-                                        </div>
                                     </div>
                                 </form>
                             </div>
@@ -598,12 +564,6 @@ if ($id_kampus) {
                         <div class="col-md-2 mb-3" style="float: right;">
                             <button class="btn btn-success btn-block" onclick="exportToExcel()">
                                 <i class="fas fa-file-excel"></i> Export to Excel
-                            </button>
-                        </div>
-                        <!-- Button Export PDF -->
-                        <div class="col-md-2 mb-3" style="float: right;">
-                            <button class="btn btn-danger btn-block" onclick="exportToPDF()">
-                                <i class="fas fa-file-pdf"></i> Export to PDF
                             </button>
                         </div>
                     </div>
@@ -911,7 +871,8 @@ if ($id_kampus) {
         <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style/dist/xlsx.min.js"></script>
 
@@ -919,7 +880,7 @@ if ($id_kampus) {
             // ============================================================
             // JQUERY INITIALIZATION - Clock & Calendar
             // ============================================================
-            $(document).ready(function() {
+            $(document).ready(function () {
                 clock_run();
                 show_calendar();
             });
@@ -964,7 +925,7 @@ if ($id_kampus) {
                 }
 
                 // Update clock every second
-                setInterval(function() {
+                setInterval(function () {
                     let d = new Date();
                     let day = en_day[d.getDay()];
                     let date = d.getDate();
@@ -1020,12 +981,12 @@ if ($id_kampus) {
                     url: 'index.php?request=validation_get',
                     type: 'GET',
 
-                    success: function(response, xhr, status, error) {
+                    success: function (response, xhr, status, error) {
                         console.log('Getting form notification');
                         $('body').append(response);
                     },
 
-                    error: function(xhr, status, error) {
+                    error: function (xhr, status, error) {
                         console.log('Failed Getting form notification');
                     }
                 });
@@ -1055,8 +1016,8 @@ if ($id_kampus) {
                             data: {
                                 'token': _token
                             },
-                            success: function() {
-                                setTimeout(function() {
+                            success: function () {
+                                setTimeout(function () {
                                     // Clear localStorage
                                     localStorage.removeItem('first');
                                     localStorage.removeItem('first_chime');
@@ -1064,7 +1025,7 @@ if ($id_kampus) {
                                     window.location.href = 'role_login.php';
                                 }, 200);
                             },
-                            error: function() {
+                            error: function () {
                                 Swal.fire('Error', 'Logout failed, please try again.', 'error');
                             }
                         });
@@ -1095,7 +1056,7 @@ if ($id_kampus) {
                 icon_spinner.className = '';
                 icon_spinner.className = spinner;
 
-                setTimeout(function() {
+                setTimeout(function () {
                     icon_spinner.className = '';
                     icon_spinner.className = icon_old;
                 }, 2000);
@@ -1283,7 +1244,7 @@ if ($id_kampus) {
 
                 // Jika belum ada acceptance status dari company
                 if (!acceptance || acceptance === '-') {
-                    return `<span class="badge-empty">-</span>`;
+                    return `<span>-</span>`;
                 }
 
                 // Jika ACCEPTED
@@ -1310,7 +1271,7 @@ if ($id_kampus) {
         `;
                 }
 
-                return `<span class="badge-empty">-</span>`;
+                return `<span>-</span>`;
             }
 
             // ============================================================
@@ -1854,28 +1815,43 @@ if ($id_kampus) {
                 }
             }
 
+            // ===============================
+            // FORMAT DATE
+            // ===============================
+            function formatDate(dateString) {
+                if (!dateString) return "-";
+                const date = new Date(dateString);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}/${month}/${year}`;
+            }
+
             /**
-             * Fetch data magang dari API - COMPATIBLE VERSION
+             * Fetch data magang dari API - menggunakan start_date & end_date
+             * @param {string} startDate YYYY-MM-DD
+             * @param {string} endDate YYYY-MM-DD
+             * @returns {Array|null}
              */
-            async function fetchInternshipData() {
+            async function fetchInternshipData(startDate, endDate) {
                 const year = document.getElementById("filter_year").value;
-                const yearDisplay = year ? year : "All Year"; // ← BARIS BARU INI
+                const yearDisplay = year ? year : "All Year";
 
                 try {
-                    // Jika year kosong (ALL), kirim parameter kosong ke API
-                    const yearParam = year ? `year=${year}` : '';
-                    const res = await fetch(`${apiBase}/lecturer/export-internship?${yearParam}&nim_nik_unit=${lecturerId}`);
+                    // build url: include start_date & end_date plus nim_nik_unit
+                    const params = new URLSearchParams();
+                    params.append('start_date', startDate);
+                    params.append('end_date', endDate);
+                    params.append('nim_nik_unit', lecturerId); // existing variable in your page
+
+                    const res = await fetch(`${apiBase}/lecturer/export-internship?${params.toString()}`);
                     const json = await res.json();
 
                     if (!json.success) {
-                        const message = year ?
-                            `No internship data found for year ${yearDisplay}` :
-                            `No internship data found for all years`;
-
                         Swal.fire({
                             icon: "info",
                             title: "No Data Found",
-                            text: message, // ← Pakai variable message
+                            text: json.message || `No internship data found for the selected date range (${startDate} - ${endDate})`,
                             confirmButtonText: "OK"
                         });
                         return null;
@@ -1885,13 +1861,13 @@ if ($id_kampus) {
                         Swal.fire({
                             icon: "info",
                             title: "No Data Found",
-                            text: `No students are doing internships`,
+                            text: `No students are doing internships in the selected date range (${startDate} - ${endDate})`,
                             confirmButtonText: "OK"
                         });
                         return null;
                     }
 
-                    console.log(`✅ Export data loaded: ${json.count} students from ${json.prodi}`);
+                    console.log(`✅ Export data loaded: ${json.total_data || json.count || json.data.length} students from ${json.prodi || '-'}`);
                     return json.data;
                 } catch (err) {
                     Swal.fire({
@@ -1905,215 +1881,84 @@ if ($id_kampus) {
             }
 
             /**
-             * Format tanggal ke DD/MM/YYYY
-             */
-            function formatDate(dateString) {
-                if (!dateString) return "-";
-                const date = new Date(dateString);
-                const day = String(date.getDate()).padStart(2, '0');
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const year = date.getFullYear();
-                return `${day}/${month}/${year}`;
-            }
-
-            /**
-             * Get display text untuk tahun
-             */
-            function getYearDisplay() {
-                const year = document.getElementById("filter_year").value;
-                return year ? year : "All Year";
-            }
-
-            /**
-             * Export to PDF - COMPATIBLE VERSION
-             */
-            async function exportToPDF() {
-                const yearDisplay = getYearDisplay();
-
-                Swal.fire({
-                    title: 'Generating PDF...',
-                    text: 'Please wait',
-                    allowOutsideClick: false,
-                    onOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                const data = await fetchInternshipData();
-
-                if (!data) {
-                    return;
-                }
-
-                Swal.close();
-
-                try {
-                    const {
-                        jsPDF
-                    } = window.jspdf;
-                    const doc = new jsPDF('landscape', 'mm', 'a4');
-
-                    // Header
-                    doc.setFontSize(16);
-                    doc.setFont(undefined, 'bold');
-                    doc.text('INTERNSHIP DATA REPORT', doc.internal.pageSize.getWidth() / 2, 15, {
-                        align: 'center'
-                    });
-
-                    doc.setFontSize(12);
-                    doc.setFont(undefined, 'normal');
-                    doc.text(`Year: ${yearDisplay}`, doc.internal.pageSize.getWidth() / 2, 22, {
-                        align: 'center'
-                    });
-                    doc.text(`Total Students: ${data.length}`, doc.internal.pageSize.getWidth() / 2, 28, {
-                        align: 'center'
-                    });
-
-                    // Table - KOLOM DISESUAIKAN DENGAN API BACKEND
-                    const tableData = data.map((item, index) => [
-                        index + 1,
-                        item.nim || '-',
-                        item.student_name || '-',
-                        item.program_study || '-',
-                        item.class || '-',
-                        item.semester || '-',
-                        item.company_name || '-',
-                        item.company_contact || '-',
-                        item.company_address || '-',
-                        formatDate(item.start_date),
-                        formatDate(item.end_date),
-                        item.email || '-',
-                        item.whatsapp_number || '-'
-                    ]);
-
-                    doc.autoTable({
-                        startY: 35,
-                        head: [
-                            ['No', 'NIM', 'Name', 'Study Program', 'Class', 'Semester', 'Company Name', 'Company Contact', 'Company Address', 'Start Date', 'End Date', 'Email', 'WhatsApp']
-                        ],
-                        body: tableData,
-                        styles: {
-                            fontSize: 6,
-                            cellPadding: 2,
-                            overflow: 'linebreak'
-                        },
-                        headStyles: {
-                            fillColor: [41, 128, 185],
-                            textColor: 255,
-                            fontStyle: 'bold',
-                            halign: 'center'
-                        },
-                        columnStyles: {
-                            0: {
-                                cellWidth: 8
-                            }, // Nomor
-                            1: {
-                                cellWidth: 18
-                            }, // NIM
-                            2: {
-                                cellWidth: 28
-                            }, // Name
-                            3: {
-                                cellWidth: 30
-                            }, // Study Program
-                            4: {
-                                cellWidth: 20
-                            }, // Class
-                            5: {
-                                cellWidth: 14
-                            }, // Semester
-                            8: {
-                                cellWidth: 28
-                            }, // Company Name
-                            9: {
-                                cellWidth: 18
-                            }, // Company Contact
-                            10: {
-                                cellWidth: 28
-                            }, // Company Address
-                            6: {
-                                cellWidth: 18
-                            }, // Start Date
-                            7: {
-                                cellWidth: 18
-                            }, // End Date
-                            11: {
-                                cellWidth: 18
-                            }, // Email
-                            12: {
-                                cellWidth: 18
-                            } // WhatsApp
-                        },
-                        alternateRowStyles: {
-                            fillColor: [245, 245, 245]
-                        }
-                    });
-
-                    // Footer
-                    const pageCount = doc.internal.getNumberOfPages();
-                    for (let i = 1; i <= pageCount; i++) {
-                        doc.setPage(i);
-                        doc.setFontSize(8);
-                        doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, {
-                            align: 'center'
-                        });
-                        doc.text(`Generated on ${new Date().toLocaleDateString('en-GB')}`, doc.internal.pageSize.getWidth() - 15, doc.internal.pageSize.getHeight() - 10, {
-                            align: 'right'
-                        });
-                    }
-
-                    // Nama file dinamis berdasarkan filter
-                    const fileName = yearDisplay === "All Year" ? "Internship_Data_All_Year.pdf" : `Internship_Data_${yearDisplay}.pdf`;
-                    doc.save(fileName);
-
-                    Swal.fire({
-                        icon: "success",
-                        title: "Success",
-                        text: "PDF downloaded successfully!",
-                        confirmButtonText: "OK"
-                    });
-
-                } catch (err) {
-                    console.error("PDF generation error:", err);
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: "Failed to generate PDF: " + err.message,
-                        confirmButtonText: "OK"
-                    });
-                }
-            }
-
-            /**
-             * Export to Excel - COMPATIBLE VERSION
+             * Popup meminta Start Date dan End Date
              */
             async function exportToExcel() {
-                const yearDisplay = getYearDisplay();
+                const { value: formValues } = await Swal.fire({
+                    title: 'Select Date Range',
+                    html:
+                        '<label for="swal-start" style="display:block;text-align:left;margin-bottom:6px">Start date</label>' +
+                        '<input id="swal-start" type="date" class="swal2-input" style="margin:0 auto;">' +
+                        '<label for="swal-end" style="display:block;text-align:left;margin-top:8px;margin-bottom:6px">End date</label>' +
+                        '<input id="swal-end" type="date" class="swal2-input" style="margin:0 auto;">',
+                    focusConfirm: false,
+                    showCancelButton: true,
+                    confirmButtonText: 'Export',
+                    didOpen: () => {
 
-                Swal.fire({
-                    title: 'Generating Excel...',
-                    text: 'Please wait',
-                    allowOutsideClick: false,
-                    onOpen: () => {
-                        Swal.showLoading();
+                        const startInput = document.getElementById("swal-start");
+                        const endInput = document.getElementById("swal-end");
+
+                        // 🔥 Saat start date dipilih → lock semua tanggal sebelumnya di end date
+                        startInput.addEventListener("change", () => {
+                            endInput.min = startInput.value;
+                            endInput.value = ""; // reset jika user sudah memilih sebelumnya
+                        });
+
+                    },
+                    preConfirm: () => {
+                        const start = document.getElementById('swal-start').value;
+                        const end = document.getElementById('swal-end').value;
+
+                        if (!start) {
+                            Swal.showValidationMessage('Start date is required');
+                            return false;
+                        }
+                        if (!end) {
+                            Swal.showValidationMessage('End date is required');
+                            return false;
+                        }
+                        if (new Date(start) > new Date(end)) {
+                            Swal.showValidationMessage('Start date must be before or equal to End date');
+                            return false;
+                        }
+
+                        return { start, end };
                     }
                 });
 
-                const data = await fetchInternshipData();
 
-                if (!data) {
+                if (!formValues) return;
+
+                const { start, end } = formValues;
+
+                Swal.fire({
+                    title: 'Fetching data...',
+                    text: 'Please wait...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                const data = await fetchInternshipData(start, end);
+
+                if (!data || data.length === 0) {
+                    Swal.close();
+                    Swal.fire({
+                        icon: "info",
+                        title: "No Data Found",
+                        text: "No internship records were found within the selected date range.",
+                        confirmButtonText: "OK"
+                    });
                     return;
                 }
 
-                Swal.close();
 
                 try {
                     const wb = XLSX.utils.book_new();
 
-                    // KOLOM DISESUAIKAN DENGAN API BACKEND
                     const excelData = [
                         ['INTERNSHIP DATA REPORT'],
-                        [`Year: ${yearDisplay}`],
+                        [`Period: ${formatDate(start)} - ${formatDate(end)}`],
                         [`Total Students: ${data.length}`],
                         [],
                         ['No', 'NIM', 'Name', 'Study Program', 'Class', 'Semester', 'Company Name', 'Company Contact', 'Company Address', 'Start Date', 'End Date', 'Email', 'WhatsApp'],
@@ -2137,213 +1982,59 @@ if ($id_kampus) {
                     const ws = XLSX.utils.aoa_to_sheet(excelData);
 
                     // Column widths
-                    ws['!cols'] = [{
-                            wch: 5
-                        }, // No
-                        {
-                            wch: 15
-                        }, // NIM
-                        {
-                            wch: 25
-                        }, // Name
-                        {
-                            wch: 35
-                        }, // Study Program
-                        {
-                            wch: 25
-                        }, // Class
-                        {
-                            wch: 10
-                        }, // Semester
-                        {
-                            wch: 50
-                        }, // Company Name
-                        {
-                            wch: 18
-                        }, // Company Contact
-                        {
-                            wch: 100
-                        }, // Company Address
-                        {
-                            wch: 12
-                        }, // Start Date
-                        {
-                            wch: 12
-                        }, // End Date
-                        {
-                            wch: 30
-                        }, // Email
-                        {
-                            wch: 18
-                        } // WhatsApp
+                    ws['!cols'] = [
+                        { wch: 5 }, { wch: 15 }, { wch: 25 }, { wch: 35 }, { wch: 20 }, { wch: 10 },
+                        { wch: 50 }, { wch: 15 }, { wch: 80 }, { wch: 12 }, { wch: 12 },
+                        { wch: 30 }, { wch: 18 }
                     ];
 
-                    // Merge cells for title
-                    ws['!merges'] = [{
-                            s: {
-                                r: 0,
-                                c: 0
-                            },
-                            e: {
-                                r: 0,
-                                c: 12
-                            }
-                        },
-                        {
-                            s: {
-                                r: 1,
-                                c: 0
-                            },
-                            e: {
-                                r: 1,
-                                c: 12
-                            }
-                        },
-                        {
-                            s: {
-                                r: 2,
-                                c: 0
-                            },
-                            e: {
-                                r: 2,
-                                c: 12
-                            }
-                        }
+                    // Merge title + subtitles
+                    ws['!merges'] = [
+                        { s: { r: 0, c: 0 }, e: { r: 0, c: 12 } },
+                        { s: { r: 1, c: 0 }, e: { r: 1, c: 12 } },
+                        { s: { r: 2, c: 0 }, e: { r: 2, c: 12 } }
                     ];
 
                     const borderStyle = {
-                        top: {
-                            style: 'thin',
-                            color: {
-                                rgb: '000000'
-                            }
-                        },
-                        bottom: {
-                            style: 'thin',
-                            color: {
-                                rgb: '000000'
-                            }
-                        },
-                        left: {
-                            style: 'thin',
-                            color: {
-                                rgb: '000000'
-                            }
-                        },
-                        right: {
-                            style: 'thin',
-                            color: {
-                                rgb: '000000'
-                            }
-                        }
+                        top: { style: 'thin', color: { rgb: '000000' } },
+                        bottom: { style: 'thin', color: { rgb: '000000' } },
+                        left: { style: 'thin', color: { rgb: '000000' } },
+                        right: { style: 'thin', color: { rgb: '000000' } }
                     };
 
                     const headerStyle = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 11,
-                            bold: true,
-                            color: {
-                                rgb: 'FFFFFF'
-                            }
-                        },
-                        fill: {
-                            fgColor: {
-                                rgb: '4472C4'
-                            }
-                        },
-                        alignment: {
-                            horizontal: 'center',
-                            vertical: 'center'
-                        },
+                        font: { name: 'Times New Roman', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
+                        fill: { fgColor: { rgb: '4472C4' } },
+                        alignment: { horizontal: 'center', vertical: 'center' },
                         border: borderStyle
                     };
 
-                    const dataStyle = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 11
-                        },
-                        alignment: {
-                            vertical: 'center'
-                        },
-                        border: borderStyle
-                    };
-
-                    const dataCenterStyle = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 11
-                        },
-                        alignment: {
-                            horizontal: 'center',
-                            vertical: 'center'
-                        },
-                        border: borderStyle
-                    };
-
-                    // Style title & subtitle
-                    ws['A1'].s = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 16,
-                            bold: true
-                        },
-                        alignment: {
-                            horizontal: 'center',
-                            vertical: 'center'
-                        }
-                    };
-                    ws['A2'].s = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 12
-                        },
-                        alignment: {
-                            horizontal: 'center',
-                            vertical: 'center'
-                        }
-                    };
-                    ws['A3'].s = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 12
-                        },
-                        alignment: {
-                            horizontal: 'center',
-                            vertical: 'center'
-                        }
-                    };
+                    // Style title
+                    ws['A1'].s = { font: { name: 'Times New Roman', sz: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'center' } };
+                    ws['A2'].s = { font: { name: 'Times New Roman', sz: 12 }, alignment: { horizontal: 'center', vertical: 'center' } };
+                    ws['A3'].s = { font: { name: 'Times New Roman', sz: 12 }, alignment: { horizontal: 'center', vertical: 'center' } };
 
                     // Style header row
                     const headerCols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
                     headerCols.forEach(col => {
-                        const cellRef = col + '5';
-                        if (ws[cellRef]) ws[cellRef].s = headerStyle;
+                        if (ws[col + '5']) ws[col + '5'].s = headerStyle;
                     });
 
-                    // Style data rows
+                    // Apply border
                     const dataStartRow = 6;
                     for (let row = dataStartRow; row < dataStartRow + data.length; row++) {
-                        headerCols.forEach((col, colIndex) => {
+                        headerCols.forEach(col => {
                             const cellRef = col + row;
-                            if (ws[cellRef]) {
-                                // Center align untuk: No, NIM, Class, Semester, Start Date, End Date
-                                if (colIndex === 0 || colIndex === 1 || colIndex === 4 || colIndex === 5 || colIndex === 6 || colIndex === 7) {
-                                    ws[cellRef].s = dataCenterStyle;
-                                } else {
-                                    ws[cellRef].s = dataStyle;
-                                }
-                            }
+                            if (ws[cellRef]) ws[cellRef].s = { border: borderStyle, font: { name: 'Times New Roman', sz: 11 } };
                         });
                     }
 
-                    // Sheet name dinamis
-                    const sheetName = yearDisplay === "All Year" ? "Internship All Year" : `Internship ${yearDisplay}`;
+                    // sheet name must <= 31 chars
+                    const sheetName = "Internship Report";
                     XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
-                    // Nama file dinamis
-                    const fileName = yearDisplay === "All Year" ? "Internship_Data_All_Year.xlsx" : `Internship_Data_${yearDisplay}.xlsx`;
+                    // Filename tetap panjang (boleh)
+                    const fileName = `Internship_${start}_to_${end}.xlsx`;
                     XLSX.writeFile(wb, fileName);
 
                     Swal.fire({
@@ -2363,7 +2054,49 @@ if ($id_kampus) {
                     });
                 }
             }
+
+            /**
+             * Format tanggal DD/MM/YYYY
+             */
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                const d = String(date.getDate()).padStart(2, '0');
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const y = date.getFullYear();
+                return `${d}/${m}/${y}`;
+            }
+
+            /**
+             * FETCH API dengan start & end date
+             */
+            async function fetchInternshipData(start, end) {
+                try {
+                    const url = `${apiBase}/lecturer/export-internship?start_date=${start}&end_date=${end}&nim_nik_unit=${lecturerId}`;
+                    const res = await fetch(url);
+                    const json = await res.json();
+
+                    if (!json.success || !json.data || json.data.length === 0) {
+                        Swal.fire({
+                            icon: "info",
+                            title: "No Data Found",
+                            text: "No internship data found for this date range",
+                        });
+                        return null;
+                    }
+
+                    return json.data;
+                } catch (err) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Failed to fetch data: " + err.message
+                    });
+                    return null;
+                }
+            }
+
         </script>
+        
 </body>
 
 </html>

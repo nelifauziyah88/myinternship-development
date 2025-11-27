@@ -447,12 +447,12 @@ router.get("/lecturer/company-reply/:id_letter", async (req, res) => {
  * GET /api/student/dashboard/statistics
  */
 router.get("/dashboard/statistics", async (req, res) => {
-    try {
-        const { department, year } = req.query;
-        const currentYear = year || new Date().getFullYear();
-        const id_kampus = 1;
+  try {
+    const { department, year } = req.query;
+    const currentYear = year || new Date().getFullYear();
+    const id_kampus = 1;
 
-        const allProgramsQuery = `
+    const allProgramsQuery = `
           SELECT 
             CONCAT(ps.jenjang, ' ', ps.study_program) AS program_full_name,
             ps.major AS department,
@@ -463,14 +463,14 @@ router.get("/dashboard/statistics", async (req, res) => {
           ORDER BY ps.major, program_full_name
         `;
 
-        const allProgramsParams = department 
-          ? [id_kampus, department] 
-          : [id_kampus];
+    const allProgramsParams = department
+      ? [id_kampus, department]
+      : [id_kampus];
 
-        const [allPrograms] = await db.query(allProgramsQuery, allProgramsParams);
+    const [allPrograms] = await db.query(allProgramsQuery, allProgramsParams);
 
-        // STEP 2: RESPONSE TIME (Koor + CDC)
-        const responseTimeQuery = `
+    // STEP 2: RESPONSE TIME (Koor + CDC)
+    const responseTimeQuery = `
           SELECT 
             CONCAT(ps.jenjang, ' ', ps.study_program) AS program_full_name,
             ps.major AS department,
@@ -505,14 +505,14 @@ router.get("/dashboard/statistics", async (req, res) => {
           GROUP BY program_full_name, ps.major
         `;
 
-        const responseTimeParams = department
-          ? [currentYear, id_kampus, department]
-          : [currentYear, id_kampus];
+    const responseTimeParams = department
+      ? [currentYear, id_kampus, department]
+      : [currentYear, id_kampus];
 
-        const [responseTimeData] = await db.query(responseTimeQuery, responseTimeParams);
+    const [responseTimeData] = await db.query(responseTimeQuery, responseTimeParams);
 
-        // STEP 3: ACCEPTANCE RATE (Company Response)
-        const acceptanceRateQuery = `
+    // STEP 3: ACCEPTANCE RATE (Company Response)
+    const acceptanceRateQuery = `
           SELECT 
             CONCAT(ps.jenjang, ' ', ps.study_program) AS program_full_name,
             ps.major AS department,
@@ -533,96 +533,96 @@ router.get("/dashboard/statistics", async (req, res) => {
           GROUP BY program_full_name, ps.major
         `;
 
-        const acceptanceRateParams = department
-          ? [currentYear, id_kampus, department]
-          : [currentYear, id_kampus];
+    const acceptanceRateParams = department
+      ? [currentYear, id_kampus, department]
+      : [currentYear, id_kampus];
 
-        const [acceptanceRateData] = await db.query(acceptanceRateQuery, acceptanceRateParams);
+    const [acceptanceRateData] = await db.query(acceptanceRateQuery, acceptanceRateParams);
 
-        // STEP 4: MERGE DATA - ALL PROGRAMS WITH ACTUAL DATA 
-        const responseTimeMap = new Map();
-        responseTimeData.forEach(r => {
-            const key = `${r.department}|||${r.program_full_name}`;
-            responseTimeMap.set(key, {
-                avgResponseTimeKoor: Number(r.avg_response_time_koor || 0).toFixed(2),
-                avgResponseTimeCdc: Number(r.avg_response_time_cdc || 0).toFixed(2),
-                avgTotalResponseTime: Number(r.avg_total_response_time || 0).toFixed(2),
-                dataCount: r.data_count || 0
-            });
-        });
+    // STEP 4: MERGE DATA - ALL PROGRAMS WITH ACTUAL DATA 
+    const responseTimeMap = new Map();
+    responseTimeData.forEach(r => {
+      const key = `${r.department}|||${r.program_full_name}`;
+      responseTimeMap.set(key, {
+        avgResponseTimeKoor: Number(r.avg_response_time_koor || 0).toFixed(2),
+        avgResponseTimeCdc: Number(r.avg_response_time_cdc || 0).toFixed(2),
+        avgTotalResponseTime: Number(r.avg_total_response_time || 0).toFixed(2),
+        dataCount: r.data_count || 0
+      });
+    });
 
-        const acceptanceRateMap = new Map();
-        acceptanceRateData.forEach(r => {
-            const key = `${r.department}|||${r.program_full_name}`;
-            acceptanceRateMap.set(key, {
-                acceptedCount: r.accepted_count || 0,
-                rejectedCount: r.rejected_count || 0,
-                totalCount: r.total_count || 0,
-                acceptanceRate: Number(r.acceptance_rate || 0),
-                rejectionRate: Number(r.rejection_rate || 0)
-            });
-        });
+    const acceptanceRateMap = new Map();
+    acceptanceRateData.forEach(r => {
+      const key = `${r.department}|||${r.program_full_name}`;
+      acceptanceRateMap.set(key, {
+        acceptedCount: r.accepted_count || 0,
+        rejectedCount: r.rejected_count || 0,
+        totalCount: r.total_count || 0,
+        acceptanceRate: Number(r.acceptance_rate || 0),
+        rejectionRate: Number(r.rejection_rate || 0)
+      });
+    });
 
-        const responseTimeResult = [];
-        const acceptanceRateResult = [];
+    const responseTimeResult = [];
+    const acceptanceRateResult = [];
 
-        allPrograms.forEach(program => {
-            const key = `${program.department}|||${program.program_full_name}`;
-            
-            // Response Time Data
-            const responseData = responseTimeMap.get(key);
-            responseTimeResult.push({
-                program: program.program_full_name,
-                department: program.department,
-                avgResponseTimeKoor: responseData ? responseData.avgResponseTimeKoor : "0.00",
-                avgResponseTimeCdc: responseData ? responseData.avgResponseTimeCdc : "0.00",
-                avgTotalResponseTime: responseData ? responseData.avgTotalResponseTime : "0.00",
-                hasData: !!responseData,
-                dataCount: responseData ? responseData.dataCount : 0
-            });
+    allPrograms.forEach(program => {
+      const key = `${program.department}|||${program.program_full_name}`;
 
-            // Acceptance Rate Data
-            const acceptanceData = acceptanceRateMap.get(key);
-            acceptanceRateResult.push({
-                program: program.program_full_name,
-                department: program.department,
-                acceptedCount: acceptanceData ? acceptanceData.acceptedCount : 0,
-                rejectedCount: acceptanceData ? acceptanceData.rejectedCount : 0,
-                totalCount: acceptanceData ? acceptanceData.totalCount : 0,
-                acceptanceRate: acceptanceData ? acceptanceData.acceptanceRate : 0,
-                rejectionRate: acceptanceData ? acceptanceData.rejectionRate : 0,
-                hasData: !!acceptanceData
-            });
-        });
+      // Response Time Data
+      const responseData = responseTimeMap.get(key);
+      responseTimeResult.push({
+        program: program.program_full_name,
+        department: program.department,
+        avgResponseTimeKoor: responseData ? responseData.avgResponseTimeKoor : "0.00",
+        avgResponseTimeCdc: responseData ? responseData.avgResponseTimeCdc : "0.00",
+        avgTotalResponseTime: responseData ? responseData.avgTotalResponseTime : "0.00",
+        hasData: !!responseData,
+        dataCount: responseData ? responseData.dataCount : 0
+      });
 
-        // STEP 5: GET UNIQUE DEPARTMENTS LIST
-        const [departments] = await db.query(`
+      // Acceptance Rate Data
+      const acceptanceData = acceptanceRateMap.get(key);
+      acceptanceRateResult.push({
+        program: program.program_full_name,
+        department: program.department,
+        acceptedCount: acceptanceData ? acceptanceData.acceptedCount : 0,
+        rejectedCount: acceptanceData ? acceptanceData.rejectedCount : 0,
+        totalCount: acceptanceData ? acceptanceData.totalCount : 0,
+        acceptanceRate: acceptanceData ? acceptanceData.acceptanceRate : 0,
+        rejectionRate: acceptanceData ? acceptanceData.rejectionRate : 0,
+        hasData: !!acceptanceData
+      });
+    });
+
+    // STEP 5: GET UNIQUE DEPARTMENTS LIST
+    const [departments] = await db.query(`
           SELECT DISTINCT major AS department
           FROM program_study
           WHERE id_kampus = ?
           ORDER BY major
         `, [id_kampus]);
 
-        // FINAL RESPONSE
-        res.json({
-            success: true,
-            data: {
-                year: currentYear,
-                department: department || "All Departments",
-                departments: departments.map(d => d.department),
-                responseTime: responseTimeResult,
-                acceptanceRate: acceptanceRateResult
-            }
-        });
+    // FINAL RESPONSE
+    res.json({
+      success: true,
+      data: {
+        year: currentYear,
+        department: department || "All Departments",
+        departments: departments.map(d => d.department),
+        responseTime: responseTimeResult,
+        acceptanceRate: acceptanceRateResult
+      }
+    });
 
-    } catch (err) {
-        console.error("Dashboard statistics error:", err);
-        res.status(500).json({
-            success: false,
-            message: "Server error",
-            error: err.message
-        });
-    }
+  } catch (err) {
+    console.error("Dashboard statistics error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message
+    });
+  }
 });
 
 // DASHBOARD SUMMARY
@@ -714,17 +714,24 @@ router.get("/dashboard/summary", async (req, res) => {
   }
 });
 
+// routes/lecturer.js (replace existing /lecturer/export-internship)
 router.get("/lecturer/export-internship", async (req, res) => {
   try {
-    const { year, nim_nik_unit } = req.query;
-    const isAllYears = !year || year.toLowerCase() === "all"; 
-    const currentYear = isAllYears ? null : year;
+    const { start_date, end_date, nim_nik_unit } = req.query;
 
     if (!nim_nik_unit) {
-      return res.status(400).json({
-        success: false,
-        message: "Lecturer ID (nim_nik_unit) is required",
-      });
+      return res.status(400).json({ success: false, message: "Lecturer ID (nim_nik_unit) is required" });
+    }
+
+    // validate dates
+    if (!start_date || !end_date) {
+      return res.status(400).json({ success: false, message: "start_date and end_date are required (YYYY-MM-DD)" });
+    }
+
+    const startDate = new Date(start_date);
+    const endDate = new Date(end_date);
+    if (isNaN(startDate) || isNaN(endDate) || startDate > endDate) {
+      return res.status(400).json({ success: false, message: "Invalid date range" });
     }
 
     // Get coordinator info
@@ -737,58 +744,24 @@ router.get("/lecturer/export-internship", async (req, res) => {
     );
 
     if (!lecRows.length) {
-      return res.status(403).json({
-        success: false,
-        message: "You are not authorized as internship coordinator",
-      });
+      return res.status(403).json({ success: false, message: "You are not authorized as internship coordinator" });
     }
 
     const { prodi_koor, id_kampus, name } = lecRows[0];
 
-    // =====================================================
-    // DYNAMIC YEAR FILTER
-    // =====================================================
-    let yearFilterInternship = "";
-    let yearFilterLetter = "";
-
-    if (!isAllYears) {
-      yearFilterInternship = `AND YEAR(i.start_date) = ${db.escape(currentYear)}`;
-      yearFilterLetter = `AND YEAR(il.start_date) = ${db.escape(currentYear)}`;
-    }
-
-    // =====================================================
-    // FINAL QUERY
-    // =====================================================
+    // FINAL QUERY: filter by date-range overlap
     const query = `
       SELECT 
         i.nim,
         si.name AS student_name,
         CONCAT(ps.jenjang, ' ', ps.study_program) AS program_study,
         ps.major AS department,
-
         COALESCE(NULLIF(MAX(il.class), ''), '-') AS class,
         COALESCE(NULLIF(MAX(il.semester), ''), '-') AS semester,
-
         ? AS internship_coordinator,
-
-        COALESCE(
-          NULLIF(MAX(c.name), ''),
-          NULLIF(MAX(il.company_name), ''),
-          '-'
-        ) AS company_name,
-
-        COALESCE(
-          NULLIF(MAX(c.phone), ''),
-          NULLIF(MAX(il.company_contact), ''),
-          '-'
-        ) AS company_contact,
-
-        COALESCE(
-          NULLIF(MAX(c.address), ''),
-          NULLIF(MAX(il.company_address), ''),
-          '-'
-        ) AS company_address,
-
+        COALESCE(NULLIF(MAX(c.name), ''), NULLIF(MAX(il.company_name), ''), '-') AS company_name,
+        COALESCE(NULLIF(MAX(c.phone), ''), NULLIF(MAX(il.company_contact), ''), '-') AS company_contact,
+        COALESCE(NULLIF(MAX(c.address), ''), NULLIF(MAX(il.company_address), ''), '-') AS company_address,
         i.start_date,
         i.end_date,
         COALESCE(NULLIF(si.email, ''), '-') AS email,
@@ -800,38 +773,34 @@ router.get("/lecturer/export-internship", async (req, res) => {
       LEFT JOIN program_study ps 
         ON si.program_study = ps.kode_prodi 
         AND si.id_kampus = ps.id_kampus
-
       LEFT JOIN internship_letter il ON i.nim = il.nim
         AND il.acceptance_status = 'ACCEPTED'
-        ${yearFilterLetter}
 
       WHERE i.status = 'ONGOING'
-        ${yearFilterInternship}
+        AND i.start_date <= ?
+        AND i.end_date >= ?
         AND si.program_study LIKE CONCAT('%', ?, '%')
         AND si.id_kampus = ?
 
       GROUP BY i.nim, si.name, ps.jenjang, ps.study_program, ps.major, 
                i.start_date, i.end_date, si.email, si.no_whatsapp
-
       ORDER BY i.start_date DESC, si.name ASC
     `;
 
     const [rows] = await db.query(query, [
       name,
+      end_date,    // i.start_date <= end_date
+      start_date,  // i.end_date   >= start_date
       prodi_koor,
-      id_kampus,
+      id_kampus
     ]);
 
     if (!rows.length) {
-      return res.status(404).json({
-        success: false,
-        message: `No internship data found for filter: year=${year || "all"}`,
-      });
+      return res.status(404).json({ success: false, message: `No internship data found in given date range` });
     }
 
     res.json({
       success: true,
-      year: isAllYears ? "all" : currentYear,
       coordinator: name,
       prodi: prodi_koor,
       total_data: rows.length,
@@ -840,13 +809,8 @@ router.get("/lecturer/export-internship", async (req, res) => {
 
   } catch (err) {
     console.error("[EXPORT] Error:", err);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: err.message,
-    });
+    res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
 });
-
 
 module.exports = router;
