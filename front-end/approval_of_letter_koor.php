@@ -1977,11 +1977,11 @@ if ($id_kampus) {
                         item.program_study || '-',
                         item.class || '-',
                         item.semester || '-',
-                        formatDate(item.start_date),
-                        formatDate(item.end_date),
                         item.company_name || '-',
                         item.company_contact || '-',
                         item.company_address || '-',
+                        formatDate(item.start_date),
+                        formatDate(item.end_date),
                         item.email || '-',
                         item.whatsapp_number || '-'
                     ]);
@@ -1989,7 +1989,7 @@ if ($id_kampus) {
                     doc.autoTable({
                         startY: 35,
                         head: [
-                            ['No', 'NIM', 'Name', 'Study Program', 'Class', 'Semester', 'Start Date', 'End Date', 'Company Name', 'Company Contact', 'Company Address', 'Email', 'WhatsApp']
+                            ['No', 'NIM', 'Name', 'Study Program', 'Class', 'Semester', 'Company Name', 'Company Contact', 'Company Address', 'Start Date', 'End Date', 'Email', 'WhatsApp']
                         ],
                         body: tableData,
                         styles: {
@@ -2022,12 +2022,6 @@ if ($id_kampus) {
                             5: {
                                 cellWidth: 14
                             }, // Semester
-                            6: {
-                                cellWidth: 18
-                            }, // Start Date
-                            7: {
-                                cellWidth: 18
-                            }, // End Date
                             8: {
                                 cellWidth: 28
                             }, // Company Name
@@ -2037,6 +2031,12 @@ if ($id_kampus) {
                             10: {
                                 cellWidth: 28
                             }, // Company Address
+                            6: {
+                                cellWidth: 18
+                            }, // Start Date
+                            7: {
+                                cellWidth: 18
+                            }, // End Date
                             11: {
                                 cellWidth: 18
                             }, // Email
@@ -2063,7 +2063,7 @@ if ($id_kampus) {
                     }
 
                     // Nama file dinamis berdasarkan filter
-                    const fileName = yearDisplay === "All Year" ? "Data_Magang_All_Year.pdf" : `Data_Magang_${yearDisplay}.pdf`;
+                    const fileName = yearDisplay === "All Year" ? "Internship_Data_All_Year.pdf" : `Internship_Data_${yearDisplay}.pdf`;
                     doc.save(fileName);
 
                     Swal.fire({
@@ -2116,7 +2116,7 @@ if ($id_kampus) {
                         [`Year: ${yearDisplay}`],
                         [`Total Students: ${data.length}`],
                         [],
-                        ['No', 'NIM', 'Name', 'Study Program', 'Class', 'Semester', 'Start Date', 'End Date', 'Company Name', 'Company Contact', 'Company Address', 'Email', 'WhatsApp'],
+                        ['No', 'NIM', 'Name', 'Study Program', 'Class', 'Semester', 'Company Name', 'Company Contact', 'Company Address', 'Start Date', 'End Date', 'Email', 'WhatsApp'],
                         ...data.map((item, index) => [
                             index + 1,
                             item.nim || '-',
@@ -2124,11 +2124,11 @@ if ($id_kampus) {
                             item.program_study || '-',
                             item.class || '-',
                             item.semester || '-',
-                            formatDate(item.start_date),
-                            formatDate(item.end_date),
                             item.company_name || '-',
                             item.company_contact || '-',
                             item.company_address || '-',
+                            formatDate(item.start_date),
+                            formatDate(item.end_date),
                             item.email || '-',
                             item.whatsapp_number || '-'
                         ])
@@ -2156,13 +2156,7 @@ if ($id_kampus) {
                             wch: 10
                         }, // Semester
                         {
-                            wch: 12
-                        }, // Start Date
-                        {
-                            wch: 12
-                        }, // End Date
-                        {
-                            wch: 30
+                            wch: 50
                         }, // Company Name
                         {
                             wch: 18
@@ -2170,6 +2164,12 @@ if ($id_kampus) {
                         {
                             wch: 100
                         }, // Company Address
+                        {
+                            wch: 12
+                        }, // Start Date
+                        {
+                            wch: 12
+                        }, // End Date
                         {
                             wch: 30
                         }, // Email

@@ -498,6 +498,15 @@ if ($id_kampus) {
                                             </select>
                                         </div>
 
+                                        <!-- Filter By Department -->
+                                        <div class="col-md mb-3">
+                                            <label for="filter_department" class="form-label">Filter By Department</label>
+                                            <select class="form-control" id="filter_department" name="department"
+                                                onchange="onDepartmentChange()">
+                                                <option value="">All Departments</option>
+                                            </select>
+                                        </div>
+
                                         <!-- Filter By Student Name -->
                                         <div class="col-md mb-3">
                                             <label for="filter_student_name" class="form-label">Filter by Student
@@ -531,9 +540,11 @@ if ($id_kampus) {
                                                 <option value="reject">Reject</option>
                                             </select>
                                         </div>
-
+                                    </div>
+                                    <!-- Filter Tahun -->
+                                    <div class="row">
                                         <!-- Filter By Result Company -->
-                                        <div class="col-md mb-3">
+                                        <div class="col-md-3 mb-3 same-width">
                                             <label for="filter_company" class="form-label">Filter by Result
                                                 Company</label>
                                             <select class="form-control" id="filter_company" name="company"
@@ -543,9 +554,6 @@ if ($id_kampus) {
                                                 <option value="rejected">Rejected</option>
                                             </select>
                                         </div>
-                                    </div>
-                                    <!-- Filter Tahun -->
-                                    <div class="row">
                                         <div class="col-md-3 mb-3 same-width">
                                             <label for="filter_year" class="form-label">Select by Year</label>
                                             <select class="form-control" id="filter_year" name="year" onchange="applyFilter()">
@@ -654,6 +662,7 @@ if ($id_kampus) {
             // ============================================
 
             document.addEventListener("DOMContentLoaded", function() {
+                loadDepartments(); // Load dropdown department untuk filter
                 loadStudyPrograms(); // Load dropdown study program untuk filter
                 loadSubmissions(); // Load data submissions default (tanpa filter)
                 loadYears(); // Load dropdown tahun untuk filter
@@ -670,6 +679,77 @@ if ($id_kampus) {
                 }
             }
 
+            /**
+             * Load departments untuk dropdown filter
+             * Ambil dari API berdasarkan id_kampus CDC
+             */
+            async function loadDepartments() {
+                if (!cdcKampusId) {
+                    console.error("CDC Kampus ID tidak tersedia");
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`${apiBase}/cdc/departments/${cdcKampusId}`);
+                    const json = await res.json();
+
+                    if (json.success && json.data.length > 0) {
+                        const select = document.getElementById("filter_department");
+                        select.innerHTML = '<option value="">All Departments</option>';
+
+                        json.data.forEach(item => {
+                            const option = document.createElement("option");
+                            option.value = item.department;
+                            option.textContent = item.department;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (err) {
+                    console.error("Error loading departments:", err);
+                }
+            }
+
+            /**
+             * Event handler ketika department berubah
+             * Akan memfilter study programs berdasarkan department yang dipilih
+             */
+            async function onDepartmentChange() {
+                const department = document.getElementById("filter_department").value;
+                const studyProgramSelect = document.getElementById("filter_study_program");
+
+                if (!department) {
+                    // Jika "All Departments", load semua study programs
+                    await loadStudyPrograms();
+                    applyFilter();
+                    return;
+                }
+
+                try {
+                    // Load study programs berdasarkan department
+                    const res = await fetch(`${apiBase}/cdc/study-programs/${cdcKampusId}`);
+                    const json = await res.json();
+
+                    if (json.success && json.data.length > 0) {
+                        // Filter study programs berdasarkan department yang dipilih
+                        const filteredPrograms = json.data.filter(item => item.major === department);
+
+                        studyProgramSelect.innerHTML = '<option value="">All Study Programs</option>';
+
+                        filteredPrograms.forEach(item => {
+                            const option = document.createElement("option");
+                            option.value = item.kode_prodi;
+                            option.textContent = `${item.kode_prodi} - ${item.study_program}`;
+                            studyProgramSelect.appendChild(option);
+                        });
+                    }
+
+                    // Apply filter setelah dropdown ter-update
+                    applyFilter();
+
+                } catch (err) {
+                    console.error("Error loading study programs by department:", err);
+                }
+            }
 
             // ============================================
             // FUNGSI UTAMA - LOAD DATA SUBMISSIONS
@@ -690,6 +770,7 @@ if ($id_kampus) {
 
                     // Jika menggunakan filter, build query params
                     if (useFilter) {
+                        const department = document.getElementById("filter_department").value;
                         const studyProgram = document.getElementById("filter_study_program").value;
                         const studentName = document.getElementById("filter_student_name").value;
                         const coordinator = document.getElementById("filter_coordinator").value;
@@ -700,6 +781,7 @@ if ($id_kampus) {
                         let queryParams = new URLSearchParams();
                         queryParams.append('id_kampus', cdcKampusId);
 
+                        if (department) queryParams.append('department', department);
                         if (studyProgram) queryParams.append('study_program', studyProgram);
                         if (studentName) queryParams.append('student_name', studentName);
                         if (coordinator) queryParams.append('coordinator', coordinator);
@@ -1485,48 +1567,54 @@ if ($id_kampus) {
             async function fetchInternshipData() {
                 const year = document.getElementById("filter_year").value;
                 const studyProgram = document.getElementById("filter_study_program").value;
+                const department = document.getElementById("filter_department").value;
 
                 // Display values untuk pesan
                 const yearDisplay = year ? year : "All Year";
 
-                // Mapping program studi untuk pesan yang lebih readable
+                // Mapping program studi KE BAHASA INGGRIS
                 const programMap = {
-                    "AB": "Administrasi Bisnis Terapan",
-                    "AK": "Akuntansi",
-                    "AM": "Akuntansi Manajerial",
-                    "AN": "Animasi",
-                    "Bengkalis-IF": "Teknik Informatika",
-                    "DBG": "Distribusi Barang",
-                    "EM": "Teknik Elektronika Manufaktur",
-                    "GM": "Teknik Geomatika",
-                    "IF": "Teknik Informatika",
-                    "IF-FR": "Teknik Informatika",
-                    "INS": "Teknik Instrumentasi",
-                    "LPI": "Logistik Perdagangan Internasional",
-                    "ME-FR": "Teknik Mesin",
-                    "MJ": "Teknologi Rekayasa Multimedia",
-                    "MK": "Teknik Mekatronika",
-                    "MS": "Teknik Mesin",
-                    "OT": "Teknik Otomasi",
+                    "AB": "Applied Business Administration",
+                    "AK": "Accounting",
+                    "AM": "Managerial Accounting",
+                    "AN": "Animation",
+                    "Bengkalis-IF": "Informatics Engineering",
+                    "DBG": "Goods Distribution",
+                    "EM": "Manufacturing Electronics Engineering",
+                    "GM": "Geomatics Engineering",
+                    "IF": "Informatics Engineering",
+                    "IF-FR": "Informatics",
+                    "INS": "Instrumentation Engineering",
+                    "LPI": "International Trade Logistics",
+                    "ME-FR": "Mechanical engineering",
+                    "MJ": "Multimedia Engineering",
+                    "MK": "Mechatronic Engineering",
+                    "MS": "Mechanical Engineering",
+                    "OT": "Automation Engineering",
                     "PPI": "Program Profesi Insinyur",
-                    "RE": "Teknik Robotika",
-                    "RKS": "Rekayasa Keamanan Siber",
-                    "RPE": "Teknologi Rekayasa Pembangkit Energi",
-                    "TPKP": "Teknik Perancangan dan Konstruksi Kapal",
-                    "TPPU": "Teknik Perawatan Pesawat Udara",
-                    "TRE": "Teknologi Rekayasa Elektronika",
-                    "TRPL": "Teknologi Rekayasa Perangkat Lunak"
+                    "RE": "Robotics Engineering",
+                    "RKS": "Cyber Security Engineering",
+                    "RPE": "Energy Generation Engineering Technology",
+                    "TPKP": "Ship Design and Construction Engineering",
+                    "TPPU": "Aircraft Maintenance Engineering",
+                    "TRE": "Electrical Engineering",
+                    "TRPL": "Software Development Engineering"
                 };
 
                 const programDisplay = studyProgram ?
                     (programMap[studyProgram] || studyProgram) :
                     "All Programs";
 
+                const departmentDisplay = department || "All Departments";
+
                 try {
                     // Build URL dengan query params
                     let url = `${apiBase}/cdc/export-internship?year=${year}`;
 
-                    // Jika ada filter prodi, tambahkan ke URL
+                    if (department && department.trim() !== '') {
+                        url += `&department=${encodeURIComponent(department)}`;
+                    }
+
                     if (studyProgram && studyProgram.trim() !== '') {
                         url += `&study_program=${encodeURIComponent(studyProgram)}`;
                     }
@@ -1535,20 +1623,39 @@ if ($id_kampus) {
                     const json = await res.json();
 
                     if (!json.success) {
-                        // Generate pesan berdasarkan kombinasi filter
+                        // ✅ GENERATE PESAN BERDASARKAN KOMBINASI FILTER - WITH "DEPARTMENT" WORD
                         let message = "";
 
-                        if (studyProgram && year) {
-                            // Ada prodi DAN ada tahun
+                        // Case 1: Ada department + prodi + tahun
+                        if (department && studyProgram && year) {
+                            message = `No internship data found for ${programDisplay} in department ${departmentDisplay} in ${yearDisplay}`;
+                        }
+                        // Case 2: Ada department + prodi, TIDAK ada tahun
+                        else if (department && studyProgram && !year) {
+                            message = `No internship data found for ${programDisplay} in department ${departmentDisplay} across all years`;
+                        }
+                        // Case 3: Ada department + tahun, TIDAK ada prodi
+                        else if (department && !studyProgram && year) {
+                            message = `No internship data found for department ${departmentDisplay} in ${yearDisplay}`;
+                        }
+                        // Case 4: Ada department saja, TIDAK ada prodi & tahun
+                        else if (department && !studyProgram && !year) {
+                            message = `No internship data found for department ${departmentDisplay} across all years`;
+                        }
+                        // Case 5: Ada prodi + tahun, TIDAK ada department
+                        else if (!department && studyProgram && year) {
                             message = `No internship data found for ${programDisplay} in ${yearDisplay}`;
-                        } else if (studyProgram && !year) {
-                            // Ada prodi tapi TIDAK ada tahun (All Year)
+                        }
+                        // Case 6: Ada prodi saja, TIDAK ada department & tahun
+                        else if (!department && studyProgram && !year) {
                             message = `No internship data found for ${programDisplay} across all years`;
-                        } else if (!studyProgram && year) {
-                            // Tidak ada prodi (All Programs) tapi ADA tahun
+                        }
+                        // Case 7: Ada tahun saja
+                        else if (!department && !studyProgram && year) {
                             message = `No internship data found for all programs in ${yearDisplay}`;
-                        } else {
-                            // Tidak ada filter sama sekali
+                        }
+                        // Case 8: Tidak ada filter sama sekali
+                        else {
                             message = `No internship data found`;
                         }
 
@@ -1562,14 +1669,22 @@ if ($id_kampus) {
                     }
 
                     if (!json.data || json.data.length === 0) {
-                        // Generate pesan untuk data kosong (sama seperti di atas)
+                        // GENERATE PESAN UNTUK DATA KOSONG - WITH "DEPARTMENT" WORD
                         let message = "";
 
-                        if (studyProgram && year) {
+                        if (department && studyProgram && year) {
+                            message = `No active internship students found for ${programDisplay} in department ${departmentDisplay} in ${yearDisplay}`;
+                        } else if (department && studyProgram && !year) {
+                            message = `No active internship students found for ${programDisplay} in department ${departmentDisplay} across all years`;
+                        } else if (department && !studyProgram && year) {
+                            message = `No active internship students found for department ${departmentDisplay} in ${yearDisplay}`;
+                        } else if (department && !studyProgram && !year) {
+                            message = `No active internship students found for department ${departmentDisplay} across all years`;
+                        } else if (!department && studyProgram && year) {
                             message = `No active internship students found for ${programDisplay} in ${yearDisplay}`;
-                        } else if (studyProgram && !year) {
+                        } else if (!department && studyProgram && !year) {
                             message = `No active internship students found for ${programDisplay} across all years`;
-                        } else if (!studyProgram && year) {
+                        } else if (!department && !studyProgram && year) {
                             message = `No active internship students found for all programs in ${yearDisplay}`;
                         } else {
                             message = `No active internship students found`;
@@ -1598,7 +1713,6 @@ if ($id_kampus) {
                     return null;
                 }
             }
-
             /**
              * Format tanggal ke DD/MM/YYYY
              */
@@ -1625,7 +1739,7 @@ if ($id_kampus) {
             async function exportToPDF() {
                 const yearDisplay = getYearDisplay();
                 const studyProgram = document.getElementById("filter_study_program").value;
-                const filterText = studyProgram ? `Program: ${studyProgram}` : 'All Programs';
+                const filterText = studyProgram ? `Program: ${studyProgram}` : 'All Study Programs';
 
                 Swal.fire({
                     title: 'Generating PDF...',
@@ -1673,32 +1787,29 @@ if ($id_kampus) {
                         align: 'center'
                     });
 
-
-
-                    // ✅ UBAH: Table Data - 15 KOLOM
+                    // ✅ Table Data - 15 KOLOM (urutan disesuaikan dengan head)
                     const tableData = data.map((item, index) => [
-                        index + 1,
-                        item.nim || '-',
-                        item.student_name || '-',
-                        item.program_study || '-',
-                        item.department || '-',
-                        item.class || '-',
-                        item.semester || '-',
-                        item.internship_coordinator || '-',
-                        item.company_name || '-',
-                        item.company_contact || '-',
-                        item.company_address || '-',
-                        formatDate(item.start_date),
-                        formatDate(item.end_date),
-                        item.email || '-',
-                        item.whatsapp_number || '-'
+                        index + 1, // No
+                        item.nim || '-', // NIM
+                        item.student_name || '-', // Name
+                        item.program_study || '-', // Study Program
+                        item.class || '-', // Class
+                        item.semester || '-', // Semester
+                        item.internship_coordinator || '-', // Internship Coordinator
+                        item.company_name || '-', // Company Name
+                        item.company_contact || '-', // Company Contact
+                        item.company_address || '-', // Company Address
+                        formatDate(item.start_date), // Start Date
+                        formatDate(item.end_date), // End Date
+                        item.email || '-', // Email
+                        item.whatsapp_number || '-' // WhatsApp
                     ]);
 
-                    // ✅ UBAH: autoTable Config - 15 KOLOM
+                    // ✅ autoTable Config - 14 KOLOM (Department dihapus karena tidak ada di head)
                     doc.autoTable({
                         startY: 40,
                         head: [
-                            ['No', 'NIM', 'Name', 'Study Program', 'Class', 'Semester', 'Start Date', 'End Date', 'Company Name', 'Company Contact', 'Company Address', 'Email', 'WhatsApp']
+                            ['No', 'NIM', 'Name', 'Study Program', 'Class', 'Semester', 'Internship Coordinator', 'Company Name', 'Company Contact', 'Company Address', 'Start Date', 'End Date', 'Email', 'WhatsApp']
                         ],
                         body: tableData,
                         styles: {
@@ -1714,51 +1825,46 @@ if ($id_kampus) {
                         },
                         columnStyles: {
                             0: {
-                                cellWidth: 8
-                            },
-                            // Nomor
+                                cellWidth: 7
+                            }, // No
                             1: {
                                 cellWidth: 18
-                            },
-                            // NIM
+                            }, // NIM
                             2: {
-                                cellWidth: 28
-                            },
-                            // Name
+                                cellWidth: 22
+                            }, // Name
                             3: {
-                                cellWidth: 30
-                            },
-                            // Study Program
+                                cellWidth: 26
+                            }, // Study Program
                             4: {
-                                cellWidth: 20
-                            },
-                            // Class
+                                cellWidth: 16
+                            }, // Class
                             5: {
                                 cellWidth: 14
-                            },
-                            // Semester
+                            }, // Semester
                             6: {
-                                cellWidth: 18
-                            },
-                            // Start Date
+                                cellWidth: 26
+                            }, // Internship Coordinator
                             7: {
                                 cellWidth: 18
-                            },
-                            // End Date
-                            8: {
-                                cellWidth: 28
                             }, // Company Name
-                            9: {
+                            8: {
                                 cellWidth: 18
                             }, // Company Contact
+                            9: {
+                                cellWidth: 30
+                            }, // Company Address (paling panjang)
                             10: {
-                                cellWidth: 28
-                            }, // Company Address
+                                cellWidth: 18
+                            }, // Start Date
                             11: {
                                 cellWidth: 18
-                            }, // Email
+                            }, // End Date
                             12: {
-                                cellWidth: 18
+                                cellWidth: 22
+                            }, // Email
+                            13: {
+                                cellWidth: 16
                             } // WhatsApp
                         },
                         alternateRowStyles: {
@@ -1779,7 +1885,7 @@ if ($id_kampus) {
                         });
                     }
 
-                    const fileName = yearDisplay === "All Year" ? "Data_Magang_All_Year.pdf" : `Data_Magang_${yearDisplay}.pdf`;
+                    const fileName = yearDisplay === "All Year" ? "Internship_Data_All_Year.pdf" : `Internship_Data_${yearDisplay}.pdf`;
                     doc.save(fileName);
 
                     Swal.fire({
@@ -1834,35 +1940,34 @@ if ($id_kampus) {
 
                     // Mapping program studi
                     const programMap = {
-                        "AB": "Administrasi Bisnis Terapan",
-                        "AK": "Akuntansi",
-                        "AM": "Akuntansi Manajerial",
-                        "AN": "Animasi",
-                        "Bengkalis-IF": "Teknik Informatika",
-                        "DBG": "Distribusi Barang",
-                        "EM": "Teknik Elektronika Manufaktur",
-                        "GM": "Teknik Geomatika",
-                        "IF": "Teknik Informatika",
-                        "IF-FR": "Teknik Informatika",
-                        "INS": "Teknik Instrumentasi",
-                        "LPI": "Logistik Perdagangan Internasional",
-                        "ME-FR": "Teknik Mesin",
-                        "MJ": "Teknologi Rekayasa Multimedia",
-                        "MK": "Teknik Mekatronika",
-                        "MS": "Teknik Mesin",
-                        "OT": "Teknik Otomasi",
+                        "AB": "Applied Business Administration",
+                        "AK": "Accounting",
+                        "AM": "Managerial Accounting",
+                        "AN": "Animation",
+                        "Bengkalis-IF": "Informatics Engineering",
+                        "DBG": "Goods Distribution",
+                        "EM": "Manufacturing Electronics Engineering",
+                        "GM": "Geomatics Engineering",
+                        "IF": "Informatics Engineering",
+                        "IF-FR": "Informatics",
+                        "INS": "Instrumentation Engineering",
+                        "LPI": "International Trade Logistics",
+                        "ME-FR": "Mechanical engineering",
+                        "MJ": "Multimedia Engineering",
+                        "MK": "Mechatronic Engineering",
+                        "MS": "Mechanical Engineering",
+                        "OT": "Automation Engineering",
                         "PPI": "Program Profesi Insinyur",
-                        "RE": "Teknik Robotika",
-                        "RKS": "Rekayasa Keamanan Siber",
-                        "RPE": "Teknologi Rekayasa Pembangkit Energi",
-                        "TPKP": "Teknik Perancangan dan Konstruksi Kapal",
-                        "TPPU": "Teknik Perawatan Pesawat Udara",
-                        "TRE": "Teknologi Rekayasa Elektronika",
-                        "TRPL": "Teknologi Rekayasa Perangkat Lunak",
-                        "All": "All Program Study",
-                        "ALL": "All Program Study"
+                        "RE": "Robotics Engineering",
+                        "RKS": "Cyber Security Engineering",
+                        "RPE": "Energy Generation Engineering Technology",
+                        "TPKP": "Ship Design and Construction Engineering",
+                        "TPPU": "Aircraft Maintenance Engineering",
+                        "TRE": "Electrical Engineering",
+                        "TRPL": "Software Development Engineering",
+                        "All": "All Study Programs",
+                        "ALL": "All Study Programs"
                     };
-
                     const selectedStudyProgram = document.getElementById("filter_study_program")?.value || "ALL";
                     let filterText = programMap[selectedStudyProgram] || selectedStudyProgram;
 
@@ -1921,7 +2026,7 @@ if ($id_kampus) {
                             wch: 25
                         }, // Coordinator
                         {
-                            wch: 30
+                            wch: 50
                         }, // Company
                         {
                             wch: 20

@@ -293,6 +293,7 @@ router.get("/cdc/submissions-filtered", async (req, res) => {
   try {
     const {
       study_program,
+      department,
       student_name,
       coordinator,
       cdc,
@@ -320,7 +321,8 @@ router.get("/cdc/submissions-filtered", async (req, res) => {
         ps.kode_prodi,
         ps.prodi AS program_name,
         ps.study_program,
-        ps.jurusan
+        ps.jurusan,
+        ps.major
       FROM internship_letter il
       JOIN student_internship s ON s.nim = il.nim
       LEFT JOIN program_study ps ON ps.kode_prodi = s.program_study AND ps.id_kampus = ?
@@ -333,6 +335,12 @@ router.get("/cdc/submissions-filtered", async (req, res) => {
     if (study_program) {
       query += ` AND s.program_study = ?`;
       params.push(study_program);
+    }
+
+    // Filter by department (major dari program_study)
+    if (department) {
+      query += ` AND ps.major = ?`;
+      params.push(department);
     }
 
     // Filter by student name
@@ -401,13 +409,13 @@ router.get("/cdc/study-programs/:id_kampus", async (req, res) => {
       `
       SELECT DISTINCT 
         ps.kode_prodi,
-        ps.prodi AS program_name,
+        ps.study_program AS program_name,
         ps.study_program,
         ps.jurusan,
         ps.major
       FROM program_study ps
       WHERE ps.id_kampus = ?
-      ORDER BY ps.prodi ASC
+      ORDER BY ps.study_program ASC
     `,
       [id_kampus]
     );
@@ -415,6 +423,28 @@ router.get("/cdc/study-programs/:id_kampus", async (req, res) => {
     res.json({ success: true, data: rows });
   } catch (err) {
     console.error("[CDC] Error fetching study programs:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Get departments by kampus
+router.get("/cdc/departments/:id_kampus", async (req, res) => {
+  try {
+    const { id_kampus } = req.params;
+
+    const [rows] = await db.query(
+      `
+      SELECT DISTINCT major AS department
+      FROM program_study
+      WHERE id_kampus = ?
+      ORDER BY major ASC
+      `,
+      [id_kampus]
+    );
+
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error("[CDC] Error fetching departments:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -860,7 +890,7 @@ router.get("/dashboard/summary", async (req, res) => {
  */
 router.get("/cdc/export-internship", async (req, res) => {
   try {
-    const { year, study_program } = req.query;
+    const { year, study_program, department } = req.query;
 
     const isAllYears = !year || year.toLowerCase() === "all";
     const id_kampus = 1; // Polibatam
@@ -934,6 +964,11 @@ router.get("/cdc/export-internship", async (req, res) => {
     `;
 
     const params = [id_kampus];
+
+    if (department && department.trim() !== "") {
+      query += ` AND ps.major = ?`;
+      params.push(department);
+    }
 
     // FILTER STUDY PROGRAM (OPTIONAL)
     if (study_program && study_program.trim() !== "") {
