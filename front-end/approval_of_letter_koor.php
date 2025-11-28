@@ -1283,72 +1283,50 @@ if ($id_kampus) {
              * Called when any filter input changes
              */
             function applyFilter() {
-                const studentName = document.getElementById("filter_student_name").value.toLowerCase().trim();
-                const coordinatorStatus = document.getElementById("filter_coordinator").value.toLowerCase();
-                const cdcStatus = document.getElementById("filter_cdc").value.toLowerCase();
-                const companyResult = document.getElementById("filter_company").value.toLowerCase();
-                const filterYear = document.getElementById("filter_year").value;
+    // Ambil value dari filter
+    const studentName = document.getElementById("filter_student_name")?.value.toLowerCase().trim();
+    const coordinatorStatus = document.getElementById("filter_coordinator")?.value.toLowerCase();
+    const cdcStatus = document.getElementById("filter_cdc")?.value.toLowerCase();
+    const companyResult = document.getElementById("filter_company")?.value.toLowerCase();
 
-                let filteredData = allSubmissions.filter(item => {
-                    // Filter by Student Name
-                    const matchName = !studentName || item.student_name.toLowerCase().includes(studentName);
+    if (!allSubmissions || !allSubmissions.length) return;
 
-                    // Filter by Coordinator Approval
-                    let matchCoordinator = true;
-                    if (coordinatorStatus) {
-                        if (coordinatorStatus === "approved") {
-                            matchCoordinator = item.koor_approval === "ACCEPTED";
-                        } else if (coordinatorStatus === "waiting") {
-                            matchCoordinator = item.koor_approval === "WAITING";
-                        } else if (coordinatorStatus === "rejected") {
-                            matchCoordinator = item.koor_approval === "REJECTED";
-                        }
-                    }
+    const filteredData = allSubmissions.filter(item => {
+        // Filter by Student Name
+        const matchName = !studentName || (item.student_name && item.student_name.toLowerCase().includes(studentName));
 
-                    // Filter by CDC Approval
-                    let matchCDC = true;
-                    if (cdcStatus) {
-                        if (cdcStatus === "approve") {
-                            matchCDC = item.cdc_approval === "ACCEPTED";
-                        } else if (cdcStatus === "waiting") {
-                            matchCDC = item.cdc_approval === "WAITING";
-                        } else if (cdcStatus === "reject") {
-                            matchCDC = item.cdc_approval === "REJECTED";
-                        }
-                    }
+        // Filter by Coordinator Approval
+        let matchCoordinator = true;
+        if (coordinatorStatus) {
+            const val = item.koor_approval?.toUpperCase() || '';
+            if (coordinatorStatus === "approved") matchCoordinator = val === "ACCEPTED";
+            else if (coordinatorStatus === "waiting") matchCoordinator = val === "WAITING";
+            else if (coordinatorStatus === "rejected") matchCoordinator = val === "REJECTED";
+        }
 
-                    // Filter by Company Result
-                    let matchCompany = true;
-                    if (companyResult) {
-                        // Check if acceptance_status field exists
-                        if (item.acceptance_status && item.acceptance_status !== "-") {
-                            if (companyResult === "accepted") {
-                                matchCompany = item.acceptance_status === "ACCEPTED";
-                            } else if (companyResult === "rejected") {
-                                matchCompany = item.acceptance_status === "REJECTED";
-                            }
-                        } else {
-                            // No acceptance status data, don't match
-                            matchCompany = false;
-                        }
-                    }
-                    // Filter by Year
-                    let matchYear = true;
-                    if (filterYear) {
-                        if (item.start_date) {
-                            const year = new Date(item.start_date).getFullYear().toString();
-                            matchYear = (year === filterYear);
-                        } else {
-                            matchYear = false;
-                        }
-                    }
+        // Filter by CDC Approval
+        let matchCDC = true;
+        if (cdcStatus) {
+            const val = item.cdc_approval?.toUpperCase() || '';
+            if (cdcStatus === "approved") matchCDC = val === "ACCEPTED";
+            else if (cdcStatus === "waiting") matchCDC = val === "WAITING";
+            else if (cdcStatus === "rejected") matchCDC = val === "REJECTED";
+        }
 
-                    return matchName && matchCoordinator && matchCDC && matchCompany && matchYear;
-                });
+        // Filter by Company Result
+        let matchCompany = true;
+        if (companyResult) {
+            const val = item.acceptance_status?.toUpperCase() || '';
+            if (companyResult === "accepted") matchCompany = val === "ACCEPTED";
+            else if (companyResult === "rejected") matchCompany = val === "REJECTED";
+        }
 
-                // Re-render table with filtered data
-                renderTable(filteredData);
-            }
+        return matchName && matchCoordinator && matchCDC && matchCompany;
+    });
+
+    // Render ulang tabel
+    renderTable(filteredData);
+}
 
             /**
              * Sort table by date
@@ -1827,61 +1805,9 @@ if ($id_kampus) {
                 return `${day}/${month}/${year}`;
             }
 
+            
             /**
-             * Fetch data magang dari API - menggunakan start_date & end_date
-             * @param {string} startDate YYYY-MM-DD
-             * @param {string} endDate YYYY-MM-DD
-             * @returns {Array|null}
-             */
-            async function fetchInternshipData(startDate, endDate) {
-                const year = document.getElementById("filter_year").value;
-                const yearDisplay = year ? year : "All Year";
-
-                try {
-                    // build url: include start_date & end_date plus nim_nik_unit
-                    const params = new URLSearchParams();
-                    params.append('start_date', startDate);
-                    params.append('end_date', endDate);
-                    params.append('nim_nik_unit', lecturerId); // existing variable in your page
-
-                    const res = await fetch(`${apiBase}/lecturer/export-internship?${params.toString()}`);
-                    const json = await res.json();
-
-                    if (!json.success) {
-                        Swal.fire({
-                            icon: "info",
-                            title: "No Data Found",
-                            text: json.message || `No internship data found for the selected date range (${startDate} - ${endDate})`,
-                            confirmButtonText: "OK"
-                        });
-                        return null;
-                    }
-
-                    if (!json.data || json.data.length === 0) {
-                        Swal.fire({
-                            icon: "info",
-                            title: "No Data Found",
-                            text: `No students are doing internships in the selected date range (${startDate} - ${endDate})`,
-                            confirmButtonText: "OK"
-                        });
-                        return null;
-                    }
-
-                    console.log(`✅ Export data loaded: ${json.total_data || json.count || json.data.length} students from ${json.prodi || '-'}`);
-                    return json.data;
-                } catch (err) {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: "Failed to fetch data: " + err.message,
-                        confirmButtonText: "OK"
-                    });
-                    return null;
-                }
-            }
-
-            /**
-             * Popup meminta Start Date dan End Date
+             * Export Excel
              */
             async function exportToExcel() {
                 const { value: formValues } = await Swal.fire({
