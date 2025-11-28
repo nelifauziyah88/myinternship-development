@@ -94,42 +94,29 @@ if ($id_kampus) {
     <script src="./library/ckeditor/ckeditor.js"></script>
 
     <script src='./core/component/jquery.min.js'></script>
-    <script>
-        $(function() {});
-    </script>
     <script defer src='./core/component/sweetalert2.min.js'></script>
     <script defer src='./core/component/soloalert.js'></script>
 
     <style type="text/css">
-        /* Posisi relatif untuk ikon agar badge bisa ditempatkan relatif terhadapnya */
         .notification-icon {
             position: relative;
-            /* Sesuaikan ukuran ikon jika diperlukan */
         }
 
-        /* Badge notifikasi kecil hijau */
         .custom-notification-badge {
             position: absolute;
             top: -8px;
-            /* Sesuaikan posisi badge secara vertikal */
             right: -8px;
-            /* Sesuaikan posisi badge secara horizontal */
             color: white;
             border-radius: 50%;
             padding: 2px 6px;
-            /* Ukuran badge */
             font-size: 10px;
-            /* Ukuran angka */
             line-height: 1;
             min-width: 16px;
-            /* Pastikan ukuran minimal badge */
             text-align: center;
-            /* Pusatkan angka di dalam badge */
         }
 
         .fc-sun {
             color: red;
-            /* Mengubah warna font menjadi merah pada hari Minggu */
         }
 
         .disabled2 {
@@ -178,13 +165,9 @@ if ($id_kampus) {
 
         .btn-xs {
             padding: 4px 8px;
-            /* lebih kecil dari btn-sm */
             font-size: 0.75rem;
-            /* teks sedikit lebih kecil */
             line-height: 1.2;
-            /* supaya height-nya rendah */
             border-radius: 4px;
-            /* tetap sedikit membulat */
         }
 
         .badge.waiting {
@@ -616,25 +599,14 @@ if ($id_kampus) {
         <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style/dist/xlsx.min.js"></script>
 
         <script>
-            // ============================================
-            // KONFIGURASI & INISIALISASI
-            // ============================================
-
-            // Data user CDC dari PHP session
             const currentUserId = <?= json_encode($user['id_upkpk'] ?? "-") ?>;
             const currentUserName = <?= json_encode($user['name'] ?? "-") ?>;
             const cdcKampusId = "<?php echo $id_kampus; ?>";
 
-            // Base URL untuk API
             const apiBase = "http://localhost:8000/api";
 
             let allSubmissions = [];
             let sortAscending = true;
-
-
-            // ============================================
-            // EVENT LISTENER - LOAD AWAL
-            // ============================================
 
             document.addEventListener("DOMContentLoaded", function() {
                 loadDepartments(); // Load dropdown department untuk filter
@@ -642,10 +614,17 @@ if ($id_kampus) {
                 loadSubmissions(); // Load data submissions default (tanpa filter)
             });
 
-            /**
-             * Load departments untuk dropdown filter
-             * Ambil dari API berdasarkan id_kampus CDC
-             */
+            function loadYears() {
+                const yearSelect = document.getElementById("filter_year");
+                const currentYear = new Date().getFullYear();
+
+                yearSelect.innerHTML = `<option value="">ALL</option>`; // Default option
+
+                for (let y = currentYear; y >= 2021; y--) {
+                    yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+                }
+            }
+
             async function loadDepartments() {
                 if (!cdcKampusId) {
                     console.error("CDC Kampus ID tidak tersedia");
@@ -672,16 +651,11 @@ if ($id_kampus) {
                 }
             }
 
-            /**
-             * Event handler ketika department berubah
-             * Akan memfilter study programs berdasarkan department yang dipilih
-             */
             async function onDepartmentChange() {
                 const department = document.getElementById("filter_department").value;
                 const studyProgramSelect = document.getElementById("filter_study_program");
 
                 if (!department) {
-                    // Jika "All Departments", load semua study programs
                     await loadStudyPrograms();
                     applyFilter();
                     return;
@@ -706,7 +680,6 @@ if ($id_kampus) {
                         });
                     }
 
-                    // Apply filter setelah dropdown ter-update
                     applyFilter();
 
                 } catch (err) {
@@ -714,16 +687,6 @@ if ($id_kampus) {
                 }
             }
 
-            // ============================================
-            // FUNGSI UTAMA - LOAD DATA SUBMISSIONS
-            // ============================================
-
-            /**
-             * Load submissions dengan atau tanpa filter
-             * Fungsi ini menggabungkan loadSubmissions() dan loadSubmissionsWithFilter()
-             * 
-             * @param {boolean} useFilter - true jika menggunakan filter, false untuk load semua data
-             */
             async function loadSubmissions(useFilter = false) {
                 const body = document.getElementById("tableBody");
                 body.innerHTML = "<tr><td colspan='8' class='text-center'>Loading...</td></tr>";
@@ -786,9 +749,6 @@ if ($id_kampus) {
                 }
             }
 
-            // ============================================
-            // HELPER BARU
-            // ============================================
             function renderTable(data) {
                 const body = document.getElementById("tableBody");
                 body.innerHTML = "";
@@ -797,18 +757,6 @@ if ($id_kampus) {
                 });
             }
 
-
-            // ============================================
-            // FUNGSI HELPER - BUILD TABLE ROW
-            // ============================================
-
-            /**
-             * Build single table row untuk submission
-             * 
-             * @param {Object} item - Data submission dari API
-             * @param {number} index - Index row untuk numbering
-             * @returns {string} HTML string untuk table row
-             */
             function buildTableRow(item, index) {
                 const date = formatDate(item.created_at);
                 const koorHtml = buildKoordinatorBadge(item);
@@ -861,21 +809,9 @@ if ($id_kampus) {
                 }
             }
 
-            /**
-             * Build HTML untuk approval CDC
-             * Logic: 
-             * - Jika koordinator REJECTED → CDC otomatis REJECTED (tanpa tanggal & tanpa reason)
-             * - Jika koordinator WAITING → CDC belum bisa action (tampil -)
-             * - Jika koordinator ACCEPTED & CDC WAITING → tampil dropdown action
-             * - Jika CDC sudah ACCEPTED/REJECTED → tampil badge dengan tanggal
-             * 
-             * @param {Object} item - Data submission
-             * @returns {string} HTML string untuk CDC approval
-             */
             function buildCDCApprovalHtml(item) {
                 const updatedDate = formatDate(item.updated_at);
 
-                // Case 1: Koordinator REJECTED → CDC otomatis REJECTED
                 if (item.koor_approval === "REJECTED") {
                     return `
             <div class="text-center">
@@ -884,13 +820,9 @@ if ($id_kampus) {
             </div>
         `;
                 }
-
-                // Case 2: Koordinator masih WAITING → CDC belum bisa action
                 if (item.koor_approval === "WAITING") {
                     return `-`;
                 }
-
-                // Case 3: Koordinator ACCEPTED & CDC WAITING → tampil dropdown action
                 if (item.cdc_approval === "WAITING" && item.koor_approval === "ACCEPTED") {
                     return `
             <div class="dropdown text-center">
@@ -908,8 +840,6 @@ if ($id_kampus) {
             </div>
         `;
                 }
-
-                // Case 4: CDC sudah ACCEPTED
                 if (item.cdc_approval === "ACCEPTED") {
                     return `
             <div class="text-center">
@@ -918,8 +848,6 @@ if ($id_kampus) {
             </div>
         `;
                 }
-
-                // Case 5: CDC sudah REJECTED (tampil badge + button show reason)
                 if (item.cdc_approval === "REJECTED") {
                     return `
             <div class="text-center">
@@ -931,26 +859,15 @@ if ($id_kampus) {
             </div>
         `;
                 }
-
-                // Default
                 return `-`;
             }
 
-            /**
-             * Build badge untuk result company dengan button view reply
-             * 
-             * @param {Object} item - Data submission lengkap
-             * @returns {string} HTML string untuk badge result
-             */
             function buildResultBadge(item) {
                 const acceptance = item.acceptance_status;
 
-                // Jika belum ada acceptance status dari company
                 if (!acceptance || acceptance === '-') {
                     return `<span>-</span>`;
                 }
-
-                // Jika ACCEPTED
                 if (acceptance === 'ACCEPTED') {
                     return `
             <div class="text-center">
@@ -962,7 +879,6 @@ if ($id_kampus) {
         `;
                 }
 
-                // Jika REJECTED
                 if (acceptance === 'REJECTED') {
                     return `
             <div class="text-center">
@@ -977,10 +893,6 @@ if ($id_kampus) {
                 return `<span>-</span>`;
             }
 
-            /**
-             * Sort table by date
-             * Toggle between ascending and descending
-             */
             function sortTable() {
                 sortAscending = !sortAscending;
 
@@ -996,128 +908,155 @@ if ($id_kampus) {
                 renderTable(allSubmissions);
             }
 
-            // ============================================
-            // FUNGSI HELPER - FORMAT TANGGAL
-            // ============================================
-
-            /**
-             * Format timestamp menjadi tanggal DD/MM/YYYY
-             * 
-             * @param {string} timestamp - Timestamp dari database
-             * @returns {string} Formatted date atau "-" jika null
-             */
             function formatDate(timestamp) {
                 if (!timestamp) return "-";
                 return new Date(timestamp).toLocaleDateString("en-GB");
             }
 
+            // --------------------------
+// Helper: bulan -> ROMAWI
+// --------------------------
+function monthToRoman(monthIndexZeroBased) {
+  const map = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
+  return map[monthIndexZeroBased] || "";
+}
 
-            // ============================================
-            // FUNGSI APPROVAL - HANDLE USER ACTION
-            // ============================================
+// --------------------------
+// Perubahan pada handleApproval
+// --------------------------
+async function handleApproval(id, status) {
+  let comment = null;
 
-            /**
-             * Handle approval action (Approve/Reject)
-             * Untuk REJECTED, akan muncul textarea untuk input alasan
-             * Untuk ACCEPTED, langsung konfirmasi
-             * 
-             * @param {number} id - ID letter submission
-             * @param {string} status - Status approval (ACCEPTED/REJECTED)
-             */
-            async function handleApproval(id, status) {
-                let comment = null;
+  // Jika reject, minta alasan (tetap seperti sebelumnya)
+  if (status === "REJECTED") {
+    const { value: reason, isConfirmed } = await Swal.fire({
+      title: "Why are you rejecting?",
+      text: "Please provide your reason for rejecting this submission.",
+      input: "textarea",
+      inputPlaceholder: "Write the reason here...",
+      inputAttributes: { 'aria-label': 'Reason for rejection' },
+      showCancelButton: true,
+      cancelButtonText: "Cancel",
+      confirmButtonText: "Submit",
+      preConfirm: (value) => {
+        if (!value || !value.trim()) {
+          Swal.showValidationMessage("Reason is required.");
+          return false;
+        }
+        return value.trim();
+      }
+    });
 
-                // Jika reject, minta alasan dulu
-                if (status === "REJECTED") {
-                    const {
-                        value: reason,
-                        isConfirmed
-                    } = await Swal.fire({
-                        title: "Why are you rejecting?",
-                        text: "Please provide your reason for rejecting this submission.",
-                        input: "textarea",
-                        inputPlaceholder: "Write the reason here...",
-                        inputAttributes: {
-                            'aria-label': 'Reason for rejection'
-                        },
-                        showCancelButton: true,
-                        cancelButtonText: "Cancel",
-                        confirmButtonText: "Submit",
-                        preConfirm: (value) => {
-                            if (!value || !value.trim()) {
-                                Swal.showValidationMessage("Reason is required.");
-                                return false;
-                            }
-                            return value.trim();
-                        }
-                    });
+    if (!isConfirmed) return;
+    comment = reason;
+  }
 
-                    if (!isConfirmed) return;
-                    comment = reason;
-                }
+  // Jika status ACCEPTED -> munculkan swal input nomor surat (khusus CDC)
+  if (status === "ACCEPTED") {
+    // show popup to input left-most number only
+    const roman = monthToRoman(new Date().getMonth()); // 0-based
+    const year = new Date().getFullYear();
+    const suffix = `/WDIII.PL29/${roman}/${year}`;
 
-                // Konfirmasi action
-                const confirm = await Swal.fire({
-                    title: "Confirm?",
-                    text: `You are about to mark this submission as ${status}`,
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Yes, confirm"
-                });
+    const { isConfirmed, value: inputNumber } = await Swal.fire({
+      title: "Enter letter number for this internship letter",
+      html:
+        `<div style="display:flex;gap:8px;align-items:center;justify-content:center">
+          <input id="swal-input-number" class="swal2-input" placeholder="e.g. 15" style="max-width:120px" inputmode="numeric" />
+          <div style="font-size:0.95rem;padding-left:4px;color:#6c757d">${suffix}</div>
+        </div>`,
+      showCancelButton: true,
+      cancelButtonText: "Cancel",
+      confirmButtonText: "Accept",
+      reverseButton: false,
+      focusConfirm: false,
+      preConfirm: () => {
+        const val = document.getElementById('swal-input-number')?.value || "";
+        if (!val || !val.trim()) {
+          Swal.showValidationMessage("Number is required.");
+          return false;
+        }
+        // hanya angka diperbolehkan (boleh tambahkan lebih kompleks jika diperlukan)
+        if (!/^\d+$/.test(val.trim())) {
+          Swal.showValidationMessage("Only digits allowed.");
+          return false;
+        }
+        return val.trim();
+      }
+    });
 
-                if (!confirm.isConfirmed) return;
+    if (!isConfirmed) {
+      // Cancel -> tidak terjadi apa-apa (status tetap WAITING)
+      return;
+    }
 
-                // Kirim ke API
-                await sendApprovalToAPI(id, status, comment);
-            }
+    // build full letter number
+    const fullLetterNumber = `${inputNumber}${suffix}`;
 
-            /**
-             * Kirim approval ke API
-             * 
-             * @param {number} id - ID letter submission
-             * @param {string} status - Status approval (ACCEPTED/REJECTED)
-             * @param {string|null} comment - Alasan reject (optional)
-             */
-            async function sendApprovalToAPI(id, status, comment = null) {
-                try {
-                    const res = await fetch(`${apiBase}/cdc/approval`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            id_letter: id,
-                            status,
-                            user_id: currentUserId,
-                            user_name: currentUserName,
-                            comment
-                        })
-                    });
+    // konfirmasi akhir sebelum kirim
+    const confirm = await Swal.fire({
+      title: "Confirm?",
+      text: `You are about to mark this submission as ACCEPTED and assign letter number: ${fullLetterNumber}`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, confirm"
+    });
 
-                    const json = await res.json();
+    if (!confirm.isConfirmed) return;
 
-                    if (json.success) {
-                        Swal.fire("Success!", json.message, "success");
-                        loadSubmissions(); // Reload data
-                    } else {
-                        Swal.fire("Error", json.message, "error");
-                    }
-                } catch (err) {
-                    console.error("Error sending approval:", err);
-                    Swal.fire("Error", err.message, "error");
-                }
-            }
+    // send ke API (kirim letter_number)
+    await sendApprovalToAPI(id, status, comment, fullLetterNumber);
+    return;
+  }
 
+  // Untuk status selain ACCEPTED/REJECTED (atau jika ACCEPTED handled di atas)
+  const confirm = await Swal.fire({
+    title: "Confirm?",
+    text: `You are about to mark this submission as ${status}`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, confirm"
+  });
 
-            // ============================================
-            // FUNGSI REASON - VIEW & EDIT
-            // ============================================
+  if (!confirm.isConfirmed) return;
 
-            /**
-             * View rejection reason dengan opsi edit
-             * 
-             * @param {number} id_letter - ID letter submission
-             */
+  await sendApprovalToAPI(id, status, comment);
+}
+
+// --------------------------
+// sendApprovalToAPI menerima optional letter_number
+// --------------------------
+async function sendApprovalToAPI(id, status, comment = "-", letter_number = null) {
+  try {
+    const payload = {
+      id_letter: id,
+      status,
+      user_id: currentUserId,
+      user_name: currentUserName,
+      comment
+    };
+    if (letter_number) payload.letter_number = letter_number;
+
+    const res = await fetch(`${apiBase}/cdc/approval`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const json = await res.json();
+
+    if (json.success) {
+      Swal.fire("Success!", json.message, "success");
+      loadSubmissions();
+    } else {
+      Swal.fire("Error", json.message, "error");
+    }
+  } catch (err) {
+    console.error("Error sending approval:", err);
+    Swal.fire("Error", err.message, "error");
+  }
+}
+
             async function viewReason(id_letter) {
                 try {
                     const res = await fetch(`${apiBase}/cdc/reason/${id_letter}`);
@@ -1142,7 +1081,6 @@ if ($id_kampus) {
                         confirmButtonText: "Close"
                     });
 
-                    // Jika user klik Edit
                     if (result.isDenied) {
                         editReason(id_letter, reason);
                     }
@@ -1152,12 +1090,6 @@ if ($id_kampus) {
                 }
             }
 
-            /**
-             * Edit rejection reason
-             * 
-             * @param {number} id_letter - ID letter submission
-             * @param {string} currentReason - Current reason text
-             */
             async function editReason(id_letter, currentReason) {
                 const {
                     value: newReason,
@@ -1181,7 +1113,6 @@ if ($id_kampus) {
 
                 if (!isConfirmed) return;
 
-                // Kirim update ke API
                 try {
                     const res = await fetch(`${apiBase}/cdc/history/${id_letter}/edit`, {
                         method: "POST",
@@ -1207,12 +1138,7 @@ if ($id_kampus) {
                 }
             }
 
-            /**
-             * Escape HTML untuk prevent XSS injection di SweetAlert
-             * 
-             * @param {string} str - String yang akan di-escape
-             * @returns {string} Escaped string
-             */
+            // Escape HTML untuk prevent XSS injection di SweetAlert
             function escapeHtml(str) {
                 if (!str) return "";
                 return String(str)
@@ -1223,15 +1149,6 @@ if ($id_kampus) {
                     .replace(/'/g, "&#039;");
             }
 
-
-            // ============================================
-            // FUNGSI FILTER & STUDY PROGRAM
-            // ============================================
-
-            /**
-             * Load study programs untuk dropdown filter
-             * Hanya load program studi yang sesuai dengan kampus CDC
-             */
             async function loadStudyPrograms() {
                 if (!cdcKampusId) {
                     console.error("CDC Kampus ID tidak tersedia");
@@ -1258,33 +1175,16 @@ if ($id_kampus) {
                 }
             }
 
-            /**
-             * Apply filter - dipanggil saat user mengubah filter
-             * Fungsi ini akan reload submissions dengan parameter filter
-             */
             function applyFilter() {
                 console.log("Applying filters...");
                 loadSubmissions(true); 
             }
 
-            // ============================================
-            // FUNGSI NAVIGASI & UTILITY
-            // ============================================
-
-            /**
-             * View detail submission - redirect ke halaman detail
-             * 
-             * @param {number} id - ID letter submission
-             */
             function viewDetail(id) {
                 console.log("Opening submission detail for:", id);
                 window.location.href = `detail_submissions_cdc.php?id=${id}`;
             }
 
-            /**
-             * Logout confirmation & redirect
-             * Menghapus session PHP dan localStorage
-             */
             function logout_confirm() {
                 let _token = $('meta[name="csrf-token"]').attr('content');
 
@@ -1321,15 +1221,6 @@ if ($id_kampus) {
                 });
             }
 
-            // ============================================================
-            // FUNGSI VIEW COMPANY REPLY - ENHANCED VERSION
-            // ============================================================
-
-            /**
-             * View company reply - tampilkan file dengan informasi lengkap
-             * 
-             * @param {number} id_letter - ID letter submission
-             */
             async function viewCompanyReply(id_letter) {
                 try {
                     // Fetch company reply data dari API
@@ -1345,7 +1236,6 @@ if ($id_kampus) {
                     const json = await res.json();
                     const data = json.data;
 
-                    // Case 1: Ada file upload
                     if (data.company_reply_letter && data.company_reply_letter !== '-') {
                         const fileName = data.company_reply_letter;
                         const fileUrl = `./${data.company_reply_letter}`;
@@ -1353,7 +1243,6 @@ if ($id_kampus) {
                         // Tentukan apakah PDF atau gambar
                         const isPDF = fileName.toLowerCase().endsWith('.pdf');
 
-                        // Badge styling berdasarkan status
                         let statusBadge = '';
                         if (data.acceptance_status === 'ACCEPTED') {
                             statusBadge = '<span class="badge approved">Accepted</span>';
@@ -1363,7 +1252,6 @@ if ($id_kampus) {
                             statusBadge = '<span class="badge waiting">Waiting</span>';
                         }
 
-                        // Format reply date dari updated_at (ketika mahasiswa upload file)
                         let replyDateFormatted = '-';
                         if (data.updated_at) {
                             const date = new Date(data.updated_at);
@@ -1411,7 +1299,6 @@ if ($id_kampus) {
                     </div>
                 </div>
             `;
-
                         let modalContent = '';
 
                         if (isPDF) {
@@ -1459,7 +1346,6 @@ if ($id_kampus) {
                     </div>
                 `;
                         }
-
                         // Tampilkan modal dengan file
                         Swal.fire({
                             title: '',
@@ -1472,7 +1358,8 @@ if ($id_kampus) {
                             }
                         });
                     }
-                    // REJECTED tanpa file
+                    
+                    // REJECTED tanpa file (overdue)
                     else if (data.acceptance_status === 'REJECTED' && data.isOverdue) {
                         Swal.fire({
                             title: "Company Reply - REJECTED",
@@ -1494,7 +1381,7 @@ if ($id_kampus) {
                             confirmButtonText: 'Close'
                         });
                     }
-                    // Case 3: Tidak ada data sama sekali
+                    // Tidak ada data sama sekali
                     else {
                         Swal.fire({
                             title: "No Reply File Yet",
@@ -1520,17 +1407,11 @@ if ($id_kampus) {
                 }
             }
 
-            /**
-             * Fetch internship data dengan filter dari API
-             * 
-             * @returns {Array|null} Array of internship data atau null jika error/no data
-             */
+            // Fetch internship data dengan filter dari API
             async function fetchInternshipData() {
                 const year = document.getElementById("filter_year").value;
                 const studyProgram = document.getElementById("filter_study_program").value;
                 const department = document.getElementById("filter_department").value;
-
-                // Display values untuk pesan
                 const yearDisplay = year ? year : "All Year";
 
                 // Mapping program studi KE BAHASA INGGRIS
@@ -1584,39 +1465,23 @@ if ($id_kampus) {
                     const json = await res.json();
 
                     if (!json.success) {
-                        // ✅ GENERATE PESAN BERDASARKAN KOMBINASI FILTER - WITH "DEPARTMENT" WORD
                         let message = "";
 
-                        // Case 1: Ada department + prodi + tahun
                         if (department && studyProgram && year) {
                             message = `No internship data found for ${programDisplay} in department ${departmentDisplay} in ${yearDisplay}`;
-                        }
-                        // Case 2: Ada department + prodi, TIDAK ada tahun
-                        else if (department && studyProgram && !year) {
+                        } else if (department && studyProgram && !year) {
                             message = `No internship data found for ${programDisplay} in department ${departmentDisplay} across all years`;
-                        }
-                        // Case 3: Ada department + tahun, TIDAK ada prodi
-                        else if (department && !studyProgram && year) {
+                        } else if (department && !studyProgram && year) {
                             message = `No internship data found for department ${departmentDisplay} in ${yearDisplay}`;
-                        }
-                        // Case 4: Ada department saja, TIDAK ada prodi & tahun
-                        else if (department && !studyProgram && !year) {
+                        } else if (department && !studyProgram && !year) {
                             message = `No internship data found for department ${departmentDisplay} across all years`;
-                        }
-                        // Case 5: Ada prodi + tahun, TIDAK ada department
-                        else if (!department && studyProgram && year) {
+                        } else if (!department && studyProgram && year) {
                             message = `No internship data found for ${programDisplay} in ${yearDisplay}`;
-                        }
-                        // Case 6: Ada prodi saja, TIDAK ada department & tahun
-                        else if (!department && studyProgram && !year) {
+                        } else if (!department && studyProgram && !year) {
                             message = `No internship data found for ${programDisplay} across all years`;
-                        }
-                        // Case 7: Ada tahun saja
-                        else if (!department && !studyProgram && year) {
+                        } else if (!department && !studyProgram && year) {
                             message = `No internship data found for all programs in ${yearDisplay}`;
-                        }
-                        // Case 8: Tidak ada filter sama sekali
-                        else {
+                        } else {
                             message = `No internship data found`;
                         }
 
@@ -1630,7 +1495,6 @@ if ($id_kampus) {
                     }
 
                     if (!json.data || json.data.length === 0) {
-                        // GENERATE PESAN UNTUK DATA KOSONG - WITH "DEPARTMENT" WORD
                         let message = "";
 
                         if (department && studyProgram && year) {
@@ -1674,9 +1538,7 @@ if ($id_kampus) {
                     return null;
                 }
             }
-            /**
-             * Format tanggal ke DD/MM/YYYY
-             */
+
             function formatDate(dateString) {
                 if (!dateString) return "-";
                 const date = new Date(dateString);
@@ -1742,6 +1604,12 @@ if ($id_kampus) {
                 }
             }
 
+            function getYearDisplay() {
+                const year = document.getElementById("filter_year").value;
+                return year ? year : "All Year";
+            }
+
+            // Export to Excel
             async function exportToExcel() {
                 const {
                     value: formValues
@@ -1806,6 +1674,13 @@ if ($id_kampus) {
                 });
 
                 const data = await fetchInternshipData(start, end);
+                // const data = await fetchInternshipData();
+
+                // if (!data) {
+                //     return;
+                // }
+
+                // Swal.close();
 
                 if (!data || data.length === 0) {
                     Swal.close();
@@ -1860,7 +1735,6 @@ if ($id_kampus) {
 
                     const ws = XLSX.utils.aoa_to_sheet(excelData);
 
-                    // Column widths
                     ws['!cols'] = [{
                             wch: 5
                         }, {
@@ -2051,6 +1925,24 @@ if ($id_kampus) {
                                 ws[col + r].s = dataCenter;
                             else
                                 ws[col + r].s = dataLeft;
+                    // const headerCols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
+                    // headerCols.forEach(col => {
+                    //     const cellRef = col + '6';
+                    //     if (ws[cellRef]) ws[cellRef].s = headerStyle;
+                    // });
+
+                    // // Data rows styling
+                    // const dataStartRow = 7;
+                    // for (let row = dataStartRow; row < dataStartRow + data.length; row++) {
+                    //     headerCols.forEach((col, colIndex) => {
+                    //         const cellRef = col + row;
+                    //         if (ws[cellRef]) {
+                    //             if (colIndex === 0 || colIndex === 1 || colIndex === 5 || colIndex === 6 || colIndex === 11 || colIndex === 12) {
+                    //                 ws[cellRef].s = dataCenterStyle;
+                    //             } else {
+                    //                 ws[cellRef].s = dataStyle;
+                    //             }
+                    //         }
                         });
                     }
 

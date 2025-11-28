@@ -110,7 +110,7 @@ router.get("/cdc/submissions", async (req, res) => {
 // Approve/Reject submission
 router.post("/cdc/approval", async (req, res) => {
   try {
-    const { id_letter, status, user_id, user_name, comment } = req.body;
+    const { id_letter, status, user_id, user_name, comment, letter_number } = req.body;
     if (!id_letter || !status) {
       return res.status(400).json({
         success: false,
@@ -126,7 +126,7 @@ router.post("/cdc/approval", async (req, res) => {
     }
 
     const [rows] = await db.query(
-      `SELECT id_letter, koor_approval, cdc_approval 
+      `SELECT id_letter, koor_approval, cdc_approval, letter_number 
        FROM internship_letter 
        WHERE id_letter = ? LIMIT 1`,
       [id_letter]
@@ -152,17 +152,48 @@ router.post("/cdc/approval", async (req, res) => {
       });
     }
 
-    // Determine update SQL for internship_letter
+    // Jika ACCEPTED -> letter_number wajib
     if (s === "ACCEPTED") {
+      if (!letter_number || !String(letter_number).trim()) {
+        return res.status(400).json({
+          success: false,
+          message: "letter_number is required when accepting.",
+        });
+      }
+      // Jika sudah ada letter_number (locked), tolak
+      if (row.letter_number && String(row.letter_number).trim()) {
+        return res.status(400).json({
+          success: false,
+          message: "Letter number already exists and cannot be modified.",
+        });
+      }
+
+      // Cek duplikasi nomor surat di seluruh tabel
+const [dup] = await db.query(
+  `SELECT id_letter FROM internship_letter
+   WHERE letter_number = ? LIMIT 1`,
+  [letter_number]
+);
+
+if (dup.length) {
+  return res.status(400).json({
+    success: false,
+    message: "This letter number is already used for another submission.",
+  });
+}
+
+
       await db.query(
         `UPDATE internship_letter
          SET cdc_approval = 'ACCEPTED',
              status = CASE WHEN koor_approval = 'ACCEPTED' THEN 'ACCEPTED' ELSE status END,
+             letter_number = ?,
              updated_at = NOW()
          WHERE id_letter = ?`,
-        [id_letter]
+        [letter_number, id_letter]
       );
     } else {
+      // REJECTED
       await db.query(
         `UPDATE internship_letter
          SET cdc_approval = 'REJECTED',
@@ -200,11 +231,10 @@ router.post("/cdc/approval", async (req, res) => {
       console.error("[CDC] user lookup error:", err);
     }
 
-    // Insert history row
     await db.query(
       `INSERT INTO internship_letter_history 
-   (id_letter, approved_by, user_id, user_name, status_approval, timestamp, comment)
-   VALUES (?, 'CDC ADMINISTRATOR', ?, ?, ?, NOW(), ?)`,
+       (id_letter, approved_by, user_id, user_name, status_approval, timestamp, comment)
+       VALUES (?, 'CDC ADMINISTRATOR', ?, ?, ?, NOW(), ?)`,
       [id_letter, user_id || "-", user_name || "-", s, comment]
     );
 
@@ -223,6 +253,7 @@ router.post("/cdc/approval", async (req, res) => {
     });
   }
 });
+
 
 // get latest rejected reason by CDC for a letter
 router.get("/cdc/reason/:id", async (req, res) => {

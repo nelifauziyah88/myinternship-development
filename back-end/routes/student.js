@@ -636,8 +636,7 @@ router.get("/letter/:id/download", async (req, res) => {
 
     const now = new Date();
     const year = now.getFullYear();
-    const month = now.getMonth(); // 0-11
-    const monthRoman = getMonthRoman(month);
+    const month = now.getMonth();
 
     let letterNumber = letter.letter_number;
     if (!letterNumber) {
@@ -653,29 +652,10 @@ router.get("/letter/:id/download", async (req, res) => {
       letterNumber = next;
     }
 
-    // Helper function untuk konversi bulan ke romawi
-    function getMonthRoman(month) {
-      const romans = [
-        "I",
-        "II",
-        "III",
-        "IV",
-        "V",
-        "VI",
-        "VII",
-        "VIII",
-        "IX",
-        "X",
-        "XI",
-        "XII",
-      ];
-      return romans[month];
-    }
-
     // Template URL
     const templateFile =
       lang === "ENG" ? "internship_letter_eng.php" : "internship_letter_id.php";
-    const templateURL = `http://localhost/myinternship/front-end/${templateFile}?id_letter=${id}&lang=${lang}&month_roman=${monthRoman}`;
+    const templateURL = `http://localhost/myinternship/front-end/${templateFile}?id_letter=${id}&lang=${lang}`;
 
     // Tambahkan update published_date:
     const browser = await puppeteer.launch({

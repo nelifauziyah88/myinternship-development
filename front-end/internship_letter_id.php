@@ -21,10 +21,7 @@ $end_date   = $fmt->format(new DateTime($letter['end_date']));
 $dateStr    = $fmt->format(new DateTime()); // tanggal hari ini
 $periode    = $start_date . ' - ' . $end_date;
 
-$year = date('Y');
 $letterNumber = $letter['letter_number'] ?? '___';
-$monthRoman = $_GET['month_roman'] ?? 'VIII'; // Ambil dari query parameter
-$nomorFormatted = "{$letterNumber}/WDI/PL29/{$monthRoman}/{$year}";
 
 $company_name = $letter['company_name'] ?? ($company['name'] ?? '');
 $company_addr = $letter['company_address'] ?? ($company['address'] ?? '');
@@ -241,24 +238,29 @@ $stempel = "assets/img/ttd.png";
         .signature-title {
             font-size: 10pt;
             margin-bottom: 3px;
+            text-align: left;
         }
 
         .signature-subtitle {
             font-size: 9pt;
             font-style: italic;
             margin-bottom: 5px;
+            text-align: left;
         }
 
         .signature-image {
             width: 100px;
-            height: 80px;
-            margin: 5px auto;
+            height: 100px;
+            margin: auto;
         }
 
         .signature-image img {
+            margin-top: 25px;
             width: 100%;
-            height: 100%;
+            height: 65%;
             object-fit: contain;
+            transform: scale(2);
+            z-index: 1;
         }
 
         .signature-name {
@@ -266,6 +268,7 @@ $stempel = "assets/img/ttd.png";
             font-weight: bold;
             margin-top: 5px;
             text-decoration: underline;
+            z-index: 0;
         }
 
         .link {
@@ -547,7 +550,7 @@ $stempel = "assets/img/ttd.png";
                 <tr>
                     <td>Nomor</td>
                     <td>:</td>
-                    <td><?= htmlspecialchars($nomorFormatted) ?></td>
+                    <td><?= htmlspecialchars($letterNumber) ?></td>
                 </tr>
                 <tr>
                     <td>Lampiran</td>
@@ -633,7 +636,7 @@ $stempel = "assets/img/ttd.png";
                 <div class="signature-image">
                     <img src="assets/img/ttd.png" alt="Stempel">
                 </div>
-                <div class="signature-name">Dr. Muhammad Zarqani, S.Si., M.Sc.</div>
+                <div class="signature-name">Dr. Muhammad Zaenuddin, S.Si., M.Sc.</div>
             </div>
         </div>
     </div>
@@ -676,7 +679,7 @@ $stempel = "assets/img/ttd.png";
 
         <div class="letter-meta" style="margin-top: 30px;">
             <div>Kepada Yth. Bapak/Ibu</div>
-            <div>Kepala GDC Politeknik Negeri Batam</div>
+            <div>Kepala CDC Politeknik Negeri Batam</div>
         </div>
 
         <div class="greeting">
