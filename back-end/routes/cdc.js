@@ -107,7 +107,6 @@ router.get("/cdc/submissions", async (req, res) => {
   }
 });
 
-
 // Approve/Reject submission
 router.post("/cdc/approval", async (req, res) => {
   try {
@@ -299,7 +298,6 @@ router.get("/cdc/submissions-filtered", async (req, res) => {
       cdc,
       company,
       id_kampus,
-      year
     } = req.query;
 
     let query = `
@@ -364,11 +362,11 @@ router.get("/cdc/submissions-filtered", async (req, res) => {
     // Filter by CDC approval
     if (cdc) {
       const cdcStatus = cdc.toUpperCase();
-      if (cdcStatus === "APPROVE") {
+      if (cdcStatus === "APPROVED") {
         query += ` AND il.cdc_approval = 'ACCEPTED'`;
       } else if (cdcStatus === "WAITING") {
         query += ` AND il.cdc_approval = 'WAITING'`;
-      } else if (cdcStatus === "REJECT") {
+      } else if (cdcStatus === "REJECTED") {
         query += ` AND il.cdc_approval = 'REJECTED'`;
       }
     }
@@ -382,13 +380,6 @@ router.get("/cdc/submissions-filtered", async (req, res) => {
         query += ` AND il.acceptance_status = 'REJECTED'`;
       }
     }
-
-    // Filter by year (start_date)
-    if (year) {
-      query += ` AND YEAR(il.start_date) = ?`;
-      params.push(year);
-    }
-
 
     query += ` ORDER BY il.created_at DESC`;
 
@@ -670,7 +661,10 @@ router.get("/dashboard/statistics", async (req, res) => {
       ? [currentYear, id_kampus, department]
       : [currentYear, id_kampus];
 
-    const [responseTimeData] = await db.query(responseTimeQuery, responseTimeParams);
+    const [responseTimeData] = await db.query(
+      responseTimeQuery,
+      responseTimeParams
+    );
 
     // STEP 3: ACCEPTANCE RATE (Company Response)
     const acceptanceRateQuery = `
@@ -698,36 +692,39 @@ router.get("/dashboard/statistics", async (req, res) => {
       ? [currentYear, id_kampus, department]
       : [currentYear, id_kampus];
 
-    const [acceptanceRateData] = await db.query(acceptanceRateQuery, acceptanceRateParams);
+    const [acceptanceRateData] = await db.query(
+      acceptanceRateQuery,
+      acceptanceRateParams
+    );
 
-    // STEP 4: MERGE DATA - ALL PROGRAMS WITH ACTUAL DATA 
+    // STEP 4: MERGE DATA - ALL PROGRAMS WITH ACTUAL DATA
     const responseTimeMap = new Map();
-    responseTimeData.forEach(r => {
+    responseTimeData.forEach((r) => {
       const key = `${r.department}|||${r.program_full_name}`;
       responseTimeMap.set(key, {
         avgResponseTimeKoor: Number(r.avg_response_time_koor || 0).toFixed(2),
         avgResponseTimeCdc: Number(r.avg_response_time_cdc || 0).toFixed(2),
         avgTotalResponseTime: Number(r.avg_total_response_time || 0).toFixed(2),
-        dataCount: r.data_count || 0
+        dataCount: r.data_count || 0,
       });
     });
 
     const acceptanceRateMap = new Map();
-    acceptanceRateData.forEach(r => {
+    acceptanceRateData.forEach((r) => {
       const key = `${r.department}|||${r.program_full_name}`;
       acceptanceRateMap.set(key, {
         acceptedCount: r.accepted_count || 0,
         rejectedCount: r.rejected_count || 0,
         totalCount: r.total_count || 0,
         acceptanceRate: Number(r.acceptance_rate || 0),
-        rejectionRate: Number(r.rejection_rate || 0)
+        rejectionRate: Number(r.rejection_rate || 0),
       });
     });
 
     const responseTimeResult = [];
     const acceptanceRateResult = [];
 
-    allPrograms.forEach(program => {
+    allPrograms.forEach((program) => {
       const key = `${program.department}|||${program.program_full_name}`;
 
       // Response Time Data
@@ -735,11 +732,17 @@ router.get("/dashboard/statistics", async (req, res) => {
       responseTimeResult.push({
         program: program.program_full_name,
         department: program.department,
-        avgResponseTimeKoor: responseData ? responseData.avgResponseTimeKoor : "0.00",
-        avgResponseTimeCdc: responseData ? responseData.avgResponseTimeCdc : "0.00",
-        avgTotalResponseTime: responseData ? responseData.avgTotalResponseTime : "0.00",
+        avgResponseTimeKoor: responseData
+          ? responseData.avgResponseTimeKoor
+          : "0.00",
+        avgResponseTimeCdc: responseData
+          ? responseData.avgResponseTimeCdc
+          : "0.00",
+        avgTotalResponseTime: responseData
+          ? responseData.avgTotalResponseTime
+          : "0.00",
         hasData: !!responseData,
-        dataCount: responseData ? responseData.dataCount : 0
+        dataCount: responseData ? responseData.dataCount : 0,
       });
 
       // Acceptance Rate Data
@@ -752,17 +755,20 @@ router.get("/dashboard/statistics", async (req, res) => {
         totalCount: acceptanceData ? acceptanceData.totalCount : 0,
         acceptanceRate: acceptanceData ? acceptanceData.acceptanceRate : 0,
         rejectionRate: acceptanceData ? acceptanceData.rejectionRate : 0,
-        hasData: !!acceptanceData
+        hasData: !!acceptanceData,
       });
     });
 
     // STEP 5: GET UNIQUE DEPARTMENTS LIST
-    const [departments] = await db.query(`
+    const [departments] = await db.query(
+      `
           SELECT DISTINCT major AS department
           FROM program_study
           WHERE id_kampus = ?
           ORDER BY major
-        `, [id_kampus]);
+        `,
+      [id_kampus]
+    );
 
     // FINAL RESPONSE
     res.json({
@@ -770,18 +776,17 @@ router.get("/dashboard/statistics", async (req, res) => {
       data: {
         year: currentYear,
         department: department || "All Departments",
-        departments: departments.map(d => d.department),
+        departments: departments.map((d) => d.department),
         responseTime: responseTimeResult,
-        acceptanceRate: acceptanceRateResult
-      }
+        acceptanceRate: acceptanceRateResult,
+      },
     });
-
   } catch (err) {
     console.error("Dashboard statistics error:", err);
     res.status(500).json({
       success: false,
       message: "Server error",
-      error: err.message
+      error: err.message,
     });
   }
 });
@@ -818,7 +823,8 @@ router.get("/dashboard/summary", async (req, res) => {
     );
 
     // AVERAGE RESPONSE TIME
-    const [avgResponseTime] = await db.query(`
+    const [avgResponseTime] = await db.query(
+      `
       SELECT AVG(DATEDIFF(ilh_cdc.timestamp, il.created_at)) AS avg_days
       FROM internship_letter il
       INNER JOIN student_internship si ON il.nim = si.nim
@@ -840,7 +846,9 @@ router.get("/dashboard/summary", async (req, res) => {
         AND si.id_kampus = ?
         AND ilh_koor.timestamp IS NOT NULL
         AND ilh_cdc.timestamp IS NOT NULL
-    `, [currentYear, id_kampus]);
+    `,
+      [currentYear, id_kampus]
+    );
 
     const [companyAcceptance] = await db.query(
       `SELECT il.acceptance_status, COUNT(*) AS count
@@ -860,17 +868,18 @@ router.get("/dashboard/summary", async (req, res) => {
         year: currentYear,
         totalSubmissions: totalSubmissions[0].total,
         statusBreakdown,
-        averageResponseTime: Number(avgResponseTime[0].avg_days || 0).toFixed(2),
-        companyAcceptance
-      }
+        averageResponseTime: Number(avgResponseTime[0].avg_days || 0).toFixed(
+          2
+        ),
+        companyAcceptance,
+      },
     });
-
   } catch (err) {
     console.error("Dashboard summary error:", err);
     res.status(500).json({
       success: false,
       message: "Server error",
-      error: err.message
+      error: err.message,
     });
   }
 });
@@ -882,13 +891,20 @@ router.get("/cdc/export-internship", async (req, res) => {
     const id_kampus = 1; // Polibatam (ubah jika dynamic)
 
     if (!start_date || !end_date) {
-      return res.status(400).json({ success: false, message: "start_date and end_date are required (YYYY-MM-DD)" });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "start_date and end_date are required (YYYY-MM-DD)",
+        });
     }
 
     const s = new Date(start_date);
     const e = new Date(end_date);
     if (isNaN(s) || isNaN(e) || s > e) {
-      return res.status(400).json({ success: false, message: "Invalid date range" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid date range" });
     }
 
     let query = `
@@ -946,7 +962,12 @@ router.get("/cdc/export-internship", async (req, res) => {
     const [rows] = await db.query(query, params);
 
     if (!rows.length) {
-      return res.status(404).json({ success: false, message: `No internship data found in given date range` });
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: `No internship data found in given date range`,
+        });
     }
 
     res.json({
@@ -955,12 +976,12 @@ router.get("/cdc/export-internship", async (req, res) => {
       count: rows.length,
       data: rows,
     });
-
   } catch (err) {
     console.error("[CDC EXPORT] Error:", err);
-    res.status(500).json({ success: false, message: "Server error", error: err.message });
+    res
+      .status(500)
+      .json({ success: false, message: "Server error", error: err.message });
   }
 });
-
 
 module.exports = router;

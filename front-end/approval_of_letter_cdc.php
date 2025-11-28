@@ -84,7 +84,7 @@ if ($id_kampus) {
                 "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
                 urls: ['./assets/css/fonts.min.css']
             },
-            active: function () {
+            active: function() {
                 sessionStorage.fonts = true;
             }
         });
@@ -95,7 +95,7 @@ if ($id_kampus) {
 
     <script src='./core/component/jquery.min.js'></script>
     <script>
-        $(function () { });
+        $(function() {});
     </script>
     <script defer src='./core/component/sweetalert2.min.js'></script>
     <script defer src='./core/component/soloalert.js'></script>
@@ -524,11 +524,10 @@ if ($id_kampus) {
                                                 <option value="">ALL</option>
                                                 <option value="approved">Approved</option>
                                                 <option value="waiting">Waiting</option>
-                                                <option value="rejected">Reject</option>
+                                                <option value="rejected">Rejected</option>
                                             </select>
                                         </div>
                                     </div>
-                                    <!-- Filter Tahun -->
                                     <div class="row">
                                         <!-- Filter By Result Company -->
                                         <div class="col-md-3 mb-3 same-width">
@@ -637,23 +636,11 @@ if ($id_kampus) {
             // EVENT LISTENER - LOAD AWAL
             // ============================================
 
-            document.addEventListener("DOMContentLoaded", function () {
+            document.addEventListener("DOMContentLoaded", function() {
                 loadDepartments(); // Load dropdown department untuk filter
                 loadStudyPrograms(); // Load dropdown study program untuk filter
                 loadSubmissions(); // Load data submissions default (tanpa filter)
-                loadYears(); // Load dropdown tahun untuk filter
             });
-
-            function loadYears() {
-                const yearSelect = document.getElementById("filter_year");
-                const currentYear = new Date().getFullYear();
-
-                yearSelect.innerHTML = `<option value="">ALL</option>`; // Default option
-
-                for (let y = currentYear; y >= 2021; y--) {
-                    yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
-                }
-            }
 
             /**
              * Load departments untuk dropdown filter
@@ -752,7 +739,6 @@ if ($id_kampus) {
                         const coordinator = document.getElementById("filter_coordinator").value;
                         const cdcFilter = document.getElementById("filter_cdc").value;
                         const company = document.getElementById("filter_company").value;
-                        const year = document.getElementById("filter_year").value;
 
                         let queryParams = new URLSearchParams();
                         queryParams.append('id_kampus', cdcKampusId);
@@ -763,7 +749,6 @@ if ($id_kampus) {
                         if (coordinator) queryParams.append('coordinator', coordinator);
                         if (cdcFilter) queryParams.append('cdc', cdcFilter);
                         if (company) queryParams.append('company', company);
-                        if (year) queryParams.append('year', year);
 
                         apiUrl = `${apiBase}/cdc/submissions-filtered?${queryParams.toString()}`;
                     }
@@ -1278,9 +1263,9 @@ if ($id_kampus) {
              * Fungsi ini akan reload submissions dengan parameter filter
              */
             function applyFilter() {
-                loadSubmissions(true); // true = gunakan filter
+                console.log("Applying filters...");
+                loadSubmissions(true); 
             }
-
 
             // ============================================
             // FUNGSI NAVIGASI & UTILITY
@@ -1320,15 +1305,15 @@ if ($id_kampus) {
                             data: {
                                 'token': _token
                             },
-                            success: function () {
-                                setTimeout(function () {
+                            success: function() {
+                                setTimeout(function() {
                                     localStorage.removeItem('first');
                                     localStorage.removeItem('first_chime');
                                     localStorage.removeItem('next_chime');
                                     window.location.href = 'role_login.php';
                                 }, 200);
                             },
-                            error: function () {
+                            error: function() {
                                 Swal.fire('Error', 'Logout failed, please try again.', 'error');
                             }
                         });
@@ -1758,10 +1743,11 @@ if ($id_kampus) {
             }
 
             async function exportToExcel() {
-                const { value: formValues } = await Swal.fire({
+                const {
+                    value: formValues
+                } = await Swal.fire({
                     title: 'Select Date Range',
-                    html:
-                        '<label for="swal-start" style="display:block;text-align:left;margin-bottom:6px">Start date</label>' +
+                    html: '<label for="swal-start" style="display:block;text-align:left;margin-bottom:6px">Start date</label>' +
                         '<input id="swal-start" type="date" class="swal2-input" style="margin:0 auto;">' +
                         '<label for="swal-end" style="display:block;text-align:left;margin-top:8px;margin-bottom:6px">End date</label>' +
                         '<input id="swal-end" type="date" class="swal2-input" style="margin:0 auto;">',
@@ -1797,14 +1783,20 @@ if ($id_kampus) {
                             return false;
                         }
 
-                        return { start, end };
+                        return {
+                            start,
+                            end
+                        };
                     }
                 });
 
 
                 if (!formValues) return;
 
-                const { start, end } = formValues;
+                const {
+                    start,
+                    end
+                } = formValues;
 
                 Swal.fire({
                     title: 'Generating Excel...',
@@ -1869,51 +1861,178 @@ if ($id_kampus) {
                     const ws = XLSX.utils.aoa_to_sheet(excelData);
 
                     // Column widths
-                    ws['!cols'] = [
-                        { wch: 5 }, { wch: 15 }, { wch: 25 }, { wch: 35 }, { wch: 20 },
-                        { wch: 25 }, { wch: 10 }, { wch: 25 }, { wch: 50 }, { wch: 20 },
-                        { wch: 100 }, { wch: 12 }, { wch: 12 }, { wch: 25 }, { wch: 18 }
+                    ws['!cols'] = [{
+                            wch: 5
+                        }, {
+                            wch: 15
+                        }, {
+                            wch: 25
+                        }, {
+                            wch: 35
+                        }, {
+                            wch: 20
+                        },
+                        {
+                            wch: 25
+                        }, {
+                            wch: 10
+                        }, {
+                            wch: 25
+                        }, {
+                            wch: 50
+                        }, {
+                            wch: 20
+                        },
+                        {
+                            wch: 100
+                        }, {
+                            wch: 12
+                        }, {
+                            wch: 12
+                        }, {
+                            wch: 25
+                        }, {
+                            wch: 18
+                        }
                     ];
 
                     // Merges
-                    ws['!merges'] = [
-                        { s: { r: 0, c: 0 }, e: { r: 0, c: 14 } },
-                        { s: { r: 1, c: 0 }, e: { r: 1, c: 14 } },
-                        { s: { r: 2, c: 0 }, e: { r: 2, c: 14 } },
-                        { s: { r: 3, c: 0 }, e: { r: 3, c: 14 } }
+                    ws['!merges'] = [{
+                            s: {
+                                r: 0,
+                                c: 0
+                            },
+                            e: {
+                                r: 0,
+                                c: 14
+                            }
+                        },
+                        {
+                            s: {
+                                r: 1,
+                                c: 0
+                            },
+                            e: {
+                                r: 1,
+                                c: 14
+                            }
+                        },
+                        {
+                            s: {
+                                r: 2,
+                                c: 0
+                            },
+                            e: {
+                                r: 2,
+                                c: 14
+                            }
+                        },
+                        {
+                            s: {
+                                r: 3,
+                                c: 0
+                            },
+                            e: {
+                                r: 3,
+                                c: 14
+                            }
+                        }
                     ];
 
                     // Styling
                     const border = {
-                        top: { style: 'thin', color: { rgb: '000000' } },
-                        bottom: { style: 'thin', color: { rgb: '000000' } },
-                        left: { style: 'thin', color: { rgb: '000000' } },
-                        right: { style: 'thin', color: { rgb: '000000' } }
+                        top: {
+                            style: 'thin',
+                            color: {
+                                rgb: '000000'
+                            }
+                        },
+                        bottom: {
+                            style: 'thin',
+                            color: {
+                                rgb: '000000'
+                            }
+                        },
+                        left: {
+                            style: 'thin',
+                            color: {
+                                rgb: '000000'
+                            }
+                        },
+                        right: {
+                            style: 'thin',
+                            color: {
+                                rgb: '000000'
+                            }
+                        }
                     };
 
                     const headerStyle = {
-                        font: { name: 'Times New Roman', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
-                        fill: { fgColor: { rgb: '4472C4' } },
-                        alignment: { horizontal: 'center', vertical: 'center' },
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 11,
+                            bold: true,
+                            color: {
+                                rgb: 'FFFFFF'
+                            }
+                        },
+                        fill: {
+                            fgColor: {
+                                rgb: '4472C4'
+                            }
+                        },
+                        alignment: {
+                            horizontal: 'center',
+                            vertical: 'center'
+                        },
                         border
                     };
 
                     const dataLeft = {
-                        font: { name: 'Times New Roman', sz: 11 },
-                        alignment: { vertical: 'center' },
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 11
+                        },
+                        alignment: {
+                            vertical: 'center'
+                        },
                         border
                     };
 
                     const dataCenter = {
-                        font: { name: 'Times New Roman', sz: 11 },
-                        alignment: { horizontal: 'center', vertical: 'center' },
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 11
+                        },
+                        alignment: {
+                            horizontal: 'center',
+                            vertical: 'center'
+                        },
                         border
                     };
 
                     // Title styles
-                    ws['A1'].s = { font: { name: 'Times New Roman', sz: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'center' } };
-                    ws['A2'].s = ws['A3'].s = ws['A4'].s =
-                        { font: { name: 'Times New Roman', sz: 12 }, alignment: { horizontal: 'center', vertical: 'center' } };
+                    ws['A1'].s = {
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 16,
+                            bold: true
+                        },
+                        alignment: {
+                            horizontal: 'center',
+                            vertical: 'center'
+                        }
+                    };
+                    ws['A2'].s = ws['A3'].s = ws['A4'].s = {
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 12
+                        },
+                        alignment: {
+                            horizontal: 'center',
+                            vertical: 'center'
+                        }
+                    };
 
                     // Header row styling
                     const headerCols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
@@ -1959,7 +2078,6 @@ if ($id_kampus) {
                     Swal.fire("Error", "Failed to generate Excel: " + err.message, "error");
                 }
             }
-
         </script>
 </body>
 
