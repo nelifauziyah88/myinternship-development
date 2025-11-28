@@ -714,7 +714,7 @@ router.get("/dashboard/summary", async (req, res) => {
   }
 });
 
-// routes/lecturer.js (replace existing /lecturer/export-internship)
+// routes/lecturer.js
 router.get("/lecturer/export-internship", async (req, res) => {
   try {
     const { start_date, end_date, nim_nik_unit } = req.query;
@@ -723,7 +723,6 @@ router.get("/lecturer/export-internship", async (req, res) => {
       return res.status(400).json({ success: false, message: "Lecturer ID (nim_nik_unit) is required" });
     }
 
-    // validate dates
     if (!start_date || !end_date) {
       return res.status(400).json({ success: false, message: "start_date and end_date are required (YYYY-MM-DD)" });
     }
@@ -734,7 +733,6 @@ router.get("/lecturer/export-internship", async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid date range" });
     }
 
-    // Get coordinator info
     const [lecRows] = await db.query(
       `SELECT prodi_koor, id_kampus, is_koor, name
        FROM lecturer 
@@ -749,7 +747,6 @@ router.get("/lecturer/export-internship", async (req, res) => {
 
     const { prodi_koor, id_kampus, name } = lecRows[0];
 
-    // FINAL QUERY: filter by date-range overlap
     const query = `
       SELECT 
         i.nim,
@@ -766,7 +763,6 @@ router.get("/lecturer/export-internship", async (req, res) => {
         i.end_date,
         COALESCE(NULLIF(si.email, ''), '-') AS email,
         COALESCE(NULLIF(si.no_whatsapp, ''), '-') AS whatsapp_number
-
       FROM internship i
       INNER JOIN student_internship si ON i.nim = si.nim
       LEFT JOIN company c ON i.id_company = c.id_company
@@ -775,13 +771,11 @@ router.get("/lecturer/export-internship", async (req, res) => {
         AND si.id_kampus = ps.id_kampus
       LEFT JOIN internship_letter il ON i.nim = il.nim
         AND il.acceptance_status = 'ACCEPTED'
-
       WHERE i.status = 'ONGOING'
-        AND i.start_date <= ?
-        AND i.end_date >= ?
+        AND i.start_date >= ?   -- start_date filter
+        AND i.end_date <= ?     -- end_date filter
         AND si.program_study LIKE CONCAT('%', ?, '%')
         AND si.id_kampus = ?
-
       GROUP BY i.nim, si.name, ps.jenjang, ps.study_program, ps.major, 
                i.start_date, i.end_date, si.email, si.no_whatsapp
       ORDER BY i.start_date DESC, si.name ASC
@@ -789,8 +783,8 @@ router.get("/lecturer/export-internship", async (req, res) => {
 
     const [rows] = await db.query(query, [
       name,
-      end_date,    // i.start_date <= end_date
-      start_date,  // i.end_date   >= start_date
+      start_date,
+      end_date,
       prodi_koor,
       id_kampus
     ]);
@@ -812,5 +806,6 @@ router.get("/lecturer/export-internship", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
 });
+
 
 module.exports = router;

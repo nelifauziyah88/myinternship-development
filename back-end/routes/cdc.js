@@ -875,28 +875,16 @@ router.get("/dashboard/summary", async (req, res) => {
   }
 });
 
-// ============================================================
-// EXPORT DATA MAGANG - CDC (ALL PRODI OR FILTERED)
-// ============================================================
-
-/**
- * GET /api/cdc/export-internship
- * Export data magang untuk CDC
- * Query params: year, study_program (optional)
- *
- * LOGIC:
- * 1. Ambil data dari tabel internship (mahasiswa aktif magang)
- * 2. Jika kolom kosong di internship, fallback ke internship_letter
- */
-// routes/cdc.js (replace existing /cdc/export-internship)
+// routes/cdc.js
 router.get("/cdc/export-internship", async (req, res) => {
   try {
     const { start_date, end_date, study_program, department } = req.query;
-    const id_kampus = 1; // Polibatam (sesuaikan jika dynamic)
+    const id_kampus = 1; // Polibatam (ubah jika dynamic)
 
     if (!start_date || !end_date) {
       return res.status(400).json({ success: false, message: "start_date and end_date are required (YYYY-MM-DD)" });
     }
+
     const s = new Date(start_date);
     const e = new Date(end_date);
     if (isNaN(s) || isNaN(e) || s > e) {
@@ -919,7 +907,6 @@ router.get("/cdc/export-internship", async (req, res) => {
         i.end_date,
         COALESCE(NULLIF(si.email, ''), '-') AS email,
         COALESCE(NULLIF(si.no_whatsapp, ''), '-') AS whatsapp_number
-
       FROM internship i
       INNER JOIN student_internship si ON i.nim = si.nim
       LEFT JOIN company c ON i.id_company = c.id_company
@@ -931,14 +918,13 @@ router.get("/cdc/export-internship", async (req, res) => {
         AND l.is_koor = 1
       LEFT JOIN internship_letter il ON i.nim = il.nim
         AND il.acceptance_status = 'ACCEPTED'
-
       WHERE i.status = 'ONGOING'
-        AND i.start_date <= ?
-        AND i.end_date >= ?
+        AND i.start_date >= ?   -- start_date filter
+        AND i.end_date <= ?     -- end_date filter
         AND si.id_kampus = ?
     `;
 
-    const params = [end_date, start_date, id_kampus];
+    const params = [start_date, end_date, id_kampus];
 
     if (department && department.trim() !== "") {
       query += ` AND ps.major = ?`;
@@ -975,5 +961,6 @@ router.get("/cdc/export-internship", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
 });
+
 
 module.exports = router;
