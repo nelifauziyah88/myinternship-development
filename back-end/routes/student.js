@@ -339,17 +339,11 @@ router.post("/form-submission", async (req, res) => {
     if (!phone) return res.status(400).json({ error: "phone required" });
     if (!language) return res.status(400).json({ error: "language required" });
 
-    // Generate letter_number otomatis
-    const [lastLetter] = await db.query(
-      "SELECT MAX(letter_number) AS lastNum FROM internship_letter"
-    );
-    const nextNumber = (lastLetter[0].lastNum || 0) + 1;
-
     // insert into internship_letter
     const [result] = await db.query(
       `INSERT INTO internship_letter 
-    (nim, id_company, start_date, end_date, status, semester, class, koor_approval, cdc_approval, company_name, company_contact, company_address, language, letter_number, company_not_exist)
-   VALUES (?, ?, ?, ?, 'WAITING', ?, ?, 'WAITING', 'WAITING', ?, ?, ?, ?, ?, ?)`,
+    (nim, id_company, start_date, end_date, status, semester, class, koor_approval, cdc_approval, company_name, company_contact, company_address, language, company_not_exist)
+   VALUES (?, ?, ?, ?, 'WAITING', ?, ?, 'WAITING', 'WAITING', ?, ?, ?, ?, ?)`,
       [
         nim,
         id_company,
@@ -361,7 +355,6 @@ router.post("/form-submission", async (req, res) => {
         company_contact,
         company_address,
         language,
-        nextNumber,
         company_not_exist,
       ]
     );
