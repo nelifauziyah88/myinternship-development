@@ -111,6 +111,7 @@ router.get("/cdc/submissions", async (req, res) => {
 router.post("/cdc/approval", async (req, res) => {
   try {
     const { id_letter, status, user_id, user_name, comment, letter_number } = req.body;
+
     if (!id_letter || !status) {
       return res.status(400).json({
         success: false,
@@ -120,22 +121,22 @@ router.post("/cdc/approval", async (req, res) => {
 
     const s = status.toUpperCase();
     if (!["ACCEPTED", "REJECTED"].includes(s)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Status invalid." });
+      return res.status(400).json({
+        success: false,
+        message: "Status invalid.",
+      });
     }
 
+    // AMBIL submission + id_company (INI YANG DITAMBAHKAN)
     const [rows] = await db.query(
-      `SELECT id_letter, koor_approval, cdc_approval, letter_number 
-       FROM internship_letter 
+      `SELECT id_letter, koor_approval, cdc_approval, letter_number, id_company
+       FROM internship_letter
        WHERE id_letter = ? LIMIT 1`,
       [id_letter]
     );
 
     if (!rows.length)
-      return res
-        .status(404)
-        .json({ success: false, message: "Submission not found." });
+      return res.status(404).json({ success: false, message: "Submission not found." });
 
     const row = rows[0];
 
@@ -145,6 +146,7 @@ router.post("/cdc/approval", async (req, res) => {
         message: "The Coordinator has not yet allowed the CDC to take action.",
       });
     }
+
     if (row.cdc_approval.toUpperCase() !== "WAITING") {
       return res.status(400).json({
         success: false,
@@ -152,15 +154,16 @@ router.post("/cdc/approval", async (req, res) => {
       });
     }
 
-    // Jika ACCEPTED -> letter_number wajib
+    // Jika ACCEPTED — letter_number required
     if (s === "ACCEPTED") {
+
       if (!letter_number || !String(letter_number).trim()) {
         return res.status(400).json({
           success: false,
           message: "letter_number is required when accepting.",
         });
       }
-      // Jika sudah ada letter_number (locked), tolak
+
       if (row.letter_number && String(row.letter_number).trim()) {
         return res.status(400).json({
           success: false,
@@ -168,21 +171,21 @@ router.post("/cdc/approval", async (req, res) => {
         });
       }
 
-      // Cek duplikasi nomor surat di seluruh tabel
-const [dup] = await db.query(
-  `SELECT id_letter FROM internship_letter
-   WHERE letter_number = ? LIMIT 1`,
-  [letter_number]
-);
+      // Cek duplikasi nomor surat
+      const [dup] = await db.query(
+        `SELECT id_letter FROM internship_letter
+         WHERE letter_number = ? LIMIT 1`,
+        [letter_number]
+      );
 
-if (dup.length) {
-  return res.status(400).json({
-    success: false,
-    message: "This letter number is already used for another submission.",
-  });
-}
+      if (dup.length) {
+        return res.status(400).json({
+          success: false,
+          message: "This letter number is already used for another submission.",
+        });
+      }
 
-
+      // Update approval CDC
       await db.query(
         `UPDATE internship_letter
          SET cdc_approval = 'ACCEPTED',
@@ -192,8 +195,21 @@ if (dup.length) {
          WHERE id_letter = ?`,
         [letter_number, id_letter]
       );
+
+      // ============================================================
+      //  🔥 AUTO VERIFY COMPANY SAAT CDC ACCEPTED
+      // ============================================================
+      if (row.id_company) {
+        await db.query(
+          `UPDATE company
+           SET status = 'verified'
+           WHERE id_company = ? AND status = 'not verified'`,
+          [row.id_company]
+        );
+      }
+
     } else {
-      // REJECTED
+      // Jika ditolak oleh CDC
       await db.query(
         `UPDATE internship_letter
          SET cdc_approval = 'REJECTED',
@@ -204,33 +220,7 @@ if (dup.length) {
       );
     }
 
-    // --- Insert into internship_letter_history ---
-    let approved_by = "CDC ADMINISTRATOR";
-    let user_id_val = "-";
-    let user_name_val = "-";
-
-    try {
-      const actor = req.user || req.session?.user || null;
-      if (actor) {
-        if (actor.role && actor.role.toLowerCase().includes("cdc")) {
-          const [urows] = await db.query(
-            `SELECT id_upkpk, name FROM upkpk WHERE id_upkpk = ? LIMIT 1`,
-            [actor.id_upkpk || actor.id]
-          );
-          if (urows && urows.length) {
-            user_id_val = urows[0].id_upkpk || "-";
-            user_name_val = urows[0].name || "-";
-            approved_by = "CDC ADMINISTRATOR";
-          }
-        } else {
-          user_id_val = actor.id || "-";
-          user_name_val = actor.name || "-";
-        }
-      }
-    } catch (err) {
-      console.error("[CDC] user lookup error:", err);
-    }
-
+    // --- Insert into history ---
     await db.query(
       `INSERT INTO internship_letter_history 
        (id_letter, approved_by, user_id, user_name, status_approval, timestamp, comment)
@@ -238,13 +228,13 @@ if (dup.length) {
       [id_letter, user_id || "-", user_name || "-", s, comment]
     );
 
-    // Cek dan set published_date jika kedua approval sudah ACCEPTED
     await checkAndSetPublishedDate(id_letter);
 
     res.json({
       success: true,
       message: `Submission has been ${s.toLowerCase()} by CDC.`,
     });
+
   } catch (err) {
     console.error("[CDC] approval error:", err);
     return res.status(500).json({
@@ -253,6 +243,7 @@ if (dup.length) {
     });
   }
 });
+
 
 
 // get latest rejected reason by CDC for a letter
