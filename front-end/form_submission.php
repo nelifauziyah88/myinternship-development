@@ -757,546 +757,452 @@ $user = $student;
     </footer>
 
     <script>
-        (function() {
+(function() {
 
-            const nim = <?= json_encode($student['nim']) ?>;
-            const API_BASE = 'http://localhost:8000/api/student';
+    const nim = <?= json_encode($student['nim']) ?>;
+    const API_BASE = 'http://localhost:8000/api/student';
 
-            let __formBlockerElement = null;
+    let __formBlockerElement = null;
 
-            function createFormBlocker() {
-                const wrapper = document.getElementById('form-blocker-wrapper');
-                if (!wrapper) return;
-                if (__formBlockerElement) return;
+    function createFormBlocker() {
+        const wrapper = document.getElementById('form-blocker-wrapper');
+        if (!wrapper) return;
+        if (__formBlockerElement) return;
 
-                const blocker = document.createElement('div');
-                blocker.id = 'form-blocker';
-                Object.assign(blocker.style, {
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(255,255,255,0)',
-                    zIndex: 50,
-                    pointerEvents: 'auto',
-                    cursor: 'not-allowed'
-                });
+        const blocker = document.createElement('div');
+        blocker.id = 'form-blocker';
+        Object.assign(blocker.style, {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(255,255,255,0)',
+            zIndex: 50,
+            pointerEvents: 'auto',
+            cursor: 'not-allowed'
+        });
 
-                wrapper.style.position = "relative";
-                wrapper.appendChild(blocker);
-                __formBlockerElement = blocker;
-            }
+        wrapper.style.position = "relative";
+        wrapper.appendChild(blocker);
+        __formBlockerElement = blocker;
+    }
 
-            function resetSwalState() {
-                // Hapus manual container lama
-                const old = document.querySelector('.swal2-container');
-                if (old) old.remove();
+    function resetSwalState() {
+        const old = document.querySelector('.swal2-container');
+        if (old) old.remove();
+        if (Swal && Swal.close) Swal.close();
+    }
 
-                // Reset otomatis SweetAlert2 internal state
-                if (Swal && Swal.close) Swal.close();
-            }
+    function removeFormBlocker() {
+        if (!__formBlockerElement) return;
+        __formBlockerElement.remove();
+        __formBlockerElement = null;
+    }
 
-            function updateFormBlockerPosition() {
-                const blocker = __formBlockerElement;
-                const form = document.getElementById('submissionForm');
-                if (!blocker || !form) return;
-                const rect = form.getBoundingClientRect();
-                blocker.style.top = `${rect.top}px`;
-                blocker.style.left = `${rect.left}px`;
-                blocker.style.width = `${rect.width}px`;
-                blocker.style.height = `${rect.height}px`;
-            }
-
-            function removeFormBlocker() {
-                if (!__formBlockerElement) return;
-                __formBlockerElement.remove();
-                __formBlockerElement = null;
-            }
-
-            window.logout_confirm = function() {
-                let _token = $('meta[name="csrf-token"]').attr('content');
-                Swal.fire({
-                    title: 'Logout from your account ?',
-                    text: 'Are you sure you want to end the current session?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: "#DD6B55",
-                    confirmButtonText: "Yes, I\'m sure!",
-                    cancelButtonText: "Cancel"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: "session_logout.php",
-                            type: "POST",
-                            data: {
-                                'token': _token
-                            },
-                            success: function() {
-                                setTimeout(function() {
-                                    localStorage.removeItem('first');
-                                    localStorage.removeItem('first_chime');
-                                    localStorage.removeItem('next_chime');
-                                    window.location.href = 'role_login.php';
-                                }, 200);
-                            }
-                        });
-                    } else {
-                        setTimeout(() => {
-                            resetSwalState();
-                            checkActive();
-                        }, 50);
-                        removeFormBlocker();
+    window.logout_confirm = function() {
+        let _token = $('meta[name="csrf-token"]').attr('content');
+        Swal.fire({
+            title: 'Logout from your account ?',
+            text: 'Are you sure you want to end the current session?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Yes, I\'m sure!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "session_logout.php",
+                    type: "POST",
+                    data: {'token': _token},
+                    success: function() {
+                        setTimeout(function() {
+                            localStorage.removeItem('first');
+                            localStorage.removeItem('first_chime');
+                            localStorage.removeItem('next_chime');
+                            window.location.href = 'role_login.php';
+                        }, 200);
                     }
                 });
-            };
-
-            // Tampilkan swal, lalu buat blocker dan biarkan swal container melewatkan klik
-            function showActiveSubmissionAlertAndBlockForm() {
-                if (__formBlockerElement) return;
-                if (Swal && Swal.close) Swal.close();
-                createFormBlocker();
-
-                Swal.fire({
-                    title: 'You have an active internship submission',
-                    html: '<p>You cannot submit a new application until your current submission is processed.</p>',
-                    icon: 'info',
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    showConfirmButton: false,
-                    backdrop: true
-                });
-                createFormBlocker();
-            }
-
-            // Dipanggil Saat ingin menonaktifkan alert dan blok
-            function closeActiveSubmissionAlertAndUnblock() {
-                // close SweetAlert popup (in case)
-                if (Swal && Swal.close) Swal.close();
-
+            } else {
+                setTimeout(() => {
+                    resetSwalState();
+                    checkActive();
+                }, 50);
                 removeFormBlocker();
             }
+        });
+    };
 
-            async function checkActive() {
-                try {
-                    const res = await fetch(`${API_BASE}/check-submission/${encodeURIComponent(nim)}`);
-                    const j = await res.json();
-                    if (!j.last) {
-                        removeFormBlocker();
-                        closeActiveSubmissionAlertAndUnblock();
-                        return;
-                    }
+    function showActiveSubmissionAlertAndBlockForm() {
+        if (__formBlockerElement) return;
+        if (Swal && Swal.close) Swal.close();
+        createFormBlocker();
 
-                    const acceptanceStatus = j.last?.acceptance_status || '-';
-                    const finalStatus = j.last?.status ? j.last.status.toUpperCase() : '-';
+        Swal.fire({
+            title: 'You have an active internship submission',
+            html: '<p>You cannot submit a new application until your current submission is processed.</p>',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            backdrop: true
+        });
+    }
 
-                    if (finalStatus === 'WAITING') {
-                        if (!__formBlockerElement && !(Swal && Swal.isVisible && Swal.isVisible())) {
-                            showActiveSubmissionAlertAndBlockForm();
-                        }
-                        return;
-                    }
+    function closeActiveSubmissionAlertAndUnblock() {
+        if (Swal && Swal.close) Swal.close();
+        removeFormBlocker();
+    }
 
-                    if (finalStatus === 'REJECTED') {
-                        removeFormBlocker();
-                        Swal.fire({
-                            html: `
-          <div style="font-size: 40px; margin-bottom: 10px;">😊</div>
-          <h3 style="font-weight: bold;">Don't be sad, you'll get accepted next time!</h3>
-        `,
-                            showConfirmButton: false,
-                            allowOutsideClick: true,
-                            backdrop: true,
-                            timer: 1500,
-                        });
-                        return;
-                    }
-
-                    if (finalStatus === 'ACCEPTED' && acceptanceStatus === '-') {
-                        showActiveSubmissionAlertAndBlockForm();
-                        return;
-                    }
-
-                    if (finalStatus === 'ACCEPTED' && acceptanceStatus === 'ACCEPTED') {
-                        Swal.fire({
-                            html: `
-          <div style="font-size: 40px; margin-bottom: 10px;">😆</div>
-          <h3 style="font-weight: bold;">Congratulations on being accepted for your internship!</h3>
-        `,
-                            showConfirmButton: false,
-                            allowOutsideClick: false,
-                            allowEscapeKey: false,
-                            backdrop: true,
-                            didOpen: () => {
-                                const cont = document.querySelector('.swal2-container');
-                                if (cont) {
-                                    cont.style.pointerEvents = 'none';
-                                    const popup = cont.querySelector('.swal2-popup');
-                                    if (popup) popup.style.zIndex = 30000;
-                                }
-                            }
-                        });
-                        createFormBlocker();
-                        return;
-                    }
-
-                    if (finalStatus === 'ACCEPTED' && acceptanceStatus === 'REJECTED') {
-                        removeFormBlocker();
-                        Swal.fire({
-                            html: `
-          <div style="font-size: 40px; margin-bottom: 10px;">😊</div>
-          <h3 style="font-weight: bold;">Don't be sad, you'll get accepted next time!</h3>
-        `,
-                            showConfirmButton: false,
-                            allowOutsideClick: true,
-                            backdrop: true,
-                            timer: 1500,
-                        });
-                        return;
-                    }
-                    if (acceptanceStatus === '-') {
-                        showActiveSubmissionAlertAndBlockForm();
-                        return;
-                    }
-                } catch (err) {
-                    console.error('checkActive error', err);
-                }
+    async function checkActive() {
+        try {
+            const res = await fetch(`${API_BASE}/check-submission/${encodeURIComponent(nim)}`);
+            const j = await res.json();
+            if (!j.last) {
+                removeFormBlocker();
+                closeActiveSubmissionAlertAndUnblock();
+                return;
             }
 
-            $(document).ready(function() {
-                checkActive();
+            const acceptanceStatus = j.last?.acceptance_status || '-';
+            const finalStatus = j.last?.status ? j.last.status.toUpperCase() : '-';
+
+            if (finalStatus === 'WAITING') {
+                if (!__formBlockerElement && !(Swal && Swal.isVisible && Swal.isVisible())) {
+                    showActiveSubmissionAlertAndBlockForm();
+                }
+                return;
+            }
+
+            if (finalStatus === 'REJECTED') {
+                removeFormBlocker();
+                Swal.fire({
+                    html: `<div style="font-size: 40px; margin-bottom: 10px;">😊</div>
+                           <h3 style="font-weight: bold;">Don't be sad, you'll get accepted next time!</h3>`,
+                    showConfirmButton: false,
+                    allowOutsideClick: true,
+                    backdrop: true,
+                    timer: 1500,
+                });
+                return;
+            }
+
+            if (finalStatus === 'ACCEPTED' && acceptanceStatus === '-') {
+                showActiveSubmissionAlertAndBlockForm();
+                return;
+            }
+
+            if (finalStatus === 'ACCEPTED' && acceptanceStatus === 'ACCEPTED') {
+                Swal.fire({
+                    html: `<div style="font-size: 40px; margin-bottom: 10px;">😆</div>
+                           <h3 style="font-weight: bold;">Congratulations on being accepted for your internship!</h3>`,
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    backdrop: true,
+                    didOpen: () => {
+                        const cont = document.querySelector('.swal2-container');
+                        if (cont) {
+                            cont.style.pointerEvents = 'none';
+                            const popup = cont.querySelector('.swal2-popup');
+                            if (popup) popup.style.zIndex = 30000;
+                        }
+                    }
+                });
+                createFormBlocker();
+                return;
+            }
+
+            if (finalStatus === 'ACCEPTED' && acceptanceStatus === 'REJECTED') {
+                removeFormBlocker();
+                Swal.fire({
+                    html: `<div style="font-size: 40px; margin-bottom: 10px;">😊</div>
+                           <h3 style="font-weight: bold;">Don't be sad, you'll get accepted next time!</h3>`,
+                    showConfirmButton: false,
+                    allowOutsideClick: true,
+                    backdrop: true,
+                    timer: 1500,
+                });
+                return;
+            }
+        } catch (err) {
+            console.error('checkActive error', err);
+        }
+    }
+
+    $(document).ready(function() {
+        checkActive();
+    });
+
+    async function loadStudentProfile() {
+        try {
+            const res = await fetch(`${API_BASE}/form-submission/${encodeURIComponent(nim)}`);
+            if (!res.ok) return;
+            const j = await res.json();
+
+            const s = j.student || {};
+            if (document.getElementById('nimField')) document.getElementById('nimField').value = s.nim || '';
+            if (document.getElementById('nameField')) document.getElementById('nameField').value = s.name || '';
+            if (document.getElementById('programField')) document.getElementById('programField').value = s.program_study || '';
+            if (document.getElementById('departmentField')) document.getElementById('departmentField').value = j.department || '';
+            if (document.getElementById('coordinatorField')) document.getElementById('coordinatorField').value = j.coordinator || '';
+            if (s.email && document.getElementById('emailField')) document.getElementById('emailField').value = s.email;
+        } catch (err) {
+            console.error('loadStudentProfile error', err);
+        }
+    }
+
+    async function loadCompanies() {
+        try {
+            const res = await fetch(`${API_BASE}/company`);
+            const list = await res.json();
+            const sel = document.getElementById('companySelect');
+            if (!sel) return;
+            sel.innerHTML = '<option value="" selected>Choose Company</option>';
+            list.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = c.name;
+                sel.appendChild(opt);
             });
 
-            async function loadStudentProfile() {
-                try {
-                    const res = await fetch(`${API_BASE}/form-submission/${encodeURIComponent(nim)}`);
-                    if (!res.ok) return;
-                    const j = await res.json();
+            if (window.jQuery && jQuery().select2) {
+                $('#companySelect').select2({ width: '70%' });
+            }
+        } catch (err) {
+            console.error('loadCompanies error', err);
+        }
 
-                    // fill auto-fields
-                    const s = j.student || {};
-                    if (document.getElementById('nimField')) document.getElementById('nimField').value = s.nim || '';
-                    if (document.getElementById('nameField')) document.getElementById('nameField').value = s.name || '';
-                    if (document.getElementById('programField')) document.getElementById('programField').value = s.program_study || '';
-                    if (document.getElementById('departmentField')) document.getElementById('departmentField').value = j.department || '';
-                    if (document.getElementById('coordinatorField')) document.getElementById('coordinatorField').value = j.coordinator || '';
+        $('#companySelect').on('select2:select', async function(e) {
+            const id = e.params.data.id;
+            const $addr = $('#companyAddress');
+            const checkbox = document.getElementById('companyExist');
+            if (checkbox && checkbox.checked) return; // jika checkbox dicentang, jangan override
 
-                    if (s.email && document.getElementById('emailField')) document.getElementById('emailField').value = s.email;
-                } catch (err) {
-                    console.error('loadStudentProfile error', err);
+            if (!id) {
+                $addr.val('').prop('readonly', true);
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/company/${id}`);
+                const c = await res.json();
+                $addr.val(c.address || '').prop('readonly', true);
+            } catch (err) {
+                console.error(err);
+            }
+        });
+    }
+
+    document.addEventListener('change', async function(e) {
+        if (!e.target) return;
+
+        const checkbox = document.getElementById('companyExist');
+        const sel = document.getElementById('companySelect');
+        const addrEl = document.getElementById('companyAddress');
+        const newFields = document.getElementById('newCompanyName');
+        const newContact = document.getElementById('newCompanyContact');
+
+        // Dropdown change
+        if (e.target.id === 'companySelect' && (!checkbox || !checkbox.checked)) {
+            const id = e.target.value;
+            if (!id) {
+                if (addrEl) addrEl.value = '';
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/company/${encodeURIComponent(id)}`);
+                if (!res.ok) return;
+                const c = await res.json();
+                if (addrEl) {
+                    addrEl.value = c.address || '';
+                    addrEl.readOnly = true;
+                }
+            } catch (err) {
+                console.error('company detail error', err);
+            }
+        }
+
+        // Checkbox change
+        if (e.target.id === 'companyExist') {
+            const checked = e.target.checked;
+
+            if (newFields && newFields.parentElement) newFields.parentElement.style.display = checked ? '' : 'none';
+            if (newContact && newContact.parentElement) newContact.parentElement.style.display = checked ? '' : 'none';
+
+            if (sel) sel.disabled = checked;
+            if (checked) {
+                sel.value = '';
+                if (window.jQuery && jQuery().select2) $('#companySelect').val(null).trigger('change');
+                if (addrEl) { addrEl.value = ''; addrEl.readOnly = false; }
+                if (newFields) newFields.value = '';
+                if (newContact) newContact.value = '';
+            } else {
+                if (sel && sel.value) {
+                    fetch(`${API_BASE}/company/${encodeURIComponent(sel.value)}`)
+                        .then(r => r.json())
+                        .then(c => { if(addrEl) addrEl.value = c.address || ''; if(addrEl) addrEl.readOnly = true; })
+                        .catch(err => console.error(err));
+                } else if (addrEl) {
+                    addrEl.value = '';
+                    addrEl.readOnly = true;
                 }
             }
 
-            // load company list for dropdown
-            async function loadCompanies() {
-                try {
-                    const res = await fetch(`${API_BASE}/company`);
-                    const list = await res.json();
-                    const sel = document.getElementById('companySelect');
-                    if (!sel) return;
-                    // clear current options
-                    sel.innerHTML = '<option value="" selected>Choose Company</option>';
-                    list.forEach(c => {
-                        const opt = document.createElement('option');
-                        opt.value = c.id;
-                        opt.textContent = c.name;
-                        sel.appendChild(opt);
-                    });
+            // toggle required stars
+            const newCompanyNameStar = document.getElementById('newCompanyNameStar');
+            const newCompanyContactStar = document.getElementById('newCompanyContactStar');
+            const companyAddressStar = document.getElementById('companyAddressStar');
+            const companySelectStar = document.getElementById('companySelectStar');
 
-                    // init select2 if available
-                    if (window.jQuery && jQuery().select2) {
-                        $('#companySelect').select2({
-                            width: '70%'
-                        });
-                    }
-                } catch (err) {
-                    console.error('loadCompanies error', err);
-                }
-                $('#companySelect').on('select2:select', async function(e) {
-                    const id = e.params.data.id;
-
-                    // Ambil referensi input address
-                    const $addr = $('#companyAddress');
-
-                    // Jika user memilih "Choose Company" (kosong)
-                    if (!id) {
-                        $addr.val('').prop('readonly', true);
-                        return;
-                    }
-
-                    try {
-                        const res = await fetch(`${API_BASE}/company/${id}`);
-                        const c = await res.json();
-                        $addr.val(c.address || '').prop('readonly', true);
-                    } catch (err) {
-                        console.error(err);
-                    }
-                });
-
-            }
-
-            // when company selected -> autofill address (address disabled when using existing company)
-            document.addEventListener('change', async function(e) {
-                if (!e.target) return;
-                if (e.target.id === 'companySelect') {
-                    const id = e.target.value;
-                    if (!id) {
-                        const addrEl = document.getElementById('companyAddress');
-                        if (addrEl) addrEl.value = '';
-                        return;
-                    }
-                    try {
-                        const res = await fetch(`${API_BASE}/company/${encodeURIComponent(id)}`);
-                        if (!res.ok) return;
-                        const c = await res.json();
-                        const addrEl = document.getElementById('companyAddress');
-                        if (addrEl) {
-                            addrEl.value = c.address || '';
-                            addrEl.disabled = true;
-                        }
-                    } catch (err) {
-                        console.error('company detail error', err);
-                    }
-                }
-            });
-
-            // handle checkbox companyExist (Company Does not Exist?)
-            const chk = document.getElementById('companyExist');
-            if (chk) {
-                chk.addEventListener('change', function() {
-                    const checked = this.checked;
-                    const newFields = document.getElementById('newCompanyName');
-                    const newContact = document.getElementById('newCompanyContact');
-                    const sel = document.getElementById('companySelect');
-                    const addrEl = document.getElementById('companyAddress');
-
-                    // toggle visibility of new company inputs
-                    if (newFields && newFields.parentElement) newFields.parentElement.style.display = checked ? '' : 'none';
-                    if (newContact) {}
-
-                    // disable companySelect when checked, and reset selection
-                    if (sel) {
-                        sel.disabled = checked;
-                        if (checked) {
-                            // reset to default
-                            sel.value = '';
-                            // if select2 in use, reset via jquery
-                            if (window.jQuery && jQuery().select2) {
-                                $('#companySelect').val(null).trigger('change');
-                            }
-                            // clear address
-                            if (addrEl) {
-                                addrEl.value = '';
-                                addrEl.readOnly = false;
-                            }
-                        } else {
-                            // when unchecked: re-enable, and if a value selected restore address, else clear
-                            sel.disabled = false;
-                            const selVal = sel.value || '';
-                            if (selVal) {
-                                fetch(`${API_BASE}/company/${encodeURIComponent(selVal)}`)
-                                    .then(r => r.json())
-                                    .then(c => {
-                                        if (addrEl) {
-                                            addrEl.value = c.address || '';
-                                            addrEl.readOnly = true;
-                                        }
-                                    })
-                                    .catch(err => console.error(err));
-                            } else {
-                                if (addrEl) {
-                                    addrEl.value = '';
-                                    addrEl.readOnly = true;
-                                }
-                            }
-                        }
-                    }
-
-                    // prepare new fields values & focus if creating new company
-                    if (checked) {
-                        if (newFields) {
-                            newFields.value = '';
-                            newFields.parentElement.style.display = '';
-                            newFields.focus();
-                        }
-                        if (newContact) newContact.value = '';
-                        if (addrEl) {
-                            addrEl.value = '';
-                            addrEl.readOnly = false;
-                        }
-                    }
-
-                    // toggle required-star visibility for conditional fields
-                    const newCompanyNameStar = document.getElementById('newCompanyNameStar');
-                    const newCompanyContactStar = document.getElementById('newCompanyContactStar');
-                    const companyAddressStar = document.getElementById('companyAddressStar');
-                    const companySelectStar = document.getElementById('companySelectStar');
-
-                    if (checked) {
-                        if (newCompanyNameStar) newCompanyNameStar.style.display = 'inline-block';
-                        if (newCompanyContactStar) newCompanyContactStar.style.display = 'inline-block';
-                        if (companyAddressStar) companyAddressStar.style.display = 'inline-block';
-                        // hide star on dropdown since we're using new company inputs
-                        if (companySelectStar) companySelectStar.style.display = 'none';
-                    } else {
-                        if (newCompanyNameStar) newCompanyNameStar.style.display = 'none';
-                        if (newCompanyContactStar) newCompanyContactStar.style.display = 'none';
-                        if (companyAddressStar) companyAddressStar.style.display = 'none';
-                        // show star on dropdown only if you want dropdown to be required when not checked.
-                        if (companySelectStar) companySelectStar.style.display = 'inline-block';
-                    }
-                });
-            }
-
-            // intercept form submit
-            const form = document.getElementById('submissionForm');
-            if (form) {
-                form.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-
-                    // prepare payload
-                    const checked = document.getElementById('companyExist') && document.getElementById('companyExist').checked;
-
-                    const payload = {
-                        nim: nim,
-                        company_id: checked ? null : (document.getElementById('companySelect') ? document.getElementById('companySelect').value : null),
-                        company_name: checked ? (document.getElementById('newCompanyName') ? document.getElementById('newCompanyName').value : null) : null,
-                        company_contact: checked ? (document.getElementById('newCompanyContact') ? document.getElementById('newCompanyContact').value : null) : null,
-                        company_address: document.getElementById('companyAddress') ? document.getElementById('companyAddress').value : null,
-                        start_date: document.getElementById('startDate') ? document.getElementById('startDate').value : null,
-                        end_date: document.getElementById('endDate') ? document.getElementById('endDate').value : null,
-                        semester: document.getElementById('semesterField') ? document.getElementById('semesterField').value : null,
-                        class: (document.querySelector('input[name="class"]:checked') ? document.querySelector('input[name="class"]:checked').value : null),
-                        email: document.getElementById('emailField') ? document.getElementById('emailField').value : null,
-                        phone: document.getElementById('phoneField') ? document.getElementById('phoneField').value : null
-                    };
-
-                    // enhanced client-side validation for required fields
-                    // required: class, semester, start_date, end_date, email, phone, language
-                    const missing = [];
-                    if (!payload.class) missing.push('Class');
-                    if (!payload.semester) missing.push('Semester');
-                    if (!payload.start_date) missing.push('Start Date');
-                    if (!payload.end_date) missing.push('End Date');
-                    if (!payload.email) missing.push('Email');
-                    if (!payload.phone) missing.push('Active WhatsApp Number');
-
-                    // language radio
-                    const langVal = (document.querySelector('input[name="language"]:checked') ? document.querySelector('input[name="language"]:checked').value : null);
-                    if (!langVal) missing.push('Language for Letter');
-                    payload.language = langVal;
-
-                    // company validation
-                    if (!payload.company_id && !payload.company_name) {
-                        missing.push('Company (choose or enter new company)');
-                    }
-                    if (!payload.company_address) missing.push('Company Address');
-
-                    if (missing.length) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Missing required fields',
-                            html: `<div>Please fill: <ul style="text-align:left;">${missing.map(m => `<li>${m}</li>`).join('')}</ul></div>`
-                        });
-                        return;
-                    }
-
-                    try {
-                        const res = await fetch(`${API_BASE}/form-submission`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(payload)
-                        });
-                        const j = await res.json();
-                        if (res.ok) {
-                            Swal.fire('Success', 'Submission successfully created', 'success').then(() => {
-
-                                window.location.href = 'approval_status.php';
-                            });
-                        } else {
-                            Swal.fire('Error', j.error || 'Submission failed', 'error');
-                        }
-                    } catch (err) {
-                        console.error('submit error', err);
-                        Swal.fire('Error', 'Server error while submitting', 'error');
-                    }
-                });
-            }
-
-            // initial load
-            (async () => {
-                await checkActive();
-                await loadStudentProfile();
-                await loadCompanies();
-
-                // hide new company fields by default
-                const newFields = document.getElementById('newCompanyName');
-                if (newFields && newFields.parentElement) newFields.parentElement.style.display = 'none';
-            })();
-
-            // set initial star visibility: company conditional stars hidden
-            (function initRequiredStars() {
-                const newCompanyNameStar = document.getElementById('newCompanyNameStar');
-                const newCompanyContactStar = document.getElementById('newCompanyContactStar');
-                const companyAddressStar = document.getElementById('companyAddressStar');
-                const companySelectStar = document.getElementById('companySelectStar');
-
+            if (checked) {
+                if (newCompanyNameStar) newCompanyNameStar.style.display = 'inline-block';
+                if (newCompanyContactStar) newCompanyContactStar.style.display = 'inline-block';
+                if (companyAddressStar) companyAddressStar.style.display = 'inline-block';
+                if (companySelectStar) companySelectStar.style.display = 'none';
+            } else {
                 if (newCompanyNameStar) newCompanyNameStar.style.display = 'none';
                 if (newCompanyContactStar) newCompanyContactStar.style.display = 'none';
                 if (companyAddressStar) companyAddressStar.style.display = 'none';
                 if (companySelectStar) companySelectStar.style.display = 'inline-block';
-            })();
+            }
+        }
+    });
 
-            const startDateInput = document.getElementById('startDate');
-            const endDateInput = document.getElementById('endDate');
+    const form = document.getElementById('submissionForm');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const checked = document.getElementById('companyExist') && document.getElementById('companyExist').checked;
 
-            // Format tanggal ke yyyy-mm-dd
-            function formatDate(date) {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
+            const payload = {
+                nim: nim,
+                company_id: checked ? null : (document.getElementById('companySelect') ? document.getElementById('companySelect').value : null),
+                company_name: checked ? (document.getElementById('newCompanyName') ? document.getElementById('newCompanyName').value : null) : null,
+                company_contact: checked ? (document.getElementById('newCompanyContact') ? document.getElementById('newCompanyContact').value : null) : null,
+                company_address: document.getElementById('companyAddress') ? document.getElementById('companyAddress').value : null,
+                start_date: document.getElementById('startDate') ? document.getElementById('startDate').value : null,
+                end_date: document.getElementById('endDate') ? document.getElementById('endDate').value : null,
+                semester: document.getElementById('semesterField') ? document.getElementById('semesterField').value : null,
+                class: (document.querySelector('input[name="class"]:checked') ? document.querySelector('input[name="class"]:checked').value : null),
+                email: document.getElementById('emailField') ? document.getElementById('emailField').value : null,
+                phone: document.getElementById('phoneField') ? document.getElementById('phoneField').value : null
+            };
+
+            const missing = [];
+            if (!payload.class) missing.push('Class');
+            if (!payload.semester) missing.push('Semester');
+            if (!payload.start_date) missing.push('Start Date');
+            if (!payload.end_date) missing.push('End Date');
+            if (!payload.email) missing.push('Email');
+            if (!payload.phone) missing.push('Active WhatsApp Number');
+
+            const langVal = (document.querySelector('input[name="language"]:checked') ? document.querySelector('input[name="language"]:checked').value : null);
+            if (!langVal) missing.push('Language for Letter');
+            payload.language = langVal;
+
+            if (!payload.company_id && !payload.company_name) missing.push('Company (choose or enter new company)');
+            if (!payload.company_address) missing.push('Company Address');
+
+            if (missing.length) {
+                Swal.fire({ icon: 'error', title: 'Missing required fields', html: `<div>Please fill: <ul style="text-align:left;">${missing.map(m => `<li>${m}</li>`).join('')}</ul></div>` });
+                return;
             }
 
-            // Saat user pilih start date
-            startDateInput.addEventListener('change', () => {
-                const startValue = startDateInput.value;
-                if (startValue) {
-                    const startDate = new Date(startValue);
-
-                    // end date minimal 1 hari setelah start date
-                    const minEndDate = new Date(startDate);
-                    minEndDate.setDate(startDate.getDate() + 1);
-                    endDateInput.min = formatDate(minEndDate);
-
-                    // Jika end date sekarang lebih kecil dari minEndDate, kosongkan
-                    if (endDateInput.value && new Date(endDateInput.value) < minEndDate) {
-                        endDateInput.value = '';
+            async function submitForm(force=false) {
+                try {
+                    const res = await fetch(`${API_BASE}/form-submission`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ...payload, force })
+                    });
+                    const j = await res.json();
+                    if(res.ok && j.success){
+                        Swal.fire('Success','Submission successfully created','success').then(()=>{ window.location.href='approval_status.php'; });
+                    } else if(j.code==='COMPANY_SIMILAR'){
+                        const result = await Swal.fire({
+                            icon:'warning',
+                            title:'Similar Company Found',
+                            html:`The company name you entered is similar to "<b>${j.similar_company}</b>". Do you want to proceed anyway?`,
+                            showCancelButton:true,
+                            confirmButtonText:'Yes, submit',
+                            cancelButtonText:'No, cancel'
+                        });
+                        if(result.isConfirmed) submitForm(true);
+                    } else {
+                        Swal.fire('Error', j.error || 'Submission failed', 'error');
                     }
+                } catch(err){
+                    console.error('submit error', err);
+                    Swal.fire('Error','Server error while submitting','error');
                 }
-            });
+            }
 
-            // Saat user pilih end date
-            endDateInput.addEventListener('change', () => {
-                const endValue = endDateInput.value;
-                if (endValue) {
-                    const endDate = new Date(endValue);
+            submitForm();
+        });
+    }
 
-                    // start date maksimal 1 hari sebelum end date
-                    const maxStartDate = new Date(endDate);
-                    maxStartDate.setDate(endDate.getDate() - 1);
-                    startDateInput.max = formatDate(maxStartDate);
+    (async () => {
+        await checkActive();
+        await loadStudentProfile();
+        await loadCompanies();
 
-                    // Jika start date sekarang lebih besar dari maxStartDate, kosongkan
-                    if (startDateInput.value && new Date(startDateInput.value) > maxStartDate) {
-                        startDateInput.value = '';
-                    }
-                }
-            });
-        })();
-    </script>
+        const newFields = document.getElementById('newCompanyName');
+        const newContact = document.getElementById('newCompanyContact');
+        if (newFields && newFields.parentElement) newFields.parentElement.style.display = 'none';
+        if (newContact && newContact.parentElement) newContact.parentElement.style.display = 'none';
+    })();
+
+    (function initRequiredStars() {
+        const newCompanyNameStar = document.getElementById('newCompanyNameStar');
+        const newCompanyContactStar = document.getElementById('newCompanyContactStar');
+        const companyAddressStar = document.getElementById('companyAddressStar');
+        const companySelectStar = document.getElementById('companySelectStar');
+
+        if (newCompanyNameStar) newCompanyNameStar.style.display = 'none';
+        if (newCompanyContactStar) newCompanyContactStar.style.display = 'none';
+        if (companyAddressStar) companyAddressStar.style.display = 'none';
+        if (companySelectStar) companySelectStar.style.display = 'inline-block';
+    })();
+
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    startDateInput.addEventListener('change', () => {
+        const startValue = startDateInput.value;
+        if (startValue) {
+            const startDate = new Date(startValue);
+            const minEndDate = new Date(startDate);
+            minEndDate.setDate(startDate.getDate() + 1);
+            endDateInput.min = formatDate(minEndDate);
+            if (endDateInput.value && new Date(endDateInput.value) < minEndDate) endDateInput.value = '';
+        }
+    });
+
+    endDateInput.addEventListener('change', () => {
+        const endValue = endDateInput.value;
+        if (endValue) {
+            const endDate = new Date(endValue);
+            const maxStartDate = new Date(endDate);
+            maxStartDate.setDate(endDate.getDate() - 1);
+            startDateInput.max = formatDate(maxStartDate);
+            if (startDateInput.value && new Date(startDateInput.value) > maxStartDate) startDateInput.value = '';
+        }
+    });
+
+})();
+</script>
+
+
 
 </body>
 

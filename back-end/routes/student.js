@@ -216,19 +216,29 @@ router.post("/form-submission", async (req, res) => {
   try {
     const body = req.body;
     const nim = body.nim;
+    const force = body.force || false; // <-- flag untuk lewati fuzzy
+
     if (!nim) return res.status(400).json({ error: "nim required" });
 
-    // check if there's an active submission
+    // ============================================================
+    // 1. CEK SUBMISSION AKTIF
+    // ============================================================
     const [lastRows] = await db.query(
-      `SELECT id_letter, status, koor_approval, cdc_approval FROM internship_letter WHERE nim = ? ORDER BY created_at DESC LIMIT 1`,
+      `SELECT id_letter, status, koor_approval, cdc_approval 
+       FROM internship_letter 
+       WHERE nim = ? 
+       ORDER BY created_at DESC 
+       LIMIT 1`,
       [nim]
     );
+
     if (lastRows.length) {
       const r = lastRows[0];
       const isActive =
         (r.status && r.status.toUpperCase() === "WAITING") ||
         (r.koor_approval && r.koor_approval.toUpperCase() === "WAITING") ||
         (r.cdc_approval && r.cdc_approval.toUpperCase() === "WAITING");
+
       if (isActive) {
         return res
           .status(400)
@@ -236,24 +246,101 @@ router.post("/form-submission", async (req, res) => {
       }
     }
 
-    // determine company fields
+    // ============================================================
+    // 2. HANDLE COMPANY (VALIDASI NORMAL + FUZZY)
+    // ============================================================
     let id_company = body.company_id || null;
     let company_name = body.company_name || null;
     let company_contact = body.company_contact || null;
     let company_address = body.company_address || null;
-
-    // Tambahkan variable untuk track company_not_exist
     let company_not_exist = 1;
 
+    function normalizeCompanyName(name) {
+      return name
+        .toLowerCase()
+        .replace(/\./g, "")
+        .replace(/\b(pt|cv|tbk|ltd|co|corp|inc|coorporation)\b/g, "")
+        .replace(/[^a-z0-9]/g, "")
+        .trim();
+    }
+
+    function levenshtein(a, b) {
+      if (!a || !b) return 999;
+      const matrix = Array(a.length + 1)
+        .fill(null)
+        .map(() => Array(b.length + 1).fill(null));
+      for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
+      for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+      for (let i = 1; i <= a.length; i++) {
+        for (let j = 1; j <= b.length; j++) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j - 1] + cost
+          );
+        }
+      }
+      return matrix[a.length][b.length];
+    }
+
+    function diceCoefficient(a, b) {
+      if (!a || !b) return 0;
+      const bg = (str) =>
+        [...str].map((_, i) => str.slice(i, i + 2)).filter((x) => x.length === 2);
+      const aBigrams = bg(a);
+      const bBigrams = bg(b);
+      let intersection = 0;
+      const bClone = [...bBigrams];
+      for (let x of aBigrams) {
+        const idx = bClone.indexOf(x);
+        if (idx !== -1) {
+          intersection++;
+          bClone.splice(idx, 1);
+        }
+      }
+      return (2 * intersection) / (aBigrams.length + bBigrams.length);
+    }
+
+    // ====================== CEK DUPLIKAT / SIMILAR =====================
     if (!id_company) {
-      // new company -> require fields
       if (!company_name || !company_contact || !company_address) {
-        return res
-          .status(400)
-          .json({ error: "new company name/contact/address required" });
+        return res.status(400).json({
+          error: "new company name/contact/address required",
+        });
       }
 
-      // Tambahkan semua kolom NOT NULL dengan nilai default:
+      const normalizedInput = normalizeCompanyName(company_name);
+
+      const [existingCompanies] = await db.query(
+        `SELECT id_company, name FROM company`
+      );
+
+      for (let c of existingCompanies) {
+        const normalizedDB = normalizeCompanyName(c.name);
+
+        // Exact match
+        if (normalizedInput === normalizedDB && !force) {
+          return res.status(400).json({
+            error: `Company "${c.name}" already exists in dropdown.`,
+            code: "COMPANY_DUPLICATE",
+          });
+        }
+
+        // Fuzzy match
+        const lev = levenshtein(normalizedInput, normalizedDB);
+        const sim = diceCoefficient(normalizedInput, normalizedDB);
+
+        if ((lev <= 4 || sim >= 0.55) && !force) {
+          return res.status(200).json({
+            success: false,
+            code: "COMPANY_SIMILAR",
+            similar_company: c.name
+          });
+        }
+      }
+
+      // ================= INSERT COMPANY BARU ===================
       const [stuRow] = await db.query(
         `SELECT id_kampus FROM student_internship WHERE nim = ? LIMIT 1`,
         [nim]
@@ -261,13 +348,14 @@ router.post("/form-submission", async (req, res) => {
       const id_kampus = stuRow.length ? stuRow[0].id_kampus : 1;
 
       const [companyResult] = await db.query(
-        `INSERT INTO company (name, type, phone, email, website, facebook, twitter, instagram, linkedin, logo,
-        address, province, city, description, status, access_type, id_kampus
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'not verified', 1, ?)`,
+        `INSERT INTO company 
+        (name, type, phone, email, website, facebook, twitter, instagram, linkedin, logo,
+         address, province, city, description, status, access_type, id_kampus)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'not verified', 1, ?)`,
         [
           company_name,
           "General",
-          body.company_contact || "",
+          company_contact || "",
           "",
           "",
           "",
@@ -283,115 +371,71 @@ router.post("/form-submission", async (req, res) => {
         ]
       );
 
-      // Set id_company dengan id yang baru dibuat
       id_company = companyResult.insertId;
-
       company_not_exist = 1;
+
     } else {
       // existing company
       const [cRow] = await db.query(
-        `SELECT name, address, phone, email 
-     FROM company 
-     WHERE id_company = ? 
-     LIMIT 1`,
+        `SELECT name, address, phone, email FROM company WHERE id_company = ? LIMIT 1`,
         [id_company]
       );
-
       if (!cRow.length)
         return res.status(400).json({ error: "Invalid company_id" });
 
       company_name = cRow[0].name;
       company_address = cRow[0].address;
-
-      // Format contact (email prioritas)
-      const phone = cRow[0].phone || "";
-      const email = cRow[0].email || "";
-      if (phone && email) {
-        company_contact = `${phone}\n${email}`;
-      } else if (email) {
-        company_contact = email;
-      } else if (phone) {
-        company_contact = phone;
-      } else {
-        company_contact = company_contact || null;
-      }
-
+      company_contact = cRow[0].phone || cRow[0].email || company_contact || null;
       company_not_exist = 0;
     }
 
-    // other fields (guard defaults)
-    const start_date = body.start_date || null;
-    const end_date = body.end_date || null;
-    const semester = body.semester || null;
-    const class_type = body.class || null;
-    const email = body.email || null;
-    const phone = body.phone || null;
-    const no_whatsapp = body.no_whatsapp || body.phone || null;
-    const language = body.language || null;
-
-    // server-side required validations
-    if (!class_type) return res.status(400).json({ error: "class required" });
-    if (!semester) return res.status(400).json({ error: "semester required" });
-    if (!start_date)
-      return res.status(400).json({ error: "start_date required" });
-    if (!end_date) return res.status(400).json({ error: "end_date required" });
-    if (!email) return res.status(400).json({ error: "email required" });
-    if (!phone) return res.status(400).json({ error: "phone required" });
-    if (!language) return res.status(400).json({ error: "language required" });
-
-    // insert into internship_letter
+    // ===================== INSERT SUBMISSION =====================
     const [result] = await db.query(
       `INSERT INTO internship_letter 
-    (nim, id_company, start_date, end_date, status, semester, class, koor_approval, cdc_approval, company_name, company_contact, company_address, language, company_not_exist)
-   VALUES (?, ?, ?, ?, 'WAITING', ?, ?, 'WAITING', 'WAITING', ?, ?, ?, ?, ?)`,
+      (nim, id_company, start_date, end_date, status, semester, class, 
+       koor_approval, cdc_approval, company_name, company_contact, company_address, 
+       language, company_not_exist)
+       VALUES (?, ?, ?, ?, 'WAITING', ?, ?, 'WAITING', 'WAITING', ?, ?, ?, ?, ?)`,
       [
         nim,
         id_company,
-        start_date,
-        end_date,
-        semester,
-        class_type,
+        body.start_date,
+        body.end_date,
+        body.semester,
+        body.class,
         company_name,
         company_contact,
         company_address,
-        language,
+        body.language,
         company_not_exist,
       ]
     );
 
-    // Update email dan phone di student_internship
-    if (email || no_whatsapp) {
-      const updateFields = [];
-      const updateValues = [];
-
-      if (email) {
-        updateFields.push("email = ?");
-        updateValues.push(email);
-      }
-
-      if (no_whatsapp) {
-        updateFields.push("no_whatsapp = ?");
-        updateValues.push(no_whatsapp);
-      }
-
-      if (updateFields.length > 0) {
-        updateValues.push(nim);
-        await db.query(
-          `UPDATE student_internship 
-           SET ${updateFields.join(", ")} 
-           WHERE nim = ?`,
-          updateValues
-        );
-        console.log(`Updated student contact info for NIM: ${nim}`);
-      }
+    // ===================== UPDATE STUDENT =====================
+    const updateFields = [];
+    const updateValues = [];
+    if (body.email) {
+      updateFields.push("email = ?");
+      updateValues.push(body.email);
+    }
+    if (body.no_whatsapp || body.phone) {
+      updateFields.push("no_whatsapp = ?");
+      updateValues.push(body.no_whatsapp || body.phone);
+    }
+    if (updateFields.length > 0) {
+      updateValues.push(nim);
+      await db.query(`UPDATE student_internship SET ${updateFields.join(", ")} WHERE nim = ?`, updateValues);
     }
 
     res.json({ success: true, id: result.insertId });
+
   } catch (err) {
     console.error("form-submission error:", err);
     res.status(500).json({ error: err.message });
   }
 });
+
+
 
 /**
  * GET /api/student/approval-status/:nim
