@@ -973,485 +973,297 @@ if ($id_kampus) {
             </script>
         </div>
     </div>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const nim = <?= json_encode($student['nim']) ?>;
-            const API_BASE = "http://localhost:8000/api/student";
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const nim = <?= json_encode($student['nim']) ?>;
+    const API_BASE = "http://localhost:8000/api/student";
+    const form = document.getElementById("acceptedForm");
 
-            const form = document.getElementById("acceptedForm");
+    const safeSet = (selector, value) => {
+        const el = form.querySelector(selector);
+        if (el) el.value = value;
+    };
 
-            const safeSet = (selector, value) => {
-                const el = form.querySelector(selector);
-                if (el) el.value = value;
-            };
+    const setRadioChecked = (name, value) => {
+        const el = form.querySelector(`input[name="${name}"][value="${value}"]`);
+        if (el) el.checked = true;
+    };
 
-            const setRadioChecked = (name, value) => {
-                const el = form.querySelector(`input[name="${name}"][value="${value}"]`);
-                if (el) el.checked = true;
-            };
+    const setRadioDisabled = (name, disabled) => {
+        form.querySelectorAll(`input[name="${name}"]`).forEach(i => i.disabled = disabled);
+    };
 
-            const setRadioDisabled = (name, disabled) => {
-                form.querySelectorAll(`input[name="${name}"]`).forEach(i => i.disabled = disabled);
-            };
+    const normalizeValue = (str) => {
+        if (!str) return "";
+        const val = str.trim().toLowerCase();
+        if (val.includes("batam")) return "batam";
+        if (val.includes("tanjung pinang")) return "tanjung_pinang";
+        if (val.includes("tanjung balai")) return "tanjung_balai";
+        if (val.includes("riau")) return "riau_islands";
+        if (val.includes("indonesia")) return "indonesia";
+        if (val.includes("overseas")) return "overseas";
+        return val;
+    };
 
-            const normalizeValue = (str) => {
-                if (!str) return "";
-                const val = str.trim().toLowerCase();
-                if (val.includes("batam")) return "batam";
-                if (val.includes("tanjung pinang")) return "tanjung_pinang";
-                if (val.includes("tanjung balai")) return "tanjung_balai";
-                if (val.includes("riau")) return "riau_islands";
-                if (val.includes("indonesia")) return "indonesia";
-                if (val.includes("overseas")) return "overseas";
-                return val;
-            };
+    const updateHiddenMirrors = (d) => {
+        if (!d) return;
+        form.querySelector("input[name='company_name_hidden']").value = d.company_name || "";
+        form.querySelector("input[name='company_address_hidden']").value = d.company_address || "";
+        form.querySelector("input[name='city_hidden']").value = d.city || "";
+        form.querySelector("input[name='province_hidden']").value = d.province || "";
+        form.querySelector("input[name='country_hidden']").value = d.country || "";
+        form.querySelector("input[name='hrd_email_hidden']").value = d.hrd_email || "";
+        form.querySelector("input[name='hrd_name_hidden']").value = d.hrd_name || "";
+        form.querySelector("input[name='hrd_whatsapp_hidden']").value = d.hrd_whatsapp || "";
+        form.querySelector("input[name='id_company']").value = d.id_company || "";
+        form.querySelector("input[name='company_not_exist']").value = d.company_not_exist ? String(d.company_not_exist) : "0";
+    };
 
-            const updateHiddenMirrors = (d) => {
-                if (!d) return;
-                form.querySelector("input[name='company_name_hidden']").value = d.company_name || "";
-                form.querySelector("input[name='company_address_hidden']").value = d.company_address || "";
-                form.querySelector("input[name='city_hidden']").value = d.city || "";
-                form.querySelector("input[name='province_hidden']").value = d.province || "";
-                form.querySelector("input[name='country_hidden']").value = d.country || "";
-                form.querySelector("input[name='hrd_email_hidden']").value = d.hrd_email || "";
-                form.querySelector("input[name='hrd_name_hidden']").value = d.hrd_name || "";
-                form.querySelector("input[name='hrd_whatsapp_hidden']").value = d.hrd_whatsapp || "";
-                form.querySelector("input[name='id_company']").value = d.id_company || "";
-                form.querySelector("input[name='company_not_exist']").value = d.company_not_exist ? String(d.company_not_exist) : "0";
-            };
+    // Show/hide city/province "other"
+    form.querySelectorAll("input[name='city']").forEach(r => r.addEventListener("change", () => {
+        const isOther = r.value === "other";
+        const cityOther = form.querySelector("input[name='city_other']");
+        cityOther.style.display = isOther ? "block" : "none";
+        if (!isOther) cityOther.value = "";
+    }));
 
-            // === SHOW/HIDE city_other based on radio ===
-            form.querySelectorAll("input[name='city']").forEach(r => {
-                r.addEventListener("change", () => {
-                    const isOther = r.value === "other";
-                    const cityOther = form.querySelector("input[name='city_other']");
-                    cityOther.style.display = isOther ? "block" : "none";
-                    if (!isOther) cityOther.value = "";
-                });
-            });
+    form.querySelectorAll("input[name='province']").forEach(r => r.addEventListener("change", () => {
+        const isOther = r.value === "other";
+        const provOther = form.querySelector("input[name='province_other']");
+        provOther.style.display = isOther ? "block" : "none";
+        if (!isOther) provOther.value = "";
+    }));
 
-            // === SHOW/HIDE province_other based on radio ===
-            form.querySelectorAll("input[name='province']").forEach(r => {
-                r.addEventListener("change", () => {
-                    const isOther = r.value === "other";
-                    const provOther = form.querySelector("input[name='province_other']");
-                    provOther.style.display = isOther ? "block" : "none";
-                    if (!isOther) provOther.value = "";
-                });
-            });
+    // ==== AUTOFILL ====
+    fetch(`${API_BASE}/accepted-by-company/autofill/${nim}`)
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) return console.error("Autofill failed:", data.message);
+        const d = data.data;
 
+        // Basic info
+        safeSet("input[name='nim']", d.nim);
+        safeSet("input[name='student_name']", d.name);
+        safeSet("input[name='study_program']", d.study_program_display);
+        safeSet("input[name='department']", d.department);
+        safeSet("input[name='semester']", d.semester);
+        safeSet("input[name='internship_coordinator']", d.coordinator_name);
 
-            // === AUTO-FILL ===
-            fetch(`${API_BASE}/accepted-by-company/autofill/${nim}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.success) return console.error("Autofill failed:", data.message);
+        // CLASS (radio)
+        if (d.class) {
+            setRadioChecked("class", d.class);
+            setRadioDisabled("class", true);
+        }
 
-                    const d = data.data;
-
-                    // basic info
-                    safeSet("input[name='nim']", d.nim);
-                    safeSet("input[name='student_name']", d.name);
-                    safeSet("input[name='study_program']", d.study_program_display);
-                    safeSet("input[name='department']", d.department);
-                    safeSet("input[name='semester']", d.semester);
-                    safeSet("input[name='internship_coordinator']", d.coordinator_name);
-
-                    // CLASS (radio)
-                    if (d.class) {
-                        setRadioChecked("class", d.class);
-                        setRadioDisabled("class", true);
-                    }
-
-                    // COMPANY
-                    safeSet("input[name='company_name']", d.company_name);
-                    safeSet("input[name='company_address']", d.company_address);
-
-                    // === CITY / PROVINCE / COUNTRY ===
-                    const cityVal = normalizeValue(d.city);
-                    const provVal = normalizeValue(d.province);
-                    const countryVal = normalizeValue(d.country);
-                    if (cityVal) setRadioChecked("city", cityVal);
-                    if (provVal) setRadioChecked("province", provVal);
-                    if (countryVal) setRadioChecked("country", countryVal);
-
-                    // Show text input jika value existing adalah "other"
-                    const cityOther = form.querySelector("input[name='city_other']");
-                    if (cityVal === "other") {
-                        cityOther.style.display = "block";
-                    } else {
-                        cityOther.style.display = "none";
-                    }
-
-                    const provOther = form.querySelector("input[name='province_other']");
-                    if (provVal === "other") {
-                        provOther.style.display = "block";
-                    } else {
-                        provOther.style.display = "none";
-                    }
-
-                    // === HRD ===
-                    safeSet("input[name='hrd_email']", d.hrd_email);
-                    safeSet("input[name='hrd_name']", d.hrd_name);
-                    safeSet("input[name='hrd_whatsapp']", d.hrd_whatsapp);
-
-                    // === Email & WhatsApp (Mahasiswa) ===
-                    safeSet("input[name='email']", d.email);
-                    safeSet("input[name='whatsapp']", d.no_whatsapp);
-
-                    // === Start / End Date ===
-                    const formatDate = (val) => {
-                        if (!val) return "";
-                        const date = new Date(val);
-                        // deteksi apakah val sudah dalam bentuk string 'YYYY-MM-DD'
-                        if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
-                        return date.toISOString().split("T")[0];
-                    };
-
-                    safeSet("input[name='start_date']", formatDate(d.start_date));
-                    safeSet("input[name='end_date']", formatDate(d.end_date));
-
-                    updateHiddenMirrors(d);
-
-                    // === Company existence behavior ===
-                    const compNotExist = Number(d.company_not_exist) === 1 ? 1 : 0;
-                    if (compNotExist === 0) {
-                        // readonly mode
-                        ["company_name", "company_address", "hrd_email", "hrd_name", "hrd_whatsapp"].forEach(name => {
-                            const el = form.querySelector(`input[name='${name}']`);
-                            if (el) el.readOnly = true;
-                        });
-                        setRadioDisabled("city", true);
-                        setRadioDisabled("province", true);
-                        setRadioDisabled("country", true);
-
-                        // City and Province field is disable
-                        const provinceOther = form.querySelector("input[name='province_other']");
-                        if (provinceOther) {
-                            provinceOther.readOnly = true;
-                            provinceOther.style.backgroundColor = "#f5f5f5";
-                            provinceOther.style.display = "none";
-                        }
-
-                        const cityOther = form.querySelector("input[name='city_other']");
-                        if (cityOther) {
-                            cityOther.readOnly = true;
-                            cityOther.style.backgroundColor = "#f5f5f5";
-                            cityOther.style.display = "none";
-                        }
-
-                    } else {
-                        // editable mode
-                        ["company_name", "company_address", "hrd_email", "hrd_name", "hrd_whatsapp"].forEach(name => {
-                            const el = form.querySelector(`input[name='${name}']`);
-                            if (el) el.readOnly = false;
-                        });
-                        setRadioDisabled("city", false);
-                        setRadioDisabled("province", false);
-                        setRadioDisabled("country", false);
-
-                        // Open field if student input new company
-                        const provinceOther = form.querySelector("input[name='province_other']");
-                        if (provinceOther) {
-                            provinceOther.readOnly = false;
-                            provinceOther.style.backgroundColor = "";
-                        }
-
-                        const cityOther = form.querySelector("input[name='city_other']");
-                        if (cityOther) {
-                            cityOther.readOnly = false;
-                            cityOther.style.backgroundColor = "";
-                        }
-                    }
-
-                    // === VALIDASI START-END DATE ===
-                    const startInput = form.querySelector("input[name='start_date']");
-                    const endInput = form.querySelector("input[name='end_date']");
-
-                    const adjustDateLimits = () => {
-                        if (startInput.value) {
-                            const minEnd = new Date(startInput.value);
-                            minEnd.setDate(minEnd.getDate() + 1);
-                            endInput.min = minEnd.toISOString().split("T")[0];
-                        }
-                        if (endInput.value) {
-                            const maxStart = new Date(endInput.value);
-                            maxStart.setDate(maxStart.getDate() - 1);
-                            startInput.max = maxStart.toISOString().split("T")[0];
-                        }
-                    };
-
-                    startInput.addEventListener("change", adjustDateLimits);
-                    endInput.addEventListener("change", adjustDateLimits);
-                    adjustDateLimits();
-                })
-                .catch(err => console.error("Autofill error:", err));
-
-            const dropzone = document.getElementById("dropzone");
-            const fileInput = document.getElementById("fileInput");
-            const fileList = document.getElementById("fileList");
-
-            // ========== CLICK ⇒ OPEN FILE EXPLORER ==========
-            dropzone.addEventListener("click", () => fileInput.click());
-
-            // ========== CHANGE (file chosen manually) ==========
-            fileInput.addEventListener("change", (e) => {
-                handleFile(e.target.files[0]);
-            });
-
-            // ========== DRAG OVER ==========
-            dropzone.addEventListener("dragover", (e) => {
-                e.preventDefault();
-                dropzone.classList.add("dragover");
-            });
-
-            // ========== DRAG LEAVE ==========
-            dropzone.addEventListener("dragleave", () => {
-                dropzone.classList.remove("dragover");
-            });
-
-            // ========== DROP FILE ==========
-            dropzone.addEventListener("drop", (e) => {
-                e.preventDefault();
-                dropzone.classList.remove("dragover");
-
-                const file = e.dataTransfer.files[0];
-                handleFile(file);
-            });
-
-            // ========== HANDLE THE FILE ==========
-            function handleFile(file) {
-                if (!file) return;
-
-                if (file.type !== "application/pdf") {
-                    alert("Only PDF files are allowed.");
-                    return;
-                }
-
-                const dt = new DataTransfer();
-                dt.items.add(file);
-                fileInput.files = dt.files;
-
-                dropzone.style.display = "none";
-                fileList.style.display = "block";
-
-                fileList.innerHTML = `
-        <div class="file-item">
-            ${file.name}
-            <span class="delete-file" style="color:red; cursor:pointer; margin-left:auto; font-weight:bold;">✕</span>
-        </div>
-        <div class="progress-bar">
-            <div class="progress-bar-fill" id="uploadProgress"></div>
-        </div>
-    `;
-
-                simulateProgress();
-
-                // DELETE BUTTON
-                document.querySelector(".delete-file").addEventListener("click", () => {
-                    fileInput.value = "";
-                    fileList.style.display = "none";
-                    dropzone.style.display = "block";
-                });
+        // Company name & address (always readonly)
+        safeSet("input[name='company_name']", d.company_name);
+        safeSet("input[name='company_address']", d.company_address);
+        ["company_name", "company_address"].forEach(name => {
+            const el = form.querySelector(`input[name='${name}']`);
+            if (el) {
+                el.readOnly = true;
+                el.style.backgroundColor = "#e9ecef";
             }
-
-
-            // ========== Fake progress bar (optional) ==========
-            function simulateProgress() {
-                const bar = document.getElementById("uploadProgress");
-                let width = 0;
-
-                const timer = setInterval(() => {
-                    width += 10;
-                    bar.style.width = width + "%";
-
-                    if (width >= 100) {
-                        clearInterval(timer);
-                        bar.parentElement.style.display = "none";
-                    }
-                }, 80);
-            }
-
-            // === SUBMISSION ===
-            const id_letter = form.querySelector("[name='id_letter']").value;
-
-            form.addEventListener("submit", async (e) => {
-                e.preventDefault();
-
-                // === DATE VALIDATION ===
-                const startVal = new Date(form.querySelector("input[name='start_date']").value);
-                const endVal = new Date(form.querySelector("input[name='end_date']").value);
-                if (startVal >= endVal) {
-                    return Swal.fire({
-                        icon: "error",
-                        title: "Invalid Dates",
-                        text: "End date must be after start date."
-                    });
-                }
-
-                // === REQUIRED ===
-                const compNotExist = Number(form.querySelector("input[name='company_not_exist']").value);
-
-                const isEmpty = (selector) => {
-                    const el = form.querySelector(selector);
-                    return !el || el.value.trim() === "";
-                };
-
-                const getChecked = (name) => form.querySelector(`input[name='${name}']:checked`);
-
-                const errors = [];
-
-                // Placement department (always required)
-                if (isEmpty("input[name='placement_department']")) errors.push("Placement Department/Division is required.");
-
-                // Start-End-Date (required)
-                if (isEmpty("input[name='start_date']")) errors.push("Start date is required.");
-                if (isEmpty("input[name='end_date']")) errors.push("End date is required.");
-
-                // Info source (radio)
-                if (!getChecked("info_source")) errors.push("Information source is required.");
-
-                // Email & WhatsApp
-                if (isEmpty("input[name='email']")) errors.push("Student email is required.");
-                if (isEmpty("input[name='whatsapp']")) errors.push("Student WhatsApp number is required.");
-
-                // File attachment
-                const fileInput = form.querySelector("input[name='attachment']");
-                if (!fileInput.files || fileInput.files.length === 0) errors.push("Please upload the internship response letter.");
-
-                // If company_not_exist = 1, check all manual field
-                if (compNotExist === 1) {
-                    if (isEmpty("input[name='company_name']")) errors.push("Company name is required.");
-                    if (isEmpty("input[name='company_address']")) errors.push("Company address is required.");
-                    if (!getChecked("city")) errors.push("City is required.");
-                    if (getChecked("city")?.value === "other" && isEmpty("input[name='city_other']"))
-                        errors.push("City (other) must be filled.");
-                    if (!getChecked("province")) errors.push("Province is required.");
-                    if (getChecked("province")?.value === "other" && isEmpty("input[name='province_other']"))
-                        errors.push("Province (other) must be filled.");
-                    if (!getChecked("country")) errors.push("Country is required.");
-                    if (isEmpty("input[name='hrd_email']")) errors.push("HRD email is required.");
-                    if (isEmpty("input[name='hrd_name']")) errors.push("HRD name is required.");
-                    if (isEmpty("input[name='hrd_whatsapp']")) errors.push("HRD WhatsApp number is required.");
-                } else {
-                    // company_not_exist = 0 → check empty autofill
-                    const autoFields = [{
-                            name: "company_name",
-                            label: "Company name"
-                        },
-                        {
-                            name: "company_address",
-                            label: "Company address"
-                        },
-                        {
-                            name: "hrd_email",
-                            label: "HRD email"
-                        },
-                        {
-                            name: "hrd_name",
-                            label: "HRD name"
-                        },
-                        {
-                            name: "hrd_whatsapp",
-                            label: "HRD WhatsApp"
-                        }
-                    ];
-                    autoFields.forEach(f => {
-                        if (isEmpty(`input[name='${f.name}']`))
-                            errors.push(`${f.label} (autofill) is missing. Please contact administrator.`);
-                    });
-                }
-
-                // Stop submit when error occured
-                if (errors.length > 0) {
-                    return Swal.fire({
-                        icon: "error",
-                        title: "Incomplete Form",
-                        html: `<ul style="text-align:left;">${errors.map(e => `<li>${e}</li>`).join("")}</ul>`
-                    });
-                }
-
-                // === Submit date if valid ===
-                const formData = new FormData(form);
-                formData.append("nim", nim);
-
-                try {
-                    // 1. Upload file ke PHP dulu
-                    const uploadRes = await fetch("upload_company_reply.php", {
-                        method: "POST",
-                        body: formData, // FormData original berisi file
-                    });
-
-                    const uploadData = await uploadRes.json();
-
-                    if (!uploadData.success) {
-                        return Swal.fire({
-                            icon: "error",
-                            title: "Upload Failed",
-                            text: uploadData.message || "Unable to upload file."
-                        });
-                    }
-
-                    // 2. Setelah file berhasil diupload → kirim DATA (tanpa file)
-                    const payload = {
-                        nim,
-                        company_name: form.querySelector("[name='company_name']").value,
-                        company_address: form.querySelector("[name='company_address']").value,
-                        city: form.querySelector("[name='city']").value,
-                        province: form.querySelector("[name='province']").value,
-                        country: form.querySelector("[name='country']").value,
-                        hrd_email: form.querySelector("[name='hrd_email']").value,
-                        hrd_name: form.querySelector("[name='hrd_name']").value,
-                        hrd_whatsapp: form.querySelector("[name='hrd_whatsapp']").value,
-                        placement_department: form.querySelector("[name='placement_department']").value,
-                        start_date: form.querySelector("[name='start_date']").value,
-                        end_date: form.querySelector("[name='end_date']").value,
-                        info_source: form.querySelector("[name='info_source']").value,
-                        email: form.querySelector("[name='email']").value,
-                        whatsapp: form.querySelector("[name='whatsapp']").value,
-                        company_not_exist: form.querySelector("[name='company_not_exist']").value,
-
-                        // PENTING: path file dari PHP
-                        company_reply_letter: uploadData.path
-                    };
-
-                    // 3. Kirim ke Node
-                    console.log("DEBUG: id_letter =", id_letter);
-                    const res = await fetch(`${API_BASE}/accepted-by-company/submit/${id_letter}`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(payload),
-                    });
-
-                    const data = await res.json();
-
-                    if (data.success) {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Success",
-                            text: data.message || "Internship claim submitted successfully!",
-                        }).then(() => (window.location.href = "approval_status.php"));
-                    } else {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Error",
-                            text: data.error || data.message || "Something went wrong"
-                        });
-                    }
-                } catch (err) {
-                    console.error("Submission error:", err);
-                    Swal.fire({
-                        icon: "error",
-                        title: "Upload Failed",
-                        text: "Unable to send data to the server."
-                    });
-                }
-            });
         });
-    </script>
+
+        // HRD & city/province/country logic
+        const compNotExist = Number(d.company_not_exist) === 1 ? 1 : 0;
+        const isVerified = d.company_status === "verified";
+
+        // Populate HRD & location
+        safeSet("input[name='hrd_email']", d.hrd_email);
+        safeSet("input[name='hrd_name']", d.hrd_name);
+        safeSet("input[name='hrd_whatsapp']", d.hrd_whatsapp);
+
+        const cityVal = normalizeValue(d.city);
+        const provVal = normalizeValue(d.province);
+        const countryVal = normalizeValue(d.country);
+
+        if (cityVal) setRadioChecked("city", cityVal);
+        if (provVal) setRadioChecked("province", provVal);
+        if (countryVal) setRadioChecked("country", countryVal);
+
+        const cityOther = form.querySelector("input[name='city_other']");
+        if (cityVal === "other") cityOther.style.display = "block";
+
+        const provOther = form.querySelector("input[name='province_other']");
+        if (provVal === "other") provOther.style.display = "block";
+
+        // Determine editable fields
+        const editable = compNotExist === 1 || !isVerified;
+        ["hrd_email", "hrd_name", "hrd_whatsapp"].forEach(name => {
+            const el = form.querySelector(`input[name='${name}']`);
+            if (el) el.readOnly = !editable;
+        });
+        setRadioDisabled("city", !editable);
+        setRadioDisabled("province", !editable);
+        setRadioDisabled("country", !editable);
+
+        if (editable) {
+            if (cityOther) cityOther.readOnly = false;
+            if (provOther) provOther.readOnly = false;
+        } else {
+            if (cityOther) cityOther.readOnly = true;
+            if (provOther) provOther.readOnly = true;
+        }
+
+        // Student contact & dates
+        safeSet("input[name='email']", d.email);
+        safeSet("input[name='whatsapp']", d.no_whatsapp);
+
+        const formatDate = val => {
+            if (!val) return "";
+            const date = new Date(val);
+            return date.toISOString().split("T")[0];
+        };
+
+        safeSet("input[name='start_date']", formatDate(d.start_date));
+        safeSet("input[name='end_date']", formatDate(d.end_date));
+
+        updateHiddenMirrors(d);
+
+        // Adjust start/end date limits
+        const startInput = form.querySelector("input[name='start_date']");
+        const endInput = form.querySelector("input[name='end_date']");
+        const adjustDateLimits = () => {
+            if (startInput.value) {
+                const minEnd = new Date(startInput.value);
+                minEnd.setDate(minEnd.getDate() + 1);
+                endInput.min = minEnd.toISOString().split("T")[0];
+            }
+            if (endInput.value) {
+                const maxStart = new Date(endInput.value);
+                maxStart.setDate(maxStart.getDate() - 1);
+                startInput.max = maxStart.toISOString().split("T")[0];
+            }
+        };
+        startInput.addEventListener("change", adjustDateLimits);
+        endInput.addEventListener("change", adjustDateLimits);
+        adjustDateLimits();
+    })
+    .catch(err => console.error("Autofill error:", err));
+
+    // ===== FILE UPLOAD LOGIC =====
+    const dropzone = document.getElementById("dropzone");
+    const fileInput = document.getElementById("fileInput");
+    const fileList = document.getElementById("fileList");
+
+    dropzone.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
+    dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("dragover"); });
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+    dropzone.addEventListener("drop", (e) => { 
+        e.preventDefault(); 
+        dropzone.classList.remove("dragover");
+        handleFile(e.dataTransfer.files[0]); 
+    });
+
+    function handleFile(file){
+        if(!file) return;
+        if(file.type !== "application/pdf"){ alert("Only PDF files are allowed."); return; }
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+        dropzone.style.display = "none";
+        fileList.style.display = "block";
+        fileList.innerHTML = `<div class="file-item">${file.name}<span class="delete-file" style="color:red; cursor:pointer; margin-left:auto; font-weight:bold;">✕</span></div><div class="progress-bar"><div class="progress-bar-fill" id="uploadProgress"></div></div>`;
+        simulateProgress();
+        document.querySelector(".delete-file").addEventListener("click", () => {
+            fileInput.value = "";
+            fileList.style.display = "none";
+            dropzone.style.display = "block";
+        });
+    }
+
+    function simulateProgress(){
+        const bar = document.getElementById("uploadProgress");
+        let width = 0;
+        const timer = setInterval(() => {
+            width += 10;
+            bar.style.width = width + "%";
+            if(width>=100){ clearInterval(timer); bar.parentElement.style.display="none"; }
+        },80);
+    }
+
+    // ==== FORM SUBMISSION ====
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const startVal = new Date(form.querySelector("input[name='start_date']").value);
+        const endVal = new Date(form.querySelector("input[name='end_date']").value);
+        if(startVal >= endVal) return Swal.fire({icon:"error",title:"Invalid Dates",text:"End date must be after start date."});
+
+        const compNotExist = Number(form.querySelector("input[name='company_not_exist']").value);
+        const isEmpty = selector => { const el=form.querySelector(selector); return !el || el.value.trim()===""; };
+        const getChecked = name => form.querySelector(`input[name='${name}']:checked`);
+        const errors=[];
+
+        if(isEmpty("input[name='placement_department']")) errors.push("Placement Department/Division is required.");
+        if(isEmpty("input[name='start_date']")) errors.push("Start date is required.");
+        if(isEmpty("input[name='end_date']")) errors.push("End date is required.");
+        if(!getChecked("info_source")) errors.push("Information source is required.");
+        if(isEmpty("input[name='email']")) errors.push("Student email is required.");
+        if(isEmpty("input[name='whatsapp']")) errors.push("Student WhatsApp number is required.");
+        const fileInputEl = form.querySelector("input[name='attachment']");
+        if(!fileInputEl.files || fileInputEl.files.length===0) errors.push("Please upload the internship response letter.");
+
+        if(compNotExist===1){
+            if(isEmpty("input[name='hrd_email']")) errors.push("HRD email is required.");
+            if(isEmpty("input[name='hrd_name']")) errors.push("HRD name is required.");
+            if(isEmpty("input[name='hrd_whatsapp']")) errors.push("HRD WhatsApp number is required.");
+            if(!getChecked("city")) errors.push("City is required.");
+            if(getChecked("city")?.value==="other" && isEmpty("input[name='city_other']")) errors.push("City (other) must be filled.");
+            if(!getChecked("province")) errors.push("Province is required.");
+            if(getChecked("province")?.value==="other" && isEmpty("input[name='province_other']")) errors.push("Province (other) must be filled.");
+            if(!getChecked("country")) errors.push("Country is required.");
+        }
+
+        if(errors.length>0) return Swal.fire({icon:"error",title:"Incomplete Form",html:`<ul style="text-align:left;">${errors.map(e=>`<li>${e}</li>`).join("")}</ul>`});
+
+        const formData = new FormData(form);
+        formData.append("nim", nim);
+
+        try{
+            const uploadRes = await fetch("upload_company_reply.php",{method:"POST",body:formData});
+            const uploadData = await uploadRes.json();
+            if(!uploadData.success) return Swal.fire({icon:"error",title:"Upload Failed",text:uploadData.message || "Unable to upload file."});
+
+            const payload = {
+                nim,
+                city: form.querySelector("[name='city']").value,
+                province: form.querySelector("[name='province']").value,
+                country: form.querySelector("[name='country']").value,
+                hrd_email: form.querySelector("[name='hrd_email']").value,
+                hrd_name: form.querySelector("[name='hrd_name']").value,
+                hrd_whatsapp: form.querySelector("[name='hrd_whatsapp']").value,
+                placement_department: form.querySelector("[name='placement_department']").value,
+                start_date: form.querySelector("[name='start_date']").value,
+                end_date: form.querySelector("[name='end_date']").value,
+                info_source: form.querySelector("[name='info_source']").value,
+                email: form.querySelector("[name='email']").value,
+                whatsapp: form.querySelector("[name='whatsapp']").value,
+                company_not_exist: form.querySelector("[name='company_not_exist']").value,
+                company_reply_letter: uploadData.path
+            };
+
+            const res = await fetch(`${API_BASE}/accepted-by-company/submit/${form.querySelector("[name='id_letter']").value}`,{
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                body:JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if(data.success){
+                Swal.fire({icon:"success",title:"Success",text:data.message || "Internship claim submitted successfully!"}).then(()=>window.location.href="approval_status.php");
+            }else{
+                Swal.fire({icon:"error",title:"Error",text:data.error || data.message || "Something went wrong"});
+            }
+        }catch(err){
+            console.error("Submission error:",err);
+            Swal.fire({icon:"error",title:"Upload Failed",text:"Unable to send data to the server."});
+        }
+    });
+});
+</script>
 
 </body>
-
 </html>

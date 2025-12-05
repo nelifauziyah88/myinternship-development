@@ -831,11 +831,16 @@ router.get("/accepted-by-company/autofill/:nim", async (req, res) => {
   }
 });
 
+// ===================================================================
+// POST: Submit Accepted by Company (Claim Internship)
+// ===================================================================
+
 // POST: Submit accepted_by_company
 router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
   try {
     const fields = req.body || {};
     const param_id_letter = req.params?.id_letter || null;
+
     const {
       nim,
       city,
@@ -858,40 +863,106 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
     await conn.beginTransaction();
 
     try {
-      // 1. Ambil data surat terakhir mahasiswa (internship_letter)
+      // ==========================================================
+      // 1. AMBIL SURAT TERBARU
+      // ==========================================================
       const [letterRows] = await conn.query(
-        "SELECT * FROM internship_letter WHERE nim = ? ORDER BY id_letter DESC LIMIT 1",
+        `SELECT * FROM internship_letter 
+         WHERE nim = ? ORDER BY id_letter DESC LIMIT 1`,
         [nim]
       );
-      const letter = letterRows[0] || null;
-      // id_company berasal dari letter bila ada
+
+      let letter = letterRows[0] || null;
       let id_company = letter?.id_company || null;
       let id_user_company = null;
 
-      // If no letter found, fallback: try find by provided id_letter param
+      // fallback jika id_letter param diberikan
       if (!letter && param_id_letter) {
-        const [letterRows2] = await conn.query(
-          "SELECT * FROM internship_letter WHERE id_letter = ? LIMIT 1",
+        const [alt] = await conn.query(
+          "SELECT * FROM internship_letter WHERE id_letter=? LIMIT 1",
           [param_id_letter]
         );
-        if (letterRows2.length) {
-          id_company = letterRows2[0].id_company || null;
+        if (alt.length) {
+          letter = alt[0];
+          id_company = alt[0].id_company;
         }
       }
 
-      // Helper: get student campus id
+      // ==========================================================
+      // 2. AMBIL ID KAMPUS
+      // ==========================================================
       const [studRows] = await conn.query(
-        "SELECT id_kampus FROM student_internship WHERE nim = ? LIMIT 1",
+        "SELECT id_kampus FROM student_internship WHERE nim = ?",
         [nim]
       );
-      const id_kampus = studRows.length > 0 ? studRows[0].id_kampus : 1;
+      const id_kampus = studRows.length ? studRows[0].id_kampus : 1;
 
-      // === 2. Handle company_not_exist === '1' (student indicated company does not exist)
-      // IMPORTANT CHANGE: jika company_not_exist = 1 tetapi id_company SUDAH ADA (dibuat saat Form Submission),
-      // maka TIDAK INSERT company baru. Sebagai gantinya hanya UPDATE fields yang diizinkan.
-      if (company_not_exist === "1" || (letter && letter.company_not_exist === 1)) {
-        if (id_company) {
-          // Company sudah ada (dibuat waktu form submission) -> HANYA UPDATE fields yang boleh diubah
+      // Determine company_not_exist flag
+      const companyNotExistFlag =
+        String(company_not_exist) === "1" || (letter && Number(letter.company_not_exist) === 1)
+          ? 1
+          : 0;
+
+      // ==========================================================
+      // 3. CASE: company_not_exist === '1' => INSERT COMPANY BARU
+      // ==========================================================
+      if (companyNotExistFlag === 1 && !id_company) {
+        const companyName = letter?.company_name || "-";
+        const companyAddress = letter?.company_address || "-";
+        const phone = "-";
+        const email_c = "-";
+
+        const [result] = await conn.query(
+          `INSERT INTO company 
+           (name, type, type_other, phone, email, website, facebook, twitter, instagram, linkedin, logo,
+            address, province, city, country, description, status, access_type, id_kampus)
+           VALUES (?, '-', NULL, ?, ?, '-', '-', '-', '-', '-', '-',
+           ?, ?, ?, ?, '-', 'not verified', '1', ?)`,
+          [companyName, phone, email_c, companyAddress, province || null, city || null, country || null, id_kampus]
+        );
+
+        id_company = result.insertId;
+
+        // Insert HRD
+        const [u] = await conn.query(
+          `INSERT INTO user_company 
+           (id_company, user_fullname, user_email, user_phone, user_type, username, password)
+           VALUES (?, ?, ?, ?, 'HRD', 'TEMP', '-')`,
+          [id_company, hrd_name || "-", hrd_email || "-", hrd_whatsapp || "-"]
+        );
+
+        id_user_company = u.insertId;
+
+        let padded =
+          id_user_company < 10
+            ? `00${id_user_company}`
+            : id_user_company < 100
+            ? `0${id_user_company}`
+            : `${id_user_company}`;
+
+        await conn.query(
+          "UPDATE user_company SET username=? WHERE id_user_company=?",
+          [`HRD.${padded}`, id_user_company]
+        );
+      }
+
+      // ==========================================================
+      // 4. COMPANY EXISTING → CEK STATUS verified / not verified
+      // ==========================================================
+      if (id_company) {
+        const [cRows] = await conn.query(
+          "SELECT status FROM company WHERE id_company = ? LIMIT 1",
+          [id_company]
+        );
+
+        const companyStatus = cRows.length ? String(cRows[0].status).toLowerCase() : "verified";
+        const isVerified = companyStatus === "verified";
+
+        // Determine if fields can be updated (HRD + City/Province/Country)
+        const canUpdateFields = companyNotExistFlag === 1 || !isVerified;
+
+        if (canUpdateFields) {
+          // Update company basic fields → hanya city/province/country
           await conn.query(
             `UPDATE company SET 
                city = COALESCE(?, city),
@@ -902,207 +973,76 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
             [city || null, province || null, country || null, id_kampus, id_company]
           );
 
-          // Ambil HRD lama atau buat baru (sama seperti logic existing company)
+          // UPDATE / INSERT HRD
           const [existingHRD] = await conn.query(
-            "SELECT id_user_company FROM user_company WHERE id_company = ? AND user_type = 'HRD' LIMIT 1",
+            "SELECT id_user_company FROM user_company WHERE id_company=? AND user_type='HRD' LIMIT 1",
             [id_company]
           );
 
-          if (existingHRD.length > 0) {
+          if (existingHRD.length) {
             id_user_company = existingHRD[0].id_user_company;
-            // Update HRD info (fullname, email, phone) — do not touch username/password here
+
             await conn.query(
-              `UPDATE user_company 
-               SET user_fullname = COALESCE(?, user_fullname),
-                   user_email = COALESCE(?, user_email),
-                   user_phone = COALESCE(?, user_phone)
+              `UPDATE user_company SET
+                 user_fullname = COALESCE(?, user_fullname),
+                 user_email   = COALESCE(?, user_email),
+                 user_phone   = COALESCE(?, user_phone)
                WHERE id_user_company = ?`,
               [hrd_name || null, hrd_email || null, hrd_whatsapp || null, id_user_company]
             );
           } else {
-            // HRD belum ada -> insert dan generate username
-            const [userResult] = await conn.query(
-              `INSERT INTO user_company 
+            const [u] = await conn.query(
+              `INSERT INTO user_company
                (id_company, user_fullname, user_email, user_phone, user_type, username, password)
                VALUES (?, ?, ?, ?, 'HRD', 'TEMP', '-')`,
               [id_company, hrd_name || "-", hrd_email || "-", hrd_whatsapp || "-"]
             );
-            id_user_company = userResult.insertId;
 
-            let paddedId =
+            id_user_company = u.insertId;
+
+            let padded =
               id_user_company < 10
                 ? `00${id_user_company}`
                 : id_user_company < 100
                 ? `0${id_user_company}`
                 : `${id_user_company}`;
+
             await conn.query(
               "UPDATE user_company SET username = ? WHERE id_user_company = ?",
-              [`HRD.${paddedId}`, id_user_company]
+              [`HRD.${padded}`, id_user_company]
             );
-          }
-        } else {
-          // Edge-case: letter indicates company_not_exist but id_company benar-benar belum dibuat.
-          // Di sini kita fallback ke behavior INSERT (sama seperti implementasi lama),
-          // karena tidak ada company yang bisa di-update.
-          const fixed_company_name = (letter && letter.company_name) ? letter.company_name : "-";
-          const fixed_company_address = (letter && letter.company_address) ? letter.company_address : "-";
-
-          // Try to extract phone/email from letter.company_contact if present
-          let phone = "-";
-          let email_c = "-";
-          if (letter && letter.company_contact) {
-            const contact = letter.company_contact.trim();
-            if (/^[+0-9\s-]+$/.test(contact) && contact.replace(/\D/g, "").length >= 8) {
-              phone = contact;
-            } else if (contact.includes("@")) {
-              email_c = contact;
-            }
-          }
-
-          // Insert company with safe defaults, using fixed_company_name/address from letter
-          const [result] = await conn.query(
-            `INSERT INTO company 
-             (name, type, type_other, phone, email, website, facebook, twitter, instagram, linkedin, logo, address, province, city, country, description, status, access_type, id_kampus)
-             VALUES (?, '-', NULL, ?, ?, '-', '-', '-', '-', '-', '-', ?, ?, ?, ?, '-', 'verified', '1', ?)`,
-            [
-              fixed_company_name,
-              phone,
-              email_c,
-              fixed_company_address,
-              province || null,
-              city || null,
-              country || null,
-              id_kampus,
-            ]
-          );
-          id_company = result.insertId;
-
-          // create HRD user_company (with placeholder password/username to be updated)
-          let existingPassword = "-";
-          const [oldHRD] = await conn.query(
-            "SELECT password FROM user_company WHERE id_company = ? AND user_type = 'HRD' LIMIT 1",
-            [id_company]
-          );
-          if (oldHRD.length > 0 && oldHRD[0].password) {
-            existingPassword = oldHRD[0].password;
-          }
-
-          const [userResult] = await conn.query(
-            "INSERT INTO user_company (id_company, user_fullname, user_email, user_phone, user_type, username, password) VALUES (?, ?, ?, ?, 'HRD', 'TEMP', ?)",
-            [id_company, hrd_name || "-", hrd_email || "-", hrd_whatsapp || "-", existingPassword || "-"]
-          );
-          id_user_company = userResult.insertId;
-
-          // Generate username e.g. HRD.00x
-          let paddedId;
-          if (id_user_company < 10) paddedId = `00${id_user_company}`;
-          else if (id_user_company < 100) paddedId = `0${id_user_company}`;
-          else paddedId = `${id_user_company}`;
-          const generatedUsername = `HRD.${paddedId}`;
-          await conn.query(
-            "UPDATE user_company SET username = ? WHERE id_user_company = ?",
-            [generatedUsername, id_user_company]
-          );
-        }
-      } else {
-        // === 3. Company sudah ada -> UPDATE hanya field yang diizinkan (city, province, country)
-        if (id_company) {
-          await conn.query(
-            `UPDATE company SET 
-               city = COALESCE(?, city),
-               province = COALESCE(?, province),
-               country = COALESCE(?, country),
-               id_kampus = COALESCE(?, id_kampus)
-             WHERE id_company = ?`,
-            [city || null, province || null, country || null, id_kampus, id_company]
-          );
-
-          // Ambil HRD lama atau buat baru
-          const [existingHRD] = await conn.query(
-            "SELECT id_user_company FROM user_company WHERE id_company = ? AND user_type = 'HRD' LIMIT 1",
-            [id_company]
-          );
-
-          if (existingHRD.length > 0) {
-            id_user_company = existingHRD[0].id_user_company;
-            // Update HRD info (fullname, email, phone) — do not touch username/password here
-            await conn.query(
-              `UPDATE user_company 
-               SET user_fullname = COALESCE(?, user_fullname),
-                   user_email = COALESCE(?, user_email),
-                   user_phone = COALESCE(?, user_phone)
-               WHERE id_user_company = ?`,
-              [hrd_name || null, hrd_email || null, hrd_whatsapp || null, id_user_company]
-            );
-          } else {
-            // HRD belum ada -> insert dan generate username
-            const [userResult] = await conn.query(
-              `INSERT INTO user_company 
-               (id_company, user_fullname, user_email, user_phone, user_type, username, password)
-               VALUES (?, ?, ?, ?, 'HRD', 'TEMP', '-')`,
-              [id_company, hrd_name || "-", hrd_email || "-", hrd_whatsapp || "-"]
-            );
-            id_user_company = userResult.insertId;
-
-            let paddedId =
-              id_user_company < 10
-                ? `00${id_user_company}`
-                : id_user_company < 100
-                ? `0${id_user_company}`
-                : `${id_user_company}`;
-            await conn.query(
-              "UPDATE user_company SET username = ? WHERE id_user_company = ?",
-              [`HRD.${paddedId}`, id_user_company]
-            );
-          }
-        } else {
-          // If there's no id_company at all (edge-case), fallback to create company using letter values if available
-          if (letter) {
-            const fixed_company_name = letter.company_name || "-";
-            const fixed_company_address = letter.company_address || "-";
-            const [result] = await conn.query(
-              `INSERT INTO company 
-               (name, type, type_other, phone, email, website, facebook, twitter, instagram, linkedin, logo, address, province, city, country, description, status, access_type, id_kampus)
-               VALUES (?, '-', NULL, '-', '-', '-', '-', '-', '-', '-', '-', ?, ?, ?, ?, '-', 'verified', '1', ?)`,
-
-              [fixed_company_name, fixed_company_address, province || null, city || null, country || null, id_kampus]
-            );
-            id_company = result.insertId;
-
-            const [userResult] = await conn.query(
-              "INSERT INTO user_company (id_company, user_fullname, user_email, user_phone, user_type, username, password) VALUES (?, ?, ?, ?, 'HRD', 'TEMP', '-')",
-              [id_company, hrd_name || "-", hrd_email || "-", hrd_whatsapp || "-"]
-            );
-            id_user_company = userResult.insertId;
-            let paddedId =
-              id_user_company < 10
-                ? `00${id_user_company}`
-                : id_user_company < 100
-                ? `0${id_user_company}`
-                : `${id_user_company}`;
-            await conn.query(
-              "UPDATE user_company SET username = ? WHERE id_user_company = ?",
-              [`HRD.${paddedId}`, id_user_company]
-            );
-          } else {
-            // No company info anywhere -> abort
-            throw new Error("No company referenced in letter and company_not_exist not set.");
           }
         }
       }
 
-      // === 4. Update student contact information
+      // ==========================================================
+      // AUTO-VERIFY COMPANY setelah mahasiswa submit claim
+      // ==========================================================
+      await conn.query(
+        `UPDATE company SET status='verified'
+         WHERE id_company=? AND status='not verified'`,
+        [id_company]
+      );
+
+      // ==========================================================
+      // 5. UPDATE DATA KONTAK MAHASISWA
+      // ==========================================================
       if (email || whatsapp) {
         await conn.query(
-          "UPDATE student_internship SET email = COALESCE(?, email), no_whatsapp = COALESCE(?, no_whatsapp) WHERE nim = ?",
+          `UPDATE student_internship 
+           SET email = COALESCE(?, email),
+               no_whatsapp = COALESCE(?, no_whatsapp)
+           WHERE nim=?`,
           [email || null, whatsapp || null, nim]
         );
       }
 
-      // === 5. Insert internship (riwayat magang) - tetap insert
-      // Validate dates minimally
+      // ==========================================================
+      // 6. INSERT DATA INTERNSHIP
+      // ==========================================================
       const sDate = start_date ? new Date(start_date) : null;
       const eDate = end_date ? new Date(end_date) : null;
+
       if (!sDate || !eDate || isNaN(sDate.getTime()) || isNaN(eDate.getTime())) {
         throw new Error("Invalid start_date or end_date");
       }
@@ -1119,8 +1059,9 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
       );
       const id_internship = internshipResult.insertId;
 
-      // === 6. Insert into internship_letter_acceptance
-      // Ambil id_letter dari surat terakhir mahasiswa jika tidak diberikan
+      // ==========================================================
+      // 7. Insert internship_letter_acceptance
+      // ==========================================================
       const [letterRows3] = await conn.query(
         "SELECT id_letter FROM internship_letter WHERE nim = ? ORDER BY id_letter DESC LIMIT 1",
         [nim]
@@ -1133,7 +1074,9 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
         [id_letter_for_accept, id_internship, info_source || null]
       );
 
-      // === 7. Update internship_letter acceptance status & company_reply_letter if uploaded
+      // ==========================================================
+      // 8. Update internship_letter acceptance status & company_reply_letter
+      // ==========================================================
       if (company_reply_letter) {
         await conn.query(
           "UPDATE internship_letter SET company_reply_letter = ?, acceptance_status = 'ACCEPTED' WHERE nim = ? AND id_letter = ?",
@@ -1168,7 +1111,6 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
     return res.status(500).json({ success: false, error: "Server error" });
   }
 });
-
 
 // =======================================
 // STUDENT DASHBOARD STATISTICS - REAL 
