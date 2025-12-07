@@ -1609,367 +1609,198 @@ async function sendApprovalToAPI(id, status, comment = "-", letter_number = null
                 return year ? year : "All Year";
             }
 
-            // Export to Excel
-            async function exportToExcel() {
-                const {
-                    value: formValues
-                } = await Swal.fire({
-                    title: 'Select Date Range',
-                    html: '<label for="swal-start" style="display:block;text-align:left;margin-bottom:6px">Start date</label>' +
-                        '<input id="swal-start" type="date" class="swal2-input" style="margin:0 auto;">' +
-                        '<label for="swal-end" style="display:block;text-align:left;margin-top:8px;margin-bottom:6px">End date</label>' +
-                        '<input id="swal-end" type="date" class="swal2-input" style="margin:0 auto;">',
-                    focusConfirm: false,
-                    showCancelButton: true,
-                    confirmButtonText: 'Export',
-                    didOpen: () => {
+// Export to Excel (CDC) — tampilan mengikuti KOOR 100%
+async function exportToExcel() {
+    const { value: formValues } = await Swal.fire({
+        title: 'Select Date Range',
+        html:
+            '<label for="swal-start" style="display:block;text-align:left;margin-bottom:6px">Start date</label>' +
+            '<input id="swal-start" type="date" class="swal2-input" style="margin:0 auto;">' +
+            '<label for="swal-end" style="display:block;text-align:left;margin-top:8px;margin-bottom:6px">End date</label>' +
+            '<input id="swal-end" type="date" class="swal2-input" style="margin:0 auto;">',
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Export',
+        didOpen: () => {
+            const startInput = document.getElementById("swal-start");
+            const endInput = document.getElementById("swal-end");
 
-                        const startInput = document.getElementById("swal-start");
-                        const endInput = document.getElementById("swal-end");
+            startInput.addEventListener("change", () => {
+                endInput.min = startInput.value;
+                endInput.value = "";
+            });
+        },
+        preConfirm: () => {
+            const start = document.getElementById('swal-start').value;
+            const end = document.getElementById('swal-end').value;
 
-                        // 🔥 Saat start date dipilih → lock semua tanggal sebelumnya di end date
-                        startInput.addEventListener("change", () => {
-                            endInput.min = startInput.value;
-                            endInput.value = ""; // reset jika user sudah memilih sebelumnya
-                        });
+            if (!start) return Swal.showValidationMessage('Start date is required');
+            if (!end) return Swal.showValidationMessage('End date is required');
+            if (new Date(start) > new Date(end))
+                return Swal.showValidationMessage('Start date must be before or equal to End date');
 
+            return { start, end };
+        }
+    });
+
+    if (!formValues) return;
+    const { start, end } = formValues;
+
+    Swal.fire({
+        title: 'Fetching data...',
+        text: 'Please wait...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    const data = await fetchInternshipData(start, end);
+
+    if (!data || data.length === 0) {
+        Swal.close();
+        Swal.fire({ icon: "info", title: "No Data Found", text: "No internship records found." });
+        return;
+    }
+
+    try {
+        const wb = XLSX.utils.book_new();
+
+        const excelData = [
+            ['INTERNSHIP DATA REPORT'],
+            [`Period: ${formatDate(start)} - ${formatDate(end)}`],
+            [`Total Students: ${data.length}`],
+            [],
+            [
+                'No','NIM','Name','Study Program','Department','Class','Semester',
+                'Coordinator','Company Name','Company Contact','Company Address',
+                'Start Date','End Date','Email','WhatsApp'
+            ],
+            ...data.map((item, index) => [
+                index + 1,
+                item.nim || '-',
+                item.student_name || '-',
+                item.program_study || '-',
+                item.department || '-',
+                item.class || '-',
+                item.semester || '-',
+                item.internship_coordinator || '-',
+                item.company_name || '-',
+                item.company_contact || '-',       // header TIDAK wrap
+                item.company_address || '-',       // wajib wrap
+                formatDate(item.start_date),
+                formatDate(item.end_date),
+                item.email || '-',
+                item.whatsapp_number || '-'
+            ])
+        ];
+
+        const ws = XLSX.utils.aoa_to_sheet(excelData);
+
+        // === Column Widths — SAMA KOOR ===
+        ws['!cols'] = [
+            { wch: 5 }, { wch: 15 }, { wch: 25 }, { wch: 35 }, { wch: 20 }, { wch: 10 },
+            { wch: 15 }, { wch: 25 }, { wch: 50 }, { wch: 15 },
+            { wch: 60 }, { wch: 14 }, { wch: 14 },
+            { wch: 30 }, { wch: 20 }
+        ];
+
+        // === Merge ===
+        ws['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: 14 } },
+            { s: { r: 1, c: 0 }, e: { r: 1, c: 14 } },
+            { s: { r: 2, c: 0 }, e: { r: 2, c: 14 } }
+        ];
+
+        // === Styles ===
+        const border = {
+            top: { style: 'thin' }, bottom: { style: 'thin' },
+            left: { style: 'thin' }, right: { style: 'thin' }
+        };
+
+        ws['A1'].s = { font: { name: 'Times New Roman', sz: 16, bold: true }, alignment: { horizontal: 'center' } };
+        ws['A2'].s = { alignment: { horizontal: 'center' } };
+        ws['A3'].s = { alignment: { horizontal: 'center' } };
+
+        const headerStyleWrap = {
+            font: { name: 'Times New Roman', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
+            fill: { fgColor: { rgb: '4472C4' } },
+            alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+            border
+        };
+
+        const headerStyleNoWrap = {
+            font: { name: 'Times New Roman', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
+            fill: { fgColor: { rgb: '4472C4' } },
+            alignment: { horizontal: 'center', vertical: 'center', wrapText: false },
+            border
+        };
+
+        const headerCols = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O'];
+
+        headerCols.forEach((col, idx) => {
+            if (!ws[col + '5']) return;
+
+            // === company contact = index ke-9 -> NO WRAP ===
+            if (idx === 9) ws[col + '5'].s = headerStyleNoWrap;
+            else ws[col + '5'].s = headerStyleWrap;
+        });
+
+        // === Data Style ===
+        const dataStart = 6;
+
+        for (let r = dataStart; r < dataStart + data.length; r++) {
+            headerCols.forEach((col, index) => {
+                const cell = ws[col + r];
+                if (!cell) return;
+
+                // center untuk kolom No & NIM
+                const isCenter = (index === 0 || index === 1);
+
+                cell.s = {
+                    font: { name: 'Times New Roman', sz: 11 },
+                    alignment: {
+                        horizontal: isCenter ? 'center' : 'left',
+                        vertical: 'top',
+                        wrapText: true
                     },
-                    preConfirm: () => {
-                        const start = document.getElementById('swal-start').value;
-                        const end = document.getElementById('swal-end').value;
+                    border
+                };
+            });
+        }
 
-                        if (!start) {
-                            Swal.showValidationMessage('Start date is required');
-                            return false;
-                        }
-                        if (!end) {
-                            Swal.showValidationMessage('End date is required');
-                            return false;
-                        }
-                        if (new Date(start) > new Date(end)) {
-                            Swal.showValidationMessage('Start date must be before or equal to End date');
-                            return false;
-                        }
+        XLSX.utils.book_append_sheet(wb, ws, 'Internship Report');
+        XLSX.writeFile(wb, `Internship_${start}_to_${end}.xlsx`);
 
-                        return {
-                            start,
-                            end
-                        };
-                    }
-                });
+        Swal.fire({ icon: "success", title: "Success", text: "Excel downloaded successfully!" });
 
+    } catch (err) {
+        Swal.fire({ icon: "error", title: "Error", text: err.message });
+    }
+}
 
-                if (!formValues) return;
+function formatDate(dateString) {
+    const d = new Date(dateString);
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+}
 
-                const {
-                    start,
-                    end
-                } = formValues;
+async function fetchInternshipData(start, end) {
+    try {
+        const url = `${apiBase}/cdc/export-internship?start_date=${start}&end_date=${end}`;
+        const res = await fetch(url);
+        const json = await res.json();
 
-                Swal.fire({
-                    title: 'Generating Excel...',
-                    text: 'Please wait',
-                    allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
-                });
+        if (!json.success || !json.data || json.data.length === 0) return null;
 
-                const data = await fetchInternshipData(start, end);
-                // const data = await fetchInternshipData();
+        return json.data;
 
-                // if (!data) {
-                //     return;
-                // }
-
-                // Swal.close();
-
-                if (!data || data.length === 0) {
-                    Swal.close();
-                    Swal.fire({
-                        icon: "info",
-                        title: "No Data Found",
-                        text: "No internship records were found within the selected date range.",
-                        confirmButtonText: "OK"
-                    });
-                    return;
-                }
+    } catch (err) {
+        Swal.fire({ icon: "error", title: "Error", text: err.message });
+        return null;
+    }
+}
 
 
-                try {
-                    // ============================================
-                    //  START BUILDING EXCEL
-                    // ============================================
-                    const wb = XLSX.utils.book_new();
 
-                    const yearDisplay = `${start} to ${end}`;
-                    const selectedStudyProgram = document.getElementById("filter_study_program")?.value || "ALL";
 
-                    const excelData = [
-                        ['INTERNSHIP DATA REPORT'],
-                        [`Year: ${yearDisplay}`],
-                        [`Filter: ${selectedStudyProgram}`],
-                        [`Total Students: ${data.length}`],
-                        [],
-                        [
-                            'No', 'NIM', 'Name', 'Study Program', 'Department', 'Class', 'Semester',
-                            'Coordinator', 'Company Name', 'Company Contact', 'Company Address',
-                            'Start Date', 'End Date', 'Email', 'WhatsApp'
-                        ],
-                        ...data.map((item, index) => [
-                            index + 1,
-                            item.nim || '-',
-                            item.student_name || '-',
-                            item.program_study || '-',
-                            item.department || '-',
-                            item.class || '-',
-                            item.semester || '-',
-                            item.internship_coordinator || '-',
-                            item.company_name || '-',
-                            item.company_contact || '-',
-                            item.company_address || '-',
-                            formatDate(item.start_date),
-                            formatDate(item.end_date),
-                            item.email || '-',
-                            item.whatsapp_number || '-'
-                        ])
-                    ];
-
-                    const ws = XLSX.utils.aoa_to_sheet(excelData);
-
-                    ws['!cols'] = [{
-                            wch: 5
-                        }, {
-                            wch: 15
-                        }, {
-                            wch: 25
-                        }, {
-                            wch: 35
-                        }, {
-                            wch: 20
-                        },
-                        {
-                            wch: 25
-                        }, {
-                            wch: 10
-                        }, {
-                            wch: 25
-                        }, {
-                            wch: 50
-                        }, {
-                            wch: 20
-                        },
-                        {
-                            wch: 100
-                        }, {
-                            wch: 12
-                        }, {
-                            wch: 12
-                        }, {
-                            wch: 25
-                        }, {
-                            wch: 18
-                        }
-                    ];
-
-                    // Merges
-                    ws['!merges'] = [{
-                            s: {
-                                r: 0,
-                                c: 0
-                            },
-                            e: {
-                                r: 0,
-                                c: 14
-                            }
-                        },
-                        {
-                            s: {
-                                r: 1,
-                                c: 0
-                            },
-                            e: {
-                                r: 1,
-                                c: 14
-                            }
-                        },
-                        {
-                            s: {
-                                r: 2,
-                                c: 0
-                            },
-                            e: {
-                                r: 2,
-                                c: 14
-                            }
-                        },
-                        {
-                            s: {
-                                r: 3,
-                                c: 0
-                            },
-                            e: {
-                                r: 3,
-                                c: 14
-                            }
-                        }
-                    ];
-
-                    // Styling
-                    const border = {
-                        top: {
-                            style: 'thin',
-                            color: {
-                                rgb: '000000'
-                            }
-                        },
-                        bottom: {
-                            style: 'thin',
-                            color: {
-                                rgb: '000000'
-                            }
-                        },
-                        left: {
-                            style: 'thin',
-                            color: {
-                                rgb: '000000'
-                            }
-                        },
-                        right: {
-                            style: 'thin',
-                            color: {
-                                rgb: '000000'
-                            }
-                        }
-                    };
-
-                    const headerStyle = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 11,
-                            bold: true,
-                            color: {
-                                rgb: 'FFFFFF'
-                            }
-                        },
-                        fill: {
-                            fgColor: {
-                                rgb: '4472C4'
-                            }
-                        },
-                        alignment: {
-                            horizontal: 'center',
-                            vertical: 'center'
-                        },
-                        border
-                    };
-
-                    const dataLeft = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 11
-                        },
-                        alignment: {
-                            vertical: 'center'
-                        },
-                        border
-                    };
-
-                    const dataCenter = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 11
-                        },
-                        alignment: {
-                            horizontal: 'center',
-                            vertical: 'center'
-                        },
-                        border
-                    };
-
-                    // Title styles
-                    ws['A1'].s = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 16,
-                            bold: true
-                        },
-                        alignment: {
-                            horizontal: 'center',
-                            vertical: 'center'
-                        }
-                    };
-                    ws['A2'].s = ws['A3'].s = ws['A4'].s = {
-                        font: {
-                            name: 'Times New Roman',
-                            sz: 12
-                        },
-                        alignment: {
-                            horizontal: 'center',
-                            vertical: 'center'
-                        }
-                    };
-
-                    // Header row styling
-                    const headerCols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
-                    headerCols.forEach(col => {
-                        if (ws[col + '6']) ws[col + '6'].s = headerStyle;
-                    });
-
-                    // Data row styling
-                    const startRow = 7;
-                    for (let r = startRow; r < startRow + data.length; r++) {
-                        headerCols.forEach((col, idx) => {
-                            if (!ws[col + r]) return;
-
-                            // Center specific cols
-                            if ([0, 1, 5, 6, 11, 12].includes(idx))
-                                ws[col + r].s = dataCenter;
-                            else
-                                ws[col + r].s = dataLeft;
-                    // const headerCols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
-                    // headerCols.forEach(col => {
-                    //     const cellRef = col + '6';
-                    //     if (ws[cellRef]) ws[cellRef].s = headerStyle;
-                    // });
-
-                    // // Data rows styling
-                    // const dataStartRow = 7;
-                    // for (let row = dataStartRow; row < dataStartRow + data.length; row++) {
-                    //     headerCols.forEach((col, colIndex) => {
-                    //         const cellRef = col + row;
-                    //         if (ws[cellRef]) {
-                    //             if (colIndex === 0 || colIndex === 1 || colIndex === 5 || colIndex === 6 || colIndex === 11 || colIndex === 12) {
-                    //                 ws[cellRef].s = dataCenterStyle;
-                    //             } else {
-                    //                 ws[cellRef].s = dataStyle;
-                    //             }
-                    //         }
-                        });
-                    }
-
-                    // Fix sheetname (prevent >31 chars)
-                    let sheetName = `Internship_${start}_${end}`;
-                    if (sheetName.length > 31)
-                        sheetName = `Internship_${start.substring(5)}_${end.substring(5)}`;
-
-                    XLSX.utils.book_append_sheet(wb, ws, sheetName);
-
-                    // Filename
-                    const fileName = `Internship_${start}_to_${end}.xlsx`;
-
-                    XLSX.writeFile(wb, fileName);
-
-                    Swal.fire({
-                        icon: "success",
-                        title: "Success",
-                        text: "Excel downloaded successfully",
-                        confirmButtonText: "OK"
-                    });
-
-                } catch (err) {
-                    console.error("Excel generation error:", err);
-                    Swal.fire("Error", "Failed to generate Excel: " + err.message, "error");
-                }
-            }
         </script>
 </body>
 
