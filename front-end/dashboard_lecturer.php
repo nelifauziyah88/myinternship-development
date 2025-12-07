@@ -818,8 +818,8 @@ if ($id_kampus) {
                     </div>
                     <div>
                         <select class="year-filter border-primary rounded px-3 py-2 font-weight-bold text-primary" id="yearFilter" onchange="filterByYear()">
-                            <option value="all">All Years</option>
-                            <option value="2025" selected>2025</option>
+                            <option value="all" selected>All Years</option>  
+                            <option value="2025">2025</option>
                             <option value="2024">2024</option>
                             <option value="2023">2023</option>
                         </select>
@@ -1042,7 +1042,7 @@ function loadDashboardState() {
         
         const state = {
             deptIndex: savedIndex !== null ? parseInt(savedIndex) : 0,
-            year: savedYear || new Date().getFullYear().toString()
+            year: savedYear || 'all'
         };
         
         console.log('State loaded: Department Index ' + state.deptIndex + ', Year ' + state.year);
@@ -1063,7 +1063,11 @@ async function fetchDashboardData(year) {
     try {
         console.log('Fetching data for year: ' + year);
         
-        const response = await fetch(`http://localhost:8000/api/student/dashboard/statistics?year=${year}`);
+        let url = 'http://localhost:8000/api/student/dashboard/statistics';
+        if (year && year !== 'all') {
+        url += '?year=' + encodeURIComponent(year);
+}
+        const response = await fetch(url);
         const result = await response.json();
 
         if (result.success) {
@@ -1395,10 +1399,11 @@ async function filterByYear() {
         console.error('Year filter not found!');
         return;
     }
+
+    const selectedValue = yearSelect.value;
+    currentYearFilter = selectedValue;
     
-    const selectedYear = yearSelect.value === 'all' ? new Date().getFullYear() : yearSelect.value;
-    
-    console.log('Filter changed to year: ' + selectedYear);
+    console.log('Filter changed to year: ' + selectedValue);
     console.log('Current department before filter: ' + (departments[currentDeptIndex] || 'N/A') + ' (index ' + currentDeptIndex + ')');
     
     // Show loading indicator
@@ -1412,7 +1417,7 @@ async function filterByYear() {
     const currentDeptName = departments[currentDeptIndex];
     
     // Fetch new data
-    const success = await fetchDashboardData(selectedYear);
+    const success = await fetchDashboardData(selectedValue);
     
     if (success && departments.length > 0) {
         // TRY to find the same department in new data
@@ -1425,7 +1430,7 @@ async function filterByYear() {
         } else {
             // Department doesn't exist in new year - go to first department
             currentDeptIndex = 0;
-            console.log('Department "' + currentDeptName + '" not found in year ' + selectedYear + ' - Reset to first department');
+            console.log('Department "' + currentDeptName + '" not found in year ' + selectedValue + ' - Reset to first department');
         }
         
         // SAVE state to localStorage

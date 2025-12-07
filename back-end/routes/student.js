@@ -1122,7 +1122,8 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
 router.get("/dashboard/statistics", async (req, res) => {
     try {
         const { department, year } = req.query;
-        const currentYear = year || new Date().getFullYear();
+        const useYearFilter = year && year !== 'all';
+        const currentYear = useYearFilter ? year : null;
         const id_kampus = 1;
 
         const allProgramsQuery = `
@@ -1170,17 +1171,17 @@ router.get("/dashboard/statistics", async (req, res) => {
               AND LOWER(status_approval) = 'accepted'
             GROUP BY id_letter
           ) ilh_cdc ON il.id_letter = ilh_cdc.id_letter
-          WHERE YEAR(il.created_at) = ?
-            AND ps.id_kampus = ?
-            ${department ? "AND ps.major = ?" : ""}
+          WHERE ps.id_kampus = ?
+          ${useYearFilter ? "AND YEAR(il.created_at) = ?" : ""}
+          ${department ? "AND ps.major = ?" : ""}
             AND ilh_koor.timestamp IS NOT NULL
             AND ilh_cdc.timestamp IS NOT NULL
           GROUP BY program_full_name, ps.major
         `;
 
-        const responseTimeParams = department
-          ? [currentYear, id_kampus, department]
-          : [currentYear, id_kampus];
+        const responseTimeParams = [id_kampus];
+        if (useYearFilter) responseTimeParams.push(currentYear);
+        if (department) responseTimeParams.push(department);
 
         const [responseTimeData] = await db.query(responseTimeQuery, responseTimeParams);
 
@@ -1199,16 +1200,16 @@ router.get("/dashboard/statistics", async (req, res) => {
           INNER JOIN program_study ps 
             ON si.program_study = ps.kode_prodi 
            AND si.id_kampus = ps.id_kampus
-          WHERE YEAR(il.created_at) = ?
-            AND ps.id_kampus = ?
-            ${department ? "AND ps.major = ?" : ""}
+          WHERE ps.id_kampus = ?
+          ${useYearFilter ? "AND YEAR(il.created_at) = ?" : ""}
+          ${department ? "AND ps.major = ?" : ""}
             AND il.acceptance_status IN ('ACCEPTED', 'REJECTED')
           GROUP BY program_full_name, ps.major
         `;
 
-        const acceptanceRateParams = department
-          ? [currentYear, id_kampus, department]
-          : [currentYear, id_kampus];
+        const acceptanceRateParams = [id_kampus];
+        if (useYearFilter) acceptanceRateParams.push(currentYear);
+        if (department) acceptanceRateParams.push(department);
 
         const [acceptanceRateData] = await db.query(acceptanceRateQuery, acceptanceRateParams);
 
@@ -1280,7 +1281,7 @@ router.get("/dashboard/statistics", async (req, res) => {
         res.json({
             success: true,
             data: {
-                year: currentYear,
+                year: currentYear || "All Years", 
                 department: department || "All Departments",
                 departments: departments.map(d => d.department),
                 responseTime: responseTimeResult,
