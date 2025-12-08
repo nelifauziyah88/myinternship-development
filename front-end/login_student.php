@@ -174,14 +174,14 @@
       font-size: 14px;
     }
 
-    /* Toast Styling - Minimal & Clean */
     .swal2-popup.swal2-toast {
       width: 550px !important;
+      height: 110px !important;
       padding: 16px 20px !important;
       border-radius: 10px !important;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
       border-left: 5px solid #e91e63 !important;
-      column-gap: 18px !important;
+      column-gap: 10px !important;
     }
 
     .swal2-popup.swal2-toast .swal2-icon {
@@ -289,7 +289,7 @@
       toast: true,
       position: 'top',
       showConfirmButton: false,
-      timer: 3000,
+      timer: 2000,
       timerProgressBar: true,
       didOpen: (toast) => {
         toast.addEventListener('mouseenter', Swal.stopTimer)
@@ -320,7 +320,7 @@
           icon: 'error',
           title: 'Validation Error',
           html: 'Username and password are required !',
-          timer: 3000
+          timer: 2000
         });
         return;
       }
@@ -360,14 +360,13 @@
             const sessionData = await sessionResp.json();
 
             if (sessionData.success) {
-              // redirect ke dashboard setelah session dibuat
               window.location.href = 'dashboard_student_final.php';
             } else {
               Toast.fire({
                 icon: 'error',
                 title: 'Session Error',
                 html: `Failed to create session: ${sessionData.message || 'Unknown'}`,
-                timer: 3000
+                timer: 2000
               });
             }
           } catch (err) {
@@ -376,7 +375,7 @@
               icon: 'error',
               title: 'Session Error',
               html: 'Failed to create session. Please try again !',
-              timer: 3000
+              timer: 2000
             });
           }
         } else {
@@ -384,7 +383,7 @@
             icon: 'error',
             title: 'Login Failed',
             html: `${data.message}`,
-            timer: 3000
+            timer: 2000
           });
         }
 
@@ -394,7 +393,7 @@
           icon: 'error',
           title: 'Connection Error',
           html: 'An error occurred during login. Please try again !',
-          timer: 3000
+          timer: 2000
         });
       }
     });

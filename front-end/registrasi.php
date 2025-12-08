@@ -223,14 +223,13 @@
       font-size: 14px;
     }
 
-    /* Toast Styling */
     .swal2-popup.swal2-toast {
       width: 550px !important;
       padding: 16px 20px !important;
       border-radius: 10px !important;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
       border-left: 5px solid #e91e63 !important;
-      column-gap: 18px !important;
+      column-gap: 10px !important;
     }
 
     .swal2-popup.swal2-toast .swal2-title {
@@ -250,7 +249,7 @@
     }
 
     .swal2-popup.swal2-toast.swal2-icon-success {
-      border-left-color: #4caf50 !important;
+      border-left-color: #43b747ff !important;
     }
 
     .swal2-popup.swal2-toast.swal2-icon-info {
