@@ -223,7 +223,7 @@
       font-size: 14px;
     }
 
-    /* ===== Toast Styling - Minimal & Clean ===== */
+    /* Toast Styling */
     .swal2-popup.swal2-toast {
       width: 550px !important;
       padding: 16px 20px !important;
@@ -245,7 +245,6 @@
       line-height: 1.7 !important;
     }
 
-    /* Warna border sesuai tipe toast */
     .swal2-popup.swal2-toast.swal2-icon-error {
       border-left-color: #e91e63 !important;
     }
@@ -567,7 +566,7 @@
             icon: 'error',
             title: 'Registration Failed',
             text: result.message || 'Please try again',
-            timer: 4000
+            timer: 3000
           });
 
           // Re-enable button
@@ -580,7 +579,7 @@
           icon: 'error',
           title: 'Connection Error',
           text: 'Unable to connect to the server',
-          timer: 4000
+          timer: 3000
         });
 
         // Re-enable button

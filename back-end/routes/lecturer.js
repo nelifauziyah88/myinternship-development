@@ -53,7 +53,7 @@ router.post("/login_lecturer", async (req, res) => {
     if (!passwordMatch) {
       return res
         .status(401)
-        .json({ success: false, message: "Wrong password." });
+        .json({ success: false, message: "Incorrect password." });
     }
 
     return res.status(200).json({

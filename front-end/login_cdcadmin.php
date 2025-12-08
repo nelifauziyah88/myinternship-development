@@ -8,6 +8,9 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
+  <!-- SweetAlert2 untuk Toast -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
   <!-- Icon -->
   <link rel="icon" href="./assets/img/iconM.png" type="image/x-icon" />
   <link href="./assets/img/iconM.png" rel="apple-touch-icon" type="image/x-icon">
@@ -154,6 +157,48 @@
       font-size: 14px;
     }
 
+    /* Toast Styling - Minimal & Clean */
+    .swal2-popup.swal2-toast {
+      width: 550px !important;
+      padding: 16px 20px !important;
+      border-radius: 10px !important;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+      border-left: 5px solid #e91e63 !important;
+      column-gap: 18px !important;
+    }
+
+    .swal2-popup.swal2-toast .swal2-icon {
+      margin-right: 6px !important;
+    }
+
+    .swal2-popup.swal2-toast .swal2-title {
+      font-size: 15px !important;
+      font-weight: 700 !important;
+      color: #222 !important;
+    }
+
+    .swal2-popup.swal2-toast .swal2-html-container {
+      font-size: 13px !important;
+      color: #555 !important;
+      line-height: 1.7 !important;
+    }
+
+    .swal2-popup.swal2-toast.swal2-icon-error {
+      border-left-color: #e91e63 !important;
+    }
+
+    .swal2-popup.swal2-toast.swal2-icon-success {
+      border-left-color: #4caf50 !important;
+    }
+
+    .swal2-popup.swal2-toast.swal2-icon-info {
+      border-left-color: #2196f3 !important;
+    }
+
+    .swal2-popup.swal2-toast.swal2-icon-warning {
+      border-left-color: #ff9800 !important;
+    }
+
     @media (max-width: 768px) {
       .left-section {
         display: none;
@@ -212,7 +257,22 @@
     </div>
   </div>
 
+  <!-- SweetAlert2 Library -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
+    // Toast Configuration
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer)
+        toast.addEventListener('mouseleave', Swal.resumeTimer)
+      }
+    });
+
     // Toggle password visibility
     const togglePassword = document.querySelector("#togglePassword");
     const password = document.querySelector("#password");
@@ -231,8 +291,13 @@
       const username = document.getElementById("username").value.trim();
       const passwordVal = document.getElementById("password").value.trim();
 
-      if (!username || !passwordVal) {
-        alert("Username and password are required !");
+      if (!username || !password) {
+        Toast.fire({
+          icon: 'error',
+          title: 'Validation Error',
+          html: 'Username and password are required !',
+          timer: 3000
+        });
         return;
       }
 
@@ -275,18 +340,38 @@
               // Redirect ke dashboard CDC
               window.location.href = "dashboard_cdc.php";
             } else {
-              alert("Failed to create session: " + (sessionData.message || "Unknown"));
+              toast.fire({
+                icon: 'error',
+                title: 'Session Error',
+                html: `Failed to create session: ${sessionData.message || 'Unknown'}`,
+                timer: 3000
+              });
             }
           } catch (err) {
             console.error("Session error:", err);
-            alert("Failed to create session. Please try again !");
+            Toast.fire({
+              icon: 'error',
+              title: 'Session Error',
+              html: 'Failed to create session. Please try again !',
+              timer: 3000
+            });
           }
         } else {
-          alert(data.message || "Login failed. Please check your credentials !");
+          Toast.fire({
+            icon: 'error',
+            title: 'Login Error',
+            html: data.message || "Login failed. Please check your credentials !",
+            timer: 3000
+          });
         }
       } catch (error) {
         console.error("Error:", error);
-        alert("An error occurred during login. Please try again !");
+        Toast.fire({
+          icon: 'error',
+          title: 'Login Error',
+          html: 'An error occurred during login. Please try again !',
+          timer: 3000
+        });
       }
     });
   </script>
