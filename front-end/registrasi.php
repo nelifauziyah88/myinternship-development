@@ -12,6 +12,9 @@
   <link rel="icon" href="./assets/img/iconM.png" type="image/x-icon" />
   <link href="./assets/img/iconM.png" rel="apple-touch-icon" type="image/x-icon">
 
+  <!-- SweetAlert2 untuk Toast -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -220,6 +223,45 @@
       font-size: 14px;
     }
 
+    /* ===== Toast Styling - Minimal & Clean ===== */
+    .swal2-popup.swal2-toast {
+      width: 550px !important;
+      padding: 16px 20px !important;
+      border-radius: 10px !important;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+      border-left: 5px solid #e91e63 !important;
+      column-gap: 18px !important;
+    }
+
+    .swal2-popup.swal2-toast .swal2-title {
+      font-size: 15px !important;
+      font-weight: 700 !important;
+      color: #222 !important;
+    }
+
+    .swal2-popup.swal2-toast .swal2-html-container {
+      font-size: 13px !important;
+      color: #555 !important;
+      line-height: 1.7 !important;
+    }
+
+    /* Warna border sesuai tipe toast */
+    .swal2-popup.swal2-toast.swal2-icon-error {
+      border-left-color: #e91e63 !important;
+    }
+
+    .swal2-popup.swal2-toast.swal2-icon-success {
+      border-left-color: #4caf50 !important;
+    }
+
+    .swal2-popup.swal2-toast.swal2-icon-info {
+      border-left-color: #2196f3 !important;
+    }
+
+    .swal2-popup.swal2-toast.swal2-icon-warning {
+      border-left-color: #ff9800 !important;
+    }
+
     @media (max-width: 576px) {
       .form-row {
         grid-template-columns: 1fr;
@@ -335,7 +377,21 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <!-- SweetAlert2 Library -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer)
+        toast.addEventListener('mouseleave', Swal.resumeTimer)
+      }
+    });
+
     // Auto-fill username dari NIM
     document.getElementById('nim').addEventListener('input', function(e) {
       document.getElementById('username').value = e.target.value;
@@ -368,7 +424,10 @@
         });
       } catch (err) {
         console.error("Error loading kampus:", err);
-        alert("Failed to load university data.");
+        Toast.fire({
+          icon: 'error',
+          title: 'Failed to load university data'
+        });
       }
     }
 
@@ -392,7 +451,10 @@
         });
       } catch (err) {
         console.error("Error loading program study:", err);
-        alert("Failed to load study program data.");
+        Toast.fire({
+          icon: 'error',
+          title: 'Failed to load study program data'
+        });
       }
     }
 
@@ -452,7 +514,16 @@
       if (pwError) errors.push(pwError);
 
       if (errors.length > 0) {
-        alert(errors.join('\n'));
+        Toast.fire({
+          icon: 'error',
+          title: 'Validation Error',
+          html: errors.map(err => `• ${err}`).join('<br>'),
+          timer: 5000
+        });
+
+        // Re-enable button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
         return;
       }
 
@@ -483,16 +554,38 @@
         const result = await response.json();
 
         if (response.ok) {
-          alert(result.message || 'Registration successful!');
-          // Redirect ke role_login.php setelah sukses
-          window.location.href = 'role_login.php';
+          Toast.fire({
+            icon: 'success',
+            title: result.message || 'Registration successful!',
+            timer: 2000
+          }).then(() => {
+            // Redirect setelah toast hilang
+            window.location.href = 'role_login.php';
+          });
         } else {
-          // server-side mengembalikan pesan validasi atau error
-          alert(result.message || 'Registration failed.');
+          Toast.fire({
+            icon: 'error',
+            title: 'Registration Failed',
+            text: result.message || 'Please try again',
+            timer: 4000
+          });
+
+          // Re-enable button
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
         }
       } catch (error) {
         console.error('Error:', error);
-        alert('Unable to connect to the server.');
+        Toast.fire({
+          icon: 'error',
+          title: 'Connection Error',
+          text: 'Unable to connect to the server',
+          timer: 4000
+        });
+
+        // Re-enable button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
       }
     });
   </script>

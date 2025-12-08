@@ -1520,6 +1520,21 @@ $(document).ready(function() {
 
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('Dashboard initialization started');
+
+    const sessionKey = 'dashboard_session_loaded';
+    const hasLoadedBefore = sessionStorage.getItem(sessionKey);
+    
+    if (!hasLoadedBefore) {
+        // Fresh login - Reset year filter ke default "all"
+        console.log('Fresh login detected - Resetting year filter to "all"');
+        localStorage.setItem('dashboard_year', 'all');
+        localStorage.setItem('dashboard_dept_index', '0');
+        
+        // Tandai bahwa dashboard sudah pernah di-load di session ini
+        sessionStorage.setItem(sessionKey, 'true');
+    } else {
+        console.log('Continuing existing session - Preserving year filter');
+    }
     
     initSidebarHighlight();
     setupNavigationUI();

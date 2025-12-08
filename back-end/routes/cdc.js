@@ -166,7 +166,7 @@ router.post("/cdc/approval", async (req, res) => {
       if (dupRows.length > 0) {
         return res.status(400).json({
           success: false,
-          message: `Nomor surat "${letter_number}" sudah digunakan pada submission lain.`
+          message: `Letter number "${letter_number}" is already used in another submission.`
         });
       }
 
