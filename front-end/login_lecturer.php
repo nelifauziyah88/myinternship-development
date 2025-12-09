@@ -170,18 +170,33 @@
       font-size: 14px;
     }
 
-    /* Toast Styling - Minimal & Clean */
     .swal2-popup.swal2-toast {
       width: 550px !important;
       padding: 16px 20px !important;
       border-radius: 10px !important;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
       border-left: 5px solid #e91e63 !important;
-      column-gap: 18px !important;
+      display: flex !important;
+      align-items: center !important;
+      column-gap: 15px !important;
     }
 
     .swal2-popup.swal2-toast .swal2-icon {
-      margin-right: 6px !important;
+      margin: 0 !important;
+      width: 32px !important;
+      height: 32px !important;
+      flex-shrink: 0 !important;
+    }
+
+    .swal2-popup.swal2-toast .swal2-icon .swal2-icon-content {
+      font-size: 20px !important;
+    }
+
+    .swal2-popup.swal2-toast .swal2-html-container {
+      margin: 0 !important;
+      padding: 0 !important;
+      display: flex !important;
+      align-items: center !important;
     }
 
     .swal2-popup.swal2-toast .swal2-title {
@@ -201,7 +216,7 @@
     }
 
     .swal2-popup.swal2-toast.swal2-icon-success {
-      border-left-color: #4caf50 !important;
+      border-left-color: #43b747ff !important;
     }
 
     .swal2-popup.swal2-toast.swal2-icon-info {
@@ -284,7 +299,7 @@
       toast: true,
       position: 'top',
       showConfirmButton: false,
-      timer: 3000,
+      timer: 2000,
       timerProgressBar: true,
       didOpen: (toast) => {
         toast.addEventListener('mouseenter', Swal.stopTimer)

@@ -11,7 +11,7 @@ router.post("/login_lecturer", async (req, res) => {
     if (!username || !password) {
       return res.status(400).json({
         success: false,
-        message: "Username and password are required.",
+        message: "Username and password are required",
       });
     }
 
@@ -26,7 +26,7 @@ router.post("/login_lecturer", async (req, res) => {
     if (!rows || rows.length === 0) {
       return res
         .status(401)
-        .json({ success: false, message: "Account not found." });
+        .json({ success: false, message: "Account not found" });
     }
 
     const user = rows[0];
@@ -34,7 +34,7 @@ router.post("/login_lecturer", async (req, res) => {
     if (user.status && user.status.toLowerCase() !== "active") {
       return res
         .status(403)
-        .json({ success: false, message: "Account inactive." });
+        .json({ success: false, message: "Account inactive" });
     }
 
     const stored = (user.password || "").trim();
@@ -53,12 +53,12 @@ router.post("/login_lecturer", async (req, res) => {
     if (!passwordMatch) {
       return res
         .status(401)
-        .json({ success: false, message: "Incorrect password." });
+        .json({ success: false, message: "Incorrect password" });
     }
 
     return res.status(200).json({
       success: true,
-      message: "Login successfull.",
+      message: "Login successfull",
       user: {
         nim_nik_unit: user.nim_nik_unit,
         name: user.name,
@@ -74,7 +74,7 @@ router.post("/login_lecturer", async (req, res) => {
     console.error("[LOGIN LECTURER] error:", err);
     return res
       .status(500)
-      .json({ success: false, message: "An error occurred on the server." });
+      .json({ success: false, message: "An error occurred on the server" });
   }
 });
 

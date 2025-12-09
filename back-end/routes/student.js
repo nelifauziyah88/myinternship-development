@@ -13,7 +13,7 @@ router.post("/login_student", async (req, res) => {
     if (!username || !password) {
       return res.status(400).json({
         success: false,
-        message: "Username and Password are required.",
+        message: "Username and Password are required",
       });
     }
 
@@ -26,7 +26,7 @@ router.post("/login_student", async (req, res) => {
     if (rows.length === 0) {
       return res
         .status(401)
-        .json({ success: false, message: "Account not found." });
+        .json({ success: false, message: "Account not found" });
     }
 
     const user = rows[0];
@@ -36,13 +36,13 @@ router.post("/login_student", async (req, res) => {
     if (!validPassword) {
       return res
         .status(401)
-        .json({ success: false, message: "Incorrect password." });
+        .json({ success: false, message: "Incorrect password" });
     }
 
     // Jika berhasil
     res.status(200).json({
       success: true,
-      message: "Login successfull.",
+      message: "Login successfull",
       user: {
         nim: user.nim,
         name: user.name,
