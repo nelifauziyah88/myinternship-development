@@ -78,7 +78,7 @@ router.post("/login_lecturer", async (req, res) => {
   }
 });
 
-// List submission mahasiswa
+// List submission
 router.get("/lecturer/submissions/:nim_nik_unit", async (req, res) => {
   const { nim_nik_unit } = req.params;
 
@@ -180,8 +180,6 @@ router.get("/lecturer/submissions/detail/:id_letter", async (req, res) => {
   }
 });
 
-
-
 // Approve/Reject submission
 router.post("/lecturer/approval", async (req, res) => {
   try {
@@ -201,7 +199,7 @@ router.post("/lecturer/approval", async (req, res) => {
         .json({ success: false, message: "Status invalid." });
     }
 
-    // fetch current letter
+    // Fetch current letter
     const [rows] = await db.query(
       `SELECT id_letter, koor_approval
        FROM internship_letter
@@ -217,7 +215,6 @@ router.post("/lecturer/approval", async (req, res) => {
 
     const row = rows[0];
 
-    // For lecturer action, ensure current koor_approval is WAITING (so coordinator can act)
     if ((row.koor_approval || "").toUpperCase() !== "WAITING") {
       return res.status(400).json({
         success: false,
@@ -225,7 +222,7 @@ router.post("/lecturer/approval", async (req, res) => {
       });
     }
 
-    // Apply update to internship_letter (koor's action)
+    // Apply update to internship_letter
     if (s === "ACCEPTED") {
       await db.query(
         `UPDATE internship_letter
@@ -248,16 +245,14 @@ router.post("/lecturer/approval", async (req, res) => {
       );
     }
 
-    // --- Insert into internship_letter_history ---
+    // Insert into internship_letter_history
     let approved_by = "INTERNSHIP COORDINATOR";
     let user_id_val = "-";
     let user_name_val = "-";
 
     try {
-      // try server-side lookup from session if present
       const actor = req.user || req.session?.user || null;
       if (actor) {
-        // If you keep lecturer session with nim_nik_unit stored, try to look it up
         if (
           (actor.role && actor.role.toLowerCase().includes("lecturer")) ||
           actor.is_koor
@@ -280,7 +275,6 @@ router.post("/lecturer/approval", async (req, res) => {
       console.error("[KOOR] user lookup error:", err);
     }
 
-    // fallback to values sent by client if server-side lookup missing
     const final_user_id =
       user_id_val && user_id_val !== "-" ? user_id_val : user_id || "-";
     const final_user_name =
@@ -316,7 +310,7 @@ router.post("/lecturer/approval", async (req, res) => {
   }
 });
 
-// get latest rejected reason by CDC for a letter
+// Get latest rejected reason by lecturer for a letter
 router.get("/lecturer/reason/:id", async (req, res) => {
   try {
     const id = req.params.id;
@@ -337,12 +331,12 @@ router.get("/lecturer/reason/:id", async (req, res) => {
       meta: { user_name: rows[0].user_name, timestamp: rows[0].timestamp },
     });
   } catch (err) {
-    console.error("[CDC] reason fetch error:", err);
+    console.error("[Intern Coor] reason fetch error:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-// edit the latest CDC rejection reason for a letter
+// Edit reason
 router.post("/lecturer/history/:id/edit", async (req, res) => {
   try {
     const id = req.params.id;
@@ -352,7 +346,6 @@ router.post("/lecturer/history/:id/edit", async (req, res) => {
         .status(400)
         .json({ success: false, message: "Comment is required." });
 
-    // Find the latest history row to update
     const [rows] = await db.query(
       `SELECT id_history FROM internship_letter_history
        WHERE id_letter = ? AND status_approval = 'REJECTED' AND approved_by = 'INTERNSHIP COORDINATOR'
@@ -443,15 +436,13 @@ router.get("/lecturer/company-reply/:id_letter", async (req, res) => {
   }
 });
 
-/**
- * GET /api/student/dashboard/statistics
- */
+// GET dashboard statistics
 router.get("/dashboard/statistics", async (req, res) => {
-    try {
-        const { department, year } = req.query;
-        const useYearFilter = year && year !== 'all';
-        const currentYear = useYearFilter ? year : null;
-        const id_kampus = 1;
+  try {
+    const { department, year } = req.query;
+    const useYearFilter = year && year !== 'all';
+    const currentYear = useYearFilter ? year : null;
+    const id_kampus = 1;
 
     const allProgramsQuery = `
           SELECT 
@@ -470,7 +461,7 @@ router.get("/dashboard/statistics", async (req, res) => {
 
     const [allPrograms] = await db.query(allProgramsQuery, allProgramsParams);
 
-    // STEP 2: RESPONSE TIME (Koor + CDC)
+    // Response time (koor & cdc)
     const responseTimeQuery = `
           SELECT 
             CONCAT(ps.jenjang, ' ', ps.study_program) AS program_full_name,
@@ -512,7 +503,7 @@ router.get("/dashboard/statistics", async (req, res) => {
 
     const [responseTimeData] = await db.query(responseTimeQuery, responseTimeParams);
 
-    // STEP 3: ACCEPTANCE RATE (Company Response)
+    // Acceptance rate
     const acceptanceRateQuery = `
           SELECT 
             CONCAT(ps.jenjang, ' ', ps.study_program) AS program_full_name,
@@ -540,7 +531,7 @@ router.get("/dashboard/statistics", async (req, res) => {
 
     const [acceptanceRateData] = await db.query(acceptanceRateQuery, acceptanceRateParams);
 
-    // STEP 4: MERGE DATA - ALL PROGRAMS WITH ACTUAL DATA 
+    // Merge data, all programs with actual data 
     const responseTimeMap = new Map();
     responseTimeData.forEach(r => {
       const key = `${r.department}|||${r.program_full_name}`;
@@ -570,7 +561,7 @@ router.get("/dashboard/statistics", async (req, res) => {
     allPrograms.forEach(program => {
       const key = `${program.department}|||${program.program_full_name}`;
 
-      // Response Time Data
+      // Response time data
       const responseData = responseTimeMap.get(key);
       responseTimeResult.push({
         program: program.program_full_name,
@@ -582,7 +573,7 @@ router.get("/dashboard/statistics", async (req, res) => {
         dataCount: responseData ? responseData.dataCount : 0
       });
 
-      // Acceptance Rate Data
+      // Acceptance rate data
       const acceptanceData = acceptanceRateMap.get(key);
       acceptanceRateResult.push({
         program: program.program_full_name,
@@ -596,7 +587,7 @@ router.get("/dashboard/statistics", async (req, res) => {
       });
     });
 
-    // STEP 5: GET UNIQUE DEPARTMENTS LIST
+    // Get unique departments list
     const [departments] = await db.query(`
           SELECT DISTINCT major AS department
           FROM program_study
@@ -604,7 +595,7 @@ router.get("/dashboard/statistics", async (req, res) => {
           ORDER BY major
         `, [id_kampus]);
 
-    // FINAL RESPONSE
+    // Final response
     res.json({
       success: true,
       data: {
@@ -626,17 +617,14 @@ router.get("/dashboard/statistics", async (req, res) => {
   }
 });
 
-// DASHBOARD SUMMARY
-/**
- * GET /api/student/dashboard/summary
- */
+// Dashboard summary
 router.get("/dashboard/summary", async (req, res) => {
   try {
     const { year } = req.query;
     const currentYear = year || new Date().getFullYear();
-    const id_kampus = 1; // Polibatam
+    const id_kampus = 1;
 
-    // TOTAL SUBMISSIONS
+    // Total submission
     const [totalSubmissions] = await db.query(
       `SELECT COUNT(*) AS total
        FROM internship_letter il
@@ -646,7 +634,7 @@ router.get("/dashboard/summary", async (req, res) => {
       [currentYear, id_kampus]
     );
 
-    // STATUS BREAKDOWN
+    // Status breakdown
     const [statusBreakdown] = await db.query(
       `SELECT il.status, COUNT(*) AS count
        FROM internship_letter il
@@ -657,7 +645,7 @@ router.get("/dashboard/summary", async (req, res) => {
       [currentYear, id_kampus]
     );
 
-    // AVERAGE RESPONSE TIME
+    // Average response time
     const [avgResponseTime] = await db.query(`
       SELECT AVG(DATEDIFF(ilh_cdc.timestamp, il.created_at)) AS avg_days
       FROM internship_letter il
@@ -693,7 +681,7 @@ router.get("/dashboard/summary", async (req, res) => {
       [currentYear, id_kampus]
     );
 
-    // FINAL RESPONSE
+    // Final response
     res.json({
       success: true,
       data: {
@@ -715,7 +703,7 @@ router.get("/dashboard/summary", async (req, res) => {
   }
 });
 
-// routes/lecturer.js
+// Export
 router.get("/lecturer/export-internship", async (req, res) => {
   try {
     const { start_date, end_date, nim_nik_unit } = req.query;
@@ -807,6 +795,5 @@ router.get("/lecturer/export-internship", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
 });
-
 
 module.exports = router;

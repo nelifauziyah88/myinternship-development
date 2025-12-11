@@ -3,7 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../db');
 
-// GET /api/kampus - ambil semua kampus
+// GET /api/kampus, ambil semua kampus
 router.get('/kampus', async (req, res) => {
   try {
     const [rows] = await db.query("SELECT id_kampus, nama_kampus FROM tb_kampus");
@@ -14,7 +14,7 @@ router.get('/kampus', async (req, res) => {
   }
 });
 
-// GET /api/program_study/:id_kampus - ambil program studi berdasarkan kampus
+// GET /api/program_study/:id_kampus, ambil program studi berdasarkan kampus
 router.get('/program_study/:id_kampus', async (req, res) => {
   try {
     const { id_kampus } = req.params;
@@ -29,7 +29,7 @@ router.get('/program_study/:id_kampus', async (req, res) => {
   }
 });
 
-// POST /api/register
+// Api registrasi
 router.post('/registrasi', async (req, res) => {
   try {
     const {

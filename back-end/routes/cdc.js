@@ -75,7 +75,7 @@ router.post("/login_cdc", async (req, res) => {
   }
 });
 
-// Detail Submission (CDC)
+// Detail submission
 router.get("/cdc/submissions", async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -107,9 +107,7 @@ router.get("/cdc/submissions", async (req, res) => {
   }
 });
 
-// ========================================================
-// CDC APPROVAL (ACCEPT / REJECT)
-// ========================================================
+// CDC approval (Accept/Reject)
 router.post("/cdc/approval", async (req, res) => {
   try {
     const { id_letter, status, user_id, user_name, comment, letter_number } = req.body;
@@ -119,7 +117,7 @@ router.post("/cdc/approval", async (req, res) => {
       return res.status(400).json({ success: false, message: "Status invalid." });
     }
 
-    // AMBIL DATA SUBMISSION
+    // Ambil data submission
     const [rows] = await db.query(
       `SELECT 
           id_letter,
@@ -148,15 +146,12 @@ router.post("/cdc/approval", async (req, res) => {
       });
     }
 
-    // ========================================================
-    // ACCEPTED
-    // ========================================================
     if (s === "ACCEPTED") {
       if (!letter_number) {
         return res.status(400).json({ success: false, message: "Nomor surat wajib." });
       }
 
-      // CEK DUPLIKASI NOMOR SURAT
+      // Cek duplikasi nomor surat
       const [dupRows] = await db.query(
         `SELECT id_letter FROM internship_letter 
          WHERE letter_number = ? AND id_letter != ?`,
@@ -181,9 +176,6 @@ router.post("/cdc/approval", async (req, res) => {
       );
     }
 
-    // ========================================================
-    // REJECTED
-    // ========================================================
     if (s === "REJECTED") {
       await db.query(
         `UPDATE internship_letter
@@ -195,9 +187,6 @@ router.post("/cdc/approval", async (req, res) => {
       );
     }
 
-    // ========================================================
-    // INSERT HISTORY
-    // ========================================================
     await db.query(
       `INSERT INTO internship_letter_history 
        (id_letter, approved_by, user_id, user_name, status_approval, timestamp, comment)
@@ -213,7 +202,7 @@ router.post("/cdc/approval", async (req, res) => {
   }
 });
 
-// get latest rejected reason by CDC for a letter
+// Get latest rejected reason by CDC for a letter
 router.get("/cdc/reason/:id", async (req, res) => {
   try {
     const id = req.params.id;
@@ -239,7 +228,7 @@ router.get("/cdc/reason/:id", async (req, res) => {
   }
 });
 
-// edit the latest CDC rejection reason for a letter
+// Edit reason
 router.post("/cdc/history/:id/edit", async (req, res) => {
   try {
     const id = req.params.id;
@@ -276,7 +265,7 @@ router.post("/cdc/history/:id/edit", async (req, res) => {
   }
 });
 
-// List submissions dengan filter (versi baru dengan filter)
+// List submissions dengan filter
 router.get("/cdc/submissions-filtered", async (req, res) => {
   try {
     const {
@@ -316,15 +305,15 @@ router.get("/cdc/submissions-filtered", async (req, res) => {
       WHERE 1=1
     `;
 
-    const params = [id_kampus]; // id_kampus untuk JOIN program_study
+    const params = [id_kampus];
 
-    // Filter by study program (kode_prodi dari student_internship)
+    // Filter by study program
     if (study_program) {
       query += ` AND s.program_study = ?`;
       params.push(study_program);
     }
 
-    // Filter by department (major dari program_study)
+    // Filter by department
     if (department) {
       query += ` AND ps.major = ?`;
       params.push(department);
@@ -429,7 +418,7 @@ router.get("/cdc/departments/:id_kampus", async (req, res) => {
   }
 });
 
-// Edit submission (data perusahaan - UPDATE ke internship_letter DAN company)
+// Edit submission
 router.put("/cdc/submissions/edit/:id_letter", async (req, res) => {
   const { id_letter } = req.params;
   const { company_name, company_address, company_phone, company_email } =
@@ -584,15 +573,13 @@ router.get("/cdc/company-reply/:id_letter", async (req, res) => {
   }
 });
 
-/**
- * GET /api/student/dashboard/statistics
- */
+// Get endpoint untuk dashboard statistics
 router.get("/dashboard/statistics", async (req, res) => {
-    try {
-        const { department, year } = req.query;
-        const useYearFilter = year && year !== 'all';
-        const currentYear = useYearFilter ? year : null;
-        const id_kampus = 1;
+  try {
+    const { department, year } = req.query;
+    const useYearFilter = year && year !== 'all';
+    const currentYear = useYearFilter ? year : null;
+    const id_kampus = 1;
 
     const allProgramsQuery = `
           SELECT 
@@ -611,7 +598,7 @@ router.get("/dashboard/statistics", async (req, res) => {
 
     const [allPrograms] = await db.query(allProgramsQuery, allProgramsParams);
 
-    // STEP 2: RESPONSE TIME (Koor + CDC)
+    // Response time (koor & cdc)
     const responseTimeQuery = `
           SELECT 
             CONCAT(ps.jenjang, ' ', ps.study_program) AS program_full_name,
@@ -656,7 +643,7 @@ router.get("/dashboard/statistics", async (req, res) => {
       responseTimeParams
     );
 
-    // STEP 3: ACCEPTANCE RATE (Company Response)
+    // Acceptance rate
     const acceptanceRateQuery = `
           SELECT 
             CONCAT(ps.jenjang, ' ', ps.study_program) AS program_full_name,
@@ -687,7 +674,7 @@ router.get("/dashboard/statistics", async (req, res) => {
       acceptanceRateParams
     );
 
-    // STEP 4: MERGE DATA - ALL PROGRAMS WITH ACTUAL DATA
+    // Merge data, all programs with actual data
     const responseTimeMap = new Map();
     responseTimeData.forEach((r) => {
       const key = `${r.department}|||${r.program_full_name}`;
@@ -717,7 +704,7 @@ router.get("/dashboard/statistics", async (req, res) => {
     allPrograms.forEach((program) => {
       const key = `${program.department}|||${program.program_full_name}`;
 
-      // Response Time Data
+      // Response time data
       const responseData = responseTimeMap.get(key);
       responseTimeResult.push({
         program: program.program_full_name,
@@ -735,7 +722,7 @@ router.get("/dashboard/statistics", async (req, res) => {
         dataCount: responseData ? responseData.dataCount : 0,
       });
 
-      // Acceptance Rate Data
+      // Acceptance rate data
       const acceptanceData = acceptanceRateMap.get(key);
       acceptanceRateResult.push({
         program: program.program_full_name,
@@ -749,7 +736,7 @@ router.get("/dashboard/statistics", async (req, res) => {
       });
     });
 
-    // STEP 5: GET UNIQUE DEPARTMENTS LIST
+    // Get unique departments list
     const [departments] = await db.query(
       `
           SELECT DISTINCT major AS department
@@ -760,7 +747,7 @@ router.get("/dashboard/statistics", async (req, res) => {
       [id_kampus]
     );
 
-    // FINAL RESPONSE
+    // Final response
     res.json({
       success: true,
       data: {
@@ -781,17 +768,14 @@ router.get("/dashboard/statistics", async (req, res) => {
   }
 });
 
-// DASHBOARD SUMMARY
-/**
- * GET /api/student/dashboard/summary
- */
+// Dashboard summary
 router.get("/dashboard/summary", async (req, res) => {
   try {
     const { year } = req.query;
     const currentYear = year || new Date().getFullYear();
-    const id_kampus = 1; // Polibatam
+    const id_kampus = 1;
 
-    // TOTAL SUBMISSIONS
+    // Total submissions
     const [totalSubmissions] = await db.query(
       `SELECT COUNT(*) AS total
        FROM internship_letter il
@@ -801,7 +785,7 @@ router.get("/dashboard/summary", async (req, res) => {
       [currentYear, id_kampus]
     );
 
-    // STATUS BREAKDOWN
+    // Status breakdown
     const [statusBreakdown] = await db.query(
       `SELECT il.status, COUNT(*) AS count
        FROM internship_letter il
@@ -812,7 +796,7 @@ router.get("/dashboard/summary", async (req, res) => {
       [currentYear, id_kampus]
     );
 
-    // AVERAGE RESPONSE TIME
+    // Average response time
     const [avgResponseTime] = await db.query(
       `
       SELECT AVG(DATEDIFF(ilh_cdc.timestamp, il.created_at)) AS avg_days
@@ -851,7 +835,7 @@ router.get("/dashboard/summary", async (req, res) => {
       [currentYear, id_kampus]
     );
 
-    // FINAL RESPONSE
+    // Final response
     res.json({
       success: true,
       data: {
@@ -874,11 +858,11 @@ router.get("/dashboard/summary", async (req, res) => {
   }
 });
 
-// routes/cdc.js
+// Export
 router.get("/cdc/export-internship", async (req, res) => {
   try {
     const { start_date, end_date, study_program, department } = req.query;
-    const id_kampus = 1; // Polibatam (ubah jika dynamic)
+    const id_kampus = 1;
 
     if (!start_date || !end_date) {
       return res

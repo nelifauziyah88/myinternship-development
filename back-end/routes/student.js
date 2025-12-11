@@ -39,7 +39,6 @@ router.post("/login_student", async (req, res) => {
         .json({ success: false, message: "Incorrect password" });
     }
 
-    // Jika berhasil
     res.status(200).json({
       success: true,
       message: "Login successfull",
@@ -60,11 +59,7 @@ router.post("/login_student", async (req, res) => {
   }
 });
 
-/**
- * GET /api/student/check-submission/:nim
- * - Cek apakah student dengan NIM punya submission aktif
- * - "Aktif" bila salah satu kolom status/koor_approval/cdc_approval = 'WAITING'
- */
+// Api cek submission
 router.get("/check-submission/:nim", async (req, res) => {
   const { nim } = req.params;
   try {
@@ -98,14 +93,7 @@ router.get("/check-submission/:nim", async (req, res) => {
   }
 });
 
-/**
- * GET /api/student/form-submission/:nim
- * - Ambil student profile + department + coordinator
- * - Alur join:
- *   student_internship (program_study, id_kampus)
- *   join program_study on program_study.kode_prodi = student_internship.program_study AND id_kampus match
- *   join lecturer on lecturer.prodi_koor = program_study.kode_prodi AND lecturer.id_kampus = program_study.id_kampus AND lecturer.is_koor = 1
- */
+// Api autofill form submission
 router.get("/form-submission/:nim", async (req, res) => {
   const { nim } = req.params;
   try {
@@ -118,7 +106,7 @@ router.get("/form-submission/:nim", async (req, res) => {
       return res.status(404).json({ error: "Student not found" });
     const student = stuRows[0];
 
-    // ambil program_study (cocokkan kode_prodi & id_kampus)
+    // ambil program_study
     const [psRows] = await db.query(
       `SELECT * FROM program_study WHERE kode_prodi = ? AND id_kampus = ? LIMIT 1`,
       [student.program_study, student.id_kampus]
@@ -126,7 +114,7 @@ router.get("/form-submission/:nim", async (req, res) => {
     const program = psRows.length ? psRows[0] : null;
     const department = program ? program.jurusan || null : null;
 
-    // ambil lecturer koordinator
+    // ambil lecturer
     let coordinator = null;
     if (program) {
       const [lecRows] = await db.query(
@@ -153,11 +141,7 @@ router.get("/form-submission/:nim", async (req, res) => {
   }
 });
 
-/**
- * GET /api/student/company
- * - Return list company (id, name).
- * - Optional query q for search.
- */
+// Api untuk list company
 router.get("/company", async (req, res) => {
   const q = req.query.q ? `%${req.query.q}%` : null;
   try {
@@ -179,10 +163,7 @@ router.get("/company", async (req, res) => {
   }
 });
 
-/**
- * GET /api/student/company/:id
- * - Return details company
- */
+// Api ambil data company berdasarkan id
 router.get("/company/:id", async (req, res) => {
   const id = req.params.id;
   try {
@@ -204,25 +185,16 @@ router.get("/company/:id", async (req, res) => {
   }
 });
 
-/**
- * POST /api/student/form-submission
- * - Terima payload dan insert ke internship_letter
- * - Validasi:
- *    - nim required
- *    - bila company_id null -> require new_company_name, new_company_contact, company_address
- *    - bila company_id present -> get company address from DB and ignore client address for safety
- */
+// Api submit form submission
 router.post("/form-submission", async (req, res) => {
   try {
     const body = req.body;
     const nim = body.nim;
-    const force = body.force || false; // <-- flag untuk lewati fuzzy
+    const force = body.force || false;
 
     if (!nim) return res.status(400).json({ error: "nim required" });
 
-    // ============================================================
-    // 1. CEK SUBMISSION AKTIF
-    // ============================================================
+    // Cek submission aktif
     const [lastRows] = await db.query(
       `SELECT id_letter, status, koor_approval, cdc_approval 
        FROM internship_letter 
@@ -246,9 +218,7 @@ router.post("/form-submission", async (req, res) => {
       }
     }
 
-    // ============================================================
-    // 2. HANDLE COMPANY (VALIDASI NORMAL + FUZZY)
-    // ============================================================
+    // Handle company
     let id_company = body.company_id || null;
     let company_name = body.company_name || null;
     let company_contact = body.company_contact || null;
@@ -302,7 +272,7 @@ router.post("/form-submission", async (req, res) => {
       return (2 * intersection) / (aBigrams.length + bBigrams.length);
     }
 
-    // ====================== CEK DUPLIKAT / SIMILAR =====================
+    // Cek duplikat atau similiar
     if (!id_company) {
       if (!company_name || !company_contact || !company_address) {
         return res.status(400).json({
@@ -340,7 +310,7 @@ router.post("/form-submission", async (req, res) => {
         }
       }
 
-      // ================= INSERT COMPANY BARU ===================
+      // Insert company baru
       const [stuRow] = await db.query(
         `SELECT id_kampus FROM student_internship WHERE nim = ? LIMIT 1`,
         [nim]
@@ -389,7 +359,7 @@ router.post("/form-submission", async (req, res) => {
       company_not_exist = 0;
     }
 
-    // ===================== INSERT SUBMISSION =====================
+    // Insert submission
     const [result] = await db.query(
       `INSERT INTO internship_letter 
       (nim, id_company, start_date, end_date, status, semester, class, 
@@ -411,7 +381,7 @@ router.post("/form-submission", async (req, res) => {
       ]
     );
 
-    // ===================== UPDATE STUDENT =====================
+    // Update student
     const updateFields = [];
     const updateValues = [];
     if (body.email) {
@@ -435,12 +405,7 @@ router.post("/form-submission", async (req, res) => {
   }
 });
 
-
-
-/**
- * GET /api/student/approval-status/:nim
- * Ambil semua internship_letter milik nim, urut terbaru (created_at desc)
- */
+// APi untuk list internship letter
 router.get("/approval-status/:nim", async (req, res) => {
   try {
     const nim = req.params.nim;
@@ -493,11 +458,7 @@ router.get("/approval-status/:nim", async (req, res) => {
   }
 });
 
-/**
- * GET /api/internship_letter/:id
- * Ambil detail surat magang berdasarkan id_letter (termasuk data student & company)
- */
-// Ambil detail surat + student + company
+// Ambil detail surat, data student dan data company berdasarkan id 
 router.get("/internship_letter/:id", async (req, res) => {
   const { id } = req.params;
   const lang = (req.query.lang || "ID").toUpperCase();
@@ -553,7 +514,7 @@ router.get("/internship_letter/:id", async (req, res) => {
   }
 });
 
-// helper: format tanggal ke "13 Agustus 2025"
+// Helper: format tanggal ke "13 Agustus 2025"
 function formatDateIndo(isoDateStr) {
   if (!isoDateStr) return "";
   const monthNames = [
@@ -577,7 +538,7 @@ function formatDateIndo(isoDateStr) {
   return `${dd} ${mm} ${yyyy}`;
 }
 
-// helper: format tanggal ke "October 30, 2025"
+// Helper: format tanggal ke "October 30, 2025"
 function formatDateEng(isoDateStr) {
   if (!isoDateStr) return "";
   const monthNames = [
@@ -635,7 +596,7 @@ async function checkAndSetPublishedDate(id_letter) {
   }
 }
 
-// Route: generate & download PDF letter by id_letter
+// Generate & download PDF letter by id_letter
 router.get("/letter/:id/download", async (req, res) => {
   const id = req.params.id;
   try {
@@ -649,7 +610,6 @@ router.get("/letter/:id/download", async (req, res) => {
 
     const lang = (req.query.lang || letter.language || "ID").toUpperCase();
 
-    // JOIN ke tabel program_study biar lengkap
     const [stuRows] = await db.query(
       `
       SELECT s.nim, s.name, s.email,
@@ -707,9 +667,8 @@ router.get("/letter/:id/download", async (req, res) => {
     });
     await browser.close();
 
-    const filename = `internship_letter_${
-      letter.nim || letter.id_letter
-    }_${year}.pdf`;
+    const filename = `internship_letter_${letter.nim || letter.id_letter
+      }_${year}.pdf`;
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     res.send(pdfBuffer);
@@ -760,7 +719,7 @@ router.post("/rejected-by-company/:id", async (req, res) => {
   }
 });
 
-// helper untuk format ke YYYY-MM-DD tanpa timezone offset
+// Helper untuk format ke YYYY-MM-DD tanpa timezone offset
 function formatDate(dateValue) {
   if (!dateValue) return null;
   const d = new Date(dateValue);
@@ -770,7 +729,7 @@ function formatDate(dateValue) {
   return `${year}-${month}-${day}`;
 }
 
-// GET: Autofill data form accepted_by_company
+// Api untuk autofill data form accepted_by_company
 router.get("/accepted-by-company/autofill/:nim", async (req, res) => {
   const nim = req.params.nim;
   try {
@@ -831,11 +790,7 @@ router.get("/accepted-by-company/autofill/:nim", async (req, res) => {
   }
 });
 
-// ===================================================================
-// POST: Submit Accepted by Company (Claim Internship)
-// ===================================================================
-
-// POST: Submit accepted_by_company
+// Api untuk claim internship
 router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
   try {
     const fields = req.body || {};
@@ -863,9 +818,7 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
     await conn.beginTransaction();
 
     try {
-      // ==========================================================
-      // 1. AMBIL SURAT TERBARU
-      // ==========================================================
+      // Ambil surat terbaru
       const [letterRows] = await conn.query(
         `SELECT * FROM internship_letter 
          WHERE nim = ? ORDER BY id_letter DESC LIMIT 1`,
@@ -876,7 +829,7 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
       let id_company = letter?.id_company || null;
       let id_user_company = null;
 
-      // fallback jika id_letter param diberikan
+      // Fallback jika id_letter param diberikan
       if (!letter && param_id_letter) {
         const [alt] = await conn.query(
           "SELECT * FROM internship_letter WHERE id_letter=? LIMIT 1",
@@ -888,9 +841,7 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
         }
       }
 
-      // ==========================================================
-      // 2. AMBIL ID KAMPUS
-      // ==========================================================
+      // Ambil id kampus
       const [studRows] = await conn.query(
         "SELECT id_kampus FROM student_internship WHERE nim = ?",
         [nim]
@@ -903,9 +854,7 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
           ? 1
           : 0;
 
-      // ==========================================================
-      // 3. CASE: company_not_exist === '1' => INSERT COMPANY BARU
-      // ==========================================================
+      // Company_not_exist === '1' = Insert company baru
       if (companyNotExistFlag === 1 && !id_company) {
         const companyName = letter?.company_name || "-";
         const companyAddress = letter?.company_address || "-";
@@ -937,8 +886,8 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
           id_user_company < 10
             ? `00${id_user_company}`
             : id_user_company < 100
-            ? `0${id_user_company}`
-            : `${id_user_company}`;
+              ? `0${id_user_company}`
+              : `${id_user_company}`;
 
         await conn.query(
           "UPDATE user_company SET username=? WHERE id_user_company=?",
@@ -946,9 +895,7 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
         );
       }
 
-      // ==========================================================
-      // 4. COMPANY EXISTING → CEK STATUS verified / not verified
-      // ==========================================================
+      // 4. Company existing = cek status verified / not verified
       if (id_company) {
         const [cRows] = await conn.query(
           "SELECT status FROM company WHERE id_company = ? LIMIT 1",
@@ -973,7 +920,7 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
             [city || null, province || null, country || null, id_kampus, id_company]
           );
 
-          // UPDATE / INSERT HRD
+          // Update/Insert HRD
           const [existingHRD] = await conn.query(
             "SELECT id_user_company FROM user_company WHERE id_company=? AND user_type='HRD' LIMIT 1",
             [id_company]
@@ -1004,8 +951,8 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
               id_user_company < 10
                 ? `00${id_user_company}`
                 : id_user_company < 100
-                ? `0${id_user_company}`
-                : `${id_user_company}`;
+                  ? `0${id_user_company}`
+                  : `${id_user_company}`;
 
             await conn.query(
               "UPDATE user_company SET username = ? WHERE id_user_company = ?",
@@ -1015,18 +962,14 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
         }
       }
 
-      // ==========================================================
-      // AUTO-VERIFY COMPANY setelah mahasiswa submit claim
-      // ==========================================================
+      // Auto verify company (setelah mahasiswa claim internship)
       await conn.query(
         `UPDATE company SET status='verified'
          WHERE id_company=? AND status='not verified'`,
         [id_company]
       );
 
-      // ==========================================================
-      // 5. UPDATE DATA KONTAK MAHASISWA
-      // ==========================================================
+      // Update data kontak mahasiswa
       if (email || whatsapp) {
         await conn.query(
           `UPDATE student_internship 
@@ -1037,9 +980,7 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
         );
       }
 
-      // ==========================================================
-      // 6. INSERT DATA INTERNSHIP
-      // ==========================================================
+      // Insert data internship
       const sDate = start_date ? new Date(start_date) : null;
       const eDate = end_date ? new Date(end_date) : null;
 
@@ -1059,9 +1000,7 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
       );
       const id_internship = internshipResult.insertId;
 
-      // ==========================================================
-      // 7. Insert internship_letter_acceptance
-      // ==========================================================
+      // Insert internship acceptance
       const [letterRows3] = await conn.query(
         "SELECT id_letter FROM internship_letter WHERE nim = ? ORDER BY id_letter DESC LIMIT 1",
         [nim]
@@ -1074,9 +1013,7 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
         [id_letter_for_accept, id_internship, info_source || null]
       );
 
-      // ==========================================================
-      // 8. Update internship_letter acceptance status & company_reply_letter
-      // ==========================================================
+      // Update internship_letter.acceptance_status & company_reply_letter
       if (company_reply_letter) {
         await conn.query(
           "UPDATE internship_letter SET company_reply_letter = ?, acceptance_status = 'ACCEPTED' WHERE nim = ? AND id_letter = ?",
@@ -1112,21 +1049,15 @@ router.post("/accepted-by-company/submit/:id_letter", async (req, res) => {
   }
 });
 
-// =======================================
-// STUDENT DASHBOARD STATISTICS - REAL 
-// =======================================
-
-/**
- * GET /api/student/dashboard/statistics
- */
+// Dashboard statistics
 router.get("/dashboard/statistics", async (req, res) => {
-    try {
-        const { department, year } = req.query;
-        const useYearFilter = year && year !== 'all';
-        const currentYear = useYearFilter ? year : null;
-        const id_kampus = 1;
+  try {
+    const { department, year } = req.query;
+    const useYearFilter = year && year !== 'all';
+    const currentYear = useYearFilter ? year : null;
+    const id_kampus = 1;
 
-        const allProgramsQuery = `
+    const allProgramsQuery = `
           SELECT 
             CONCAT(ps.jenjang, ' ', ps.study_program) AS program_full_name,
             ps.major AS department,
@@ -1137,14 +1068,14 @@ router.get("/dashboard/statistics", async (req, res) => {
           ORDER BY ps.major, program_full_name
         `;
 
-        const allProgramsParams = department 
-          ? [id_kampus, department] 
-          : [id_kampus];
+    const allProgramsParams = department
+      ? [id_kampus, department]
+      : [id_kampus];
 
-        const [allPrograms] = await db.query(allProgramsQuery, allProgramsParams);
+    const [allPrograms] = await db.query(allProgramsQuery, allProgramsParams);
 
-        // STEP 2: RESPONSE TIME (Koor + CDC)
-        const responseTimeQuery = `
+    // Response time (koor & cdc)
+    const responseTimeQuery = `
           SELECT 
             CONCAT(ps.jenjang, ' ', ps.study_program) AS program_full_name,
             ps.major AS department,
@@ -1179,14 +1110,14 @@ router.get("/dashboard/statistics", async (req, res) => {
           GROUP BY program_full_name, ps.major
         `;
 
-        const responseTimeParams = [id_kampus];
-        if (useYearFilter) responseTimeParams.push(currentYear);
-        if (department) responseTimeParams.push(department);
+    const responseTimeParams = [id_kampus];
+    if (useYearFilter) responseTimeParams.push(currentYear);
+    if (department) responseTimeParams.push(department);
 
-        const [responseTimeData] = await db.query(responseTimeQuery, responseTimeParams);
+    const [responseTimeData] = await db.query(responseTimeQuery, responseTimeParams);
 
-        // STEP 3: ACCEPTANCE RATE (Company Response)
-        const acceptanceRateQuery = `
+    // Acceptance rate
+    const acceptanceRateQuery = `
           SELECT 
             CONCAT(ps.jenjang, ' ', ps.study_program) AS program_full_name,
             ps.major AS department,
@@ -1207,109 +1138,106 @@ router.get("/dashboard/statistics", async (req, res) => {
           GROUP BY program_full_name, ps.major
         `;
 
-        const acceptanceRateParams = [id_kampus];
-        if (useYearFilter) acceptanceRateParams.push(currentYear);
-        if (department) acceptanceRateParams.push(department);
+    const acceptanceRateParams = [id_kampus];
+    if (useYearFilter) acceptanceRateParams.push(currentYear);
+    if (department) acceptanceRateParams.push(department);
 
-        const [acceptanceRateData] = await db.query(acceptanceRateQuery, acceptanceRateParams);
+    const [acceptanceRateData] = await db.query(acceptanceRateQuery, acceptanceRateParams);
 
-        // STEP 4: MERGE DATA - ALL PROGRAMS WITH ACTUAL DATA 
-        const responseTimeMap = new Map();
-        responseTimeData.forEach(r => {
-            const key = `${r.department}|||${r.program_full_name}`;
-            responseTimeMap.set(key, {
-                avgResponseTimeKoor: Number(r.avg_response_time_koor || 0).toFixed(2),
-                avgResponseTimeCdc: Number(r.avg_response_time_cdc || 0).toFixed(2),
-                avgTotalResponseTime: Number(r.avg_total_response_time || 0).toFixed(2),
-                dataCount: r.data_count || 0
-            });
-        });
+    // Merge data, all programs with actual data 
+    const responseTimeMap = new Map();
+    responseTimeData.forEach(r => {
+      const key = `${r.department}|||${r.program_full_name}`;
+      responseTimeMap.set(key, {
+        avgResponseTimeKoor: Number(r.avg_response_time_koor || 0).toFixed(2),
+        avgResponseTimeCdc: Number(r.avg_response_time_cdc || 0).toFixed(2),
+        avgTotalResponseTime: Number(r.avg_total_response_time || 0).toFixed(2),
+        dataCount: r.data_count || 0
+      });
+    });
 
-        const acceptanceRateMap = new Map();
-        acceptanceRateData.forEach(r => {
-            const key = `${r.department}|||${r.program_full_name}`;
-            acceptanceRateMap.set(key, {
-                acceptedCount: r.accepted_count || 0,
-                rejectedCount: r.rejected_count || 0,
-                totalCount: r.total_count || 0,
-                acceptanceRate: Number(r.acceptance_rate || 0),
-                rejectionRate: Number(r.rejection_rate || 0)
-            });
-        });
+    const acceptanceRateMap = new Map();
+    acceptanceRateData.forEach(r => {
+      const key = `${r.department}|||${r.program_full_name}`;
+      acceptanceRateMap.set(key, {
+        acceptedCount: r.accepted_count || 0,
+        rejectedCount: r.rejected_count || 0,
+        totalCount: r.total_count || 0,
+        acceptanceRate: Number(r.acceptance_rate || 0),
+        rejectionRate: Number(r.rejection_rate || 0)
+      });
+    });
 
-        const responseTimeResult = [];
-        const acceptanceRateResult = [];
+    const responseTimeResult = [];
+    const acceptanceRateResult = [];
 
-        allPrograms.forEach(program => {
-            const key = `${program.department}|||${program.program_full_name}`;
-            
-            // Response Time Data
-            const responseData = responseTimeMap.get(key);
-            responseTimeResult.push({
-                program: program.program_full_name,
-                department: program.department,
-                avgResponseTimeKoor: responseData ? responseData.avgResponseTimeKoor : "0.00",
-                avgResponseTimeCdc: responseData ? responseData.avgResponseTimeCdc : "0.00",
-                avgTotalResponseTime: responseData ? responseData.avgTotalResponseTime : "0.00",
-                hasData: !!responseData,
-                dataCount: responseData ? responseData.dataCount : 0
-            });
+    allPrograms.forEach(program => {
+      const key = `${program.department}|||${program.program_full_name}`;
 
-            // Acceptance Rate Data
-            const acceptanceData = acceptanceRateMap.get(key);
-            acceptanceRateResult.push({
-                program: program.program_full_name,
-                department: program.department,
-                acceptedCount: acceptanceData ? acceptanceData.acceptedCount : 0,
-                rejectedCount: acceptanceData ? acceptanceData.rejectedCount : 0,
-                totalCount: acceptanceData ? acceptanceData.totalCount : 0,
-                acceptanceRate: acceptanceData ? acceptanceData.acceptanceRate : 0,
-                rejectionRate: acceptanceData ? acceptanceData.rejectionRate : 0,
-                hasData: !!acceptanceData
-            });
-        });
+      // Response time data
+      const responseData = responseTimeMap.get(key);
+      responseTimeResult.push({
+        program: program.program_full_name,
+        department: program.department,
+        avgResponseTimeKoor: responseData ? responseData.avgResponseTimeKoor : "0.00",
+        avgResponseTimeCdc: responseData ? responseData.avgResponseTimeCdc : "0.00",
+        avgTotalResponseTime: responseData ? responseData.avgTotalResponseTime : "0.00",
+        hasData: !!responseData,
+        dataCount: responseData ? responseData.dataCount : 0
+      });
 
-        // STEP 5: GET UNIQUE DEPARTMENTS LIST
-        const [departments] = await db.query(`
+      // Acceptance rate data
+      const acceptanceData = acceptanceRateMap.get(key);
+      acceptanceRateResult.push({
+        program: program.program_full_name,
+        department: program.department,
+        acceptedCount: acceptanceData ? acceptanceData.acceptedCount : 0,
+        rejectedCount: acceptanceData ? acceptanceData.rejectedCount : 0,
+        totalCount: acceptanceData ? acceptanceData.totalCount : 0,
+        acceptanceRate: acceptanceData ? acceptanceData.acceptanceRate : 0,
+        rejectionRate: acceptanceData ? acceptanceData.rejectionRate : 0,
+        hasData: !!acceptanceData
+      });
+    });
+
+    // Get unique departments list
+    const [departments] = await db.query(`
           SELECT DISTINCT major AS department
           FROM program_study
           WHERE id_kampus = ?
           ORDER BY major
         `, [id_kampus]);
 
-        // FINAL RESPONSE
-        res.json({
-            success: true,
-            data: {
-                year: currentYear || "All Years", 
-                department: department || "All Departments",
-                departments: departments.map(d => d.department),
-                responseTime: responseTimeResult,
-                acceptanceRate: acceptanceRateResult
-            }
-        });
+    // Final response
+    res.json({
+      success: true,
+      data: {
+        year: currentYear || "All Years",
+        department: department || "All Departments",
+        departments: departments.map(d => d.department),
+        responseTime: responseTimeResult,
+        acceptanceRate: acceptanceRateResult
+      }
+    });
 
-    } catch (err) {
-        console.error("Dashboard statistics error:", err);
-        res.status(500).json({
-            success: false,
-            message: "Server error",
-            error: err.message
-        });
-    }
+  } catch (err) {
+    console.error("Dashboard statistics error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message
+    });
+  }
 });
 
-// DASHBOARD SUMMARY
-/**
- * GET /api/student/dashboard/summary
- */
+// Dashboard summary
 router.get("/dashboard/summary", async (req, res) => {
   try {
     const { year } = req.query;
     const currentYear = year || new Date().getFullYear();
-    const id_kampus = 1; // Polibatam
+    const id_kampus = 1;
 
-    // TOTAL SUBMISSIONS
+    // Total submissions
     const [totalSubmissions] = await db.query(
       `SELECT COUNT(*) AS total
        FROM internship_letter il
@@ -1319,7 +1247,7 @@ router.get("/dashboard/summary", async (req, res) => {
       [currentYear, id_kampus]
     );
 
-    // STATUS BREAKDOWN
+    // Status breakdown
     const [statusBreakdown] = await db.query(
       `SELECT il.status, COUNT(*) AS count
        FROM internship_letter il
@@ -1330,7 +1258,7 @@ router.get("/dashboard/summary", async (req, res) => {
       [currentYear, id_kampus]
     );
 
-    // AVERAGE RESPONSE TIME
+    // Average response time
     const [avgResponseTime] = await db.query(`
       SELECT AVG(DATEDIFF(ilh_cdc.timestamp, il.created_at)) AS avg_days
       FROM internship_letter il
@@ -1366,7 +1294,7 @@ router.get("/dashboard/summary", async (req, res) => {
       [currentYear, id_kampus]
     );
 
-    // FINAL RESPONSE
+    // Final response
     res.json({
       success: true,
       data: {
@@ -1387,5 +1315,6 @@ router.get("/dashboard/summary", async (req, res) => {
     });
   }
 });
+
 module.exports = router;
 module.exports.checkAndSetPublishedDate = checkAndSetPublishedDate;
