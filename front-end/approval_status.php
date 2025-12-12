@@ -13,7 +13,7 @@ $id_kampus = $user['id_kampus'] ?? null;
 $nama_kampus = "Unknown";
 
 if ($id_kampus) {
-    // URL ke backend Express
+    
     $api_url = "http://localhost:8000/api/kampus/" . urlencode($id_kampus);
 
     // Ambil data dari backend
