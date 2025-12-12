@@ -250,7 +250,8 @@
                 <div class="footer-column">
                     <h3 class="footer-title">MyInternship</h3>
                     <p class="footer-text">
-                        If you have any further questions about this website, please don’t hesitate to contact us directly during office hours or through the contact information provided below.
+                        If you have any further questions about this website, please don’t hesitate to contact us
+                        directly during office hours or through the contact information provided below.
                     </p>
                 </div>
 
@@ -269,16 +270,20 @@
                 <div class="footer-column">
                     <h3 class="footer-title">Temukan Kami di</h3>
                     <div class="footer-social">
-                        <a href="https://www.instagram.com/myinternship.polibatam/" class="social-link"><i class="bi bi-instagram"></i></a>
-                        <a href="https://id-id.facebook.com/polibatamofficial/" class="social-link"><i class="bi bi-facebook"></i></a>
-                        <a href="https://id-id.facebook.com/polibatamofficial/" class="social-link"><i class="bi bi-twitter"></i></a>
+                        <a href="https://www.instagram.com/myinternship.polibatam/" class="social-link"><i
+                                class="bi bi-instagram"></i></a>
+                        <a href="https://id-id.facebook.com/polibatamofficial/" class="social-link"><i
+                                class="bi bi-facebook"></i></a>
+                        <a href="https://id-id.facebook.com/polibatamofficial/" class="social-link"><i
+                                class="bi bi-twitter"></i></a>
                     </div>
                 </div>
             </div>
 
             <div class="footer-bottom">
                 <p>© 2025 MyInternship | Made with <span style="color: #3498db;">❤</span> by
-                    <a href="https://github.com/nelifauziyah88/myinternship-development.git" target="_blank" class="footer-link">
+                    <a href="https://github.com/nelifauziyah88/myinternship-development.git" target="_blank"
+                        class="footer-link">
                         <strong>PBLIFPagi3A-3</strong>
                     </a>
                 </p>
@@ -287,11 +292,13 @@
     </footer>
     <!-- End Footer -->
 
-    <script src="https://themekita.com/demo-atlantis-bootstrap/livepreview/examples/assets/js/core/jquery.3.2.1.min.js"></script>
-    <script src="https://themekita.com/demo-atlantis-bootstrap/livepreview/examples/assets/js/core/bootstrap.min.js"></script>
+    <script
+        src="https://themekita.com/demo-atlantis-bootstrap/livepreview/examples/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script
+        src="https://themekita.com/demo-atlantis-bootstrap/livepreview/examples/assets/js/core/bootstrap.min.js"></script>
     <script>
         // ===== Navbar Scroll Effect =====
-        window.addEventListener('scroll', function() {
+        window.addEventListener('scroll', function () {
             const navbar = document.querySelector('.navbar');
             if (window.scrollY > 50) {
                 navbar.classList.add('scrolled');
@@ -318,7 +325,7 @@
 
         // ===== Smooth Scroll for Navbar Links =====
         document.querySelectorAll('a[href^="#"]').forEach(link => {
-            link.addEventListener('click', function(e) {
+            link.addEventListener('click', function (e) {
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
                     e.preventDefault();
@@ -341,7 +348,6 @@
             }, 2000);
         }
 
-        // ===== Fade-in Animation (Revised) =====
         const fadeEls = document.querySelectorAll("section, .faq-item, .feature-box, .why-box");
 
         fadeEls.forEach(el => {
@@ -350,7 +356,6 @@
             el.style.transition = "all 0.8s ease-out";
         });
 
-        // Saat halaman pertama kali dimuat
         window.addEventListener("load", () => {
             fadeEls.forEach(el => {
                 const rect = el.getBoundingClientRect();
@@ -361,7 +366,6 @@
             });
         });
 
-        // Saat di-scroll ke bawah
         window.addEventListener("scroll", () => {
             fadeEls.forEach(el => {
                 const rect = el.getBoundingClientRect();

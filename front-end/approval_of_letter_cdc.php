@@ -49,7 +49,6 @@ if ($id_kampus) {
 <html lang="en">
 
 <head>
-    <!-- Meta for Compatibility -->
     <meta charset="utf-8">
     <title>Approval CDC</title>
     <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
@@ -84,7 +83,7 @@ if ($id_kampus) {
                 "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
                 urls: ['./assets/css/fonts.min.css']
             },
-            active: function() {
+            active: function () {
                 sessionStorage.fonts = true;
             }
         });
@@ -148,7 +147,6 @@ if ($id_kampus) {
             word-wrap: break-word;
             min-width: 140px;
             max-width: 140px;
-            /* max-width:150px; */
         }
 
         .wrap2 {
@@ -156,7 +154,6 @@ if ($id_kampus) {
             word-wrap: break-word;
             min-width: 170px;
             max-width: 170px;
-            /* max-width:150px; */
         }
 
         .main-panel {
@@ -204,7 +201,6 @@ if ($id_kampus) {
 <body>
 
     <div class="wrapper">
-
         <div class="modal fade" id="Modalkalender" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -255,7 +251,7 @@ if ($id_kampus) {
                     <div class="collapse" id="search-nav">
                         <ul class="navbar-nav navbar-left topbar-nav nav-search mr-md-3 align-items-center">
 
-                            <!-- Tanggal -->
+                            <!-- Date -->
                             <li class="nav-item dropdown hidden-caret">
                                 <a aria-label="Current Date and Calendar" class="nav-link dropdown-toggle"
                                     data-toggle="dropdown" href="#" aria-expanded="false">
@@ -270,7 +266,7 @@ if ($id_kampus) {
                                 </ul>
                             </li>
 
-                            <!-- Jam -->
+                            <!-- Time -->
                             <li class="nav-item dropdown hidden-caret">
                                 <a aria-label="Current Time" class="nav-link dropdown-toggle" data-toggle="dropdown"
                                     href="#" aria-expanded="false">
@@ -321,7 +317,7 @@ if ($id_kampus) {
                             </ul>
                         </li>
 
-                        <!-- Profil -->
+                        <!-- Profile -->
                         <li class="nav-item dropdown hidden-caret">
                             <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#"
                                 aria-expanded="false">
@@ -348,7 +344,6 @@ if ($id_kampus) {
                                         <a class="dropdown-item" href="cdc_dashboard.php">My Dashboard</a>
                                         <a class="dropdown-item" href="#">My Profile</a>
                                         <a class="dropdown-item" href="#">My Company</a>
-                                        <!-- <a class="dropdown-item" href="#">Inbox</a> -->
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="#">Home</a>
                                         <a class="dropdown-item" href="#">Announcements</a>
@@ -405,7 +400,7 @@ if ($id_kampus) {
                         <li class="nav-item active">
                             <a href="approval_of_letter.php" class="collapsed" aria-expanded="false">
                                 <i class="fas fa-briefcase"></i>
-                                <p>Approval Of Letter</p>
+                                <p>Approval Letter</p>
                             </a>
                         </li>
                         <li class="nav-section">
@@ -434,7 +429,7 @@ if ($id_kampus) {
         <!-- End Sidebar -->
 
         <div class="main-panel">
-            <!-- Approval Status Header - FULL WIDTH -->
+            <!-- Header -->
             <div class="panel-header bg-primary-gradient">
                 <div class="page-inner py-5">
                     <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row">
@@ -445,7 +440,7 @@ if ($id_kampus) {
                 </div>
             </div>
 
-            <!-- Content Container -->
+            <!-- Content -->
             <div class="page-inner mt--5">
                 <div class="row mt--2">
                     <!-- Filter Section -->
@@ -527,7 +522,7 @@ if ($id_kampus) {
                                 </form>
                             </div>
                         </div>
-                        <!-- Button Export Excel -->
+                        <!-- Export Excel -->
                         <div class="col-md-2 mb-3" style="float: right;">
                             <button class="btn btn-success btn-block" onclick="exportToExcel()">
                                 <i class="fas fa-file-excel"></i> Export to Excel
@@ -560,7 +555,7 @@ if ($id_kampus) {
                                         </tbody>
                                     </table>
                                 </div>
-                                <!-- Pagination -->
+                                <!-- Next and Previous -->
                                 <div class="mt-3">
                                     <nav aria-label="Page navigation">
                                         <ul class="pagination justify-content-center">
@@ -608,10 +603,10 @@ if ($id_kampus) {
             let allSubmissions = [];
             let sortAscending = true;
 
-            document.addEventListener("DOMContentLoaded", function() {
-                loadDepartments(); // Load dropdown department untuk filter
-                loadStudyPrograms(); // Load dropdown study program untuk filter
-                loadSubmissions(); // Load data submissions default (tanpa filter)
+            document.addEventListener("DOMContentLoaded", function () {
+                loadDepartments();
+                loadStudyPrograms();
+                loadSubmissions();
             });
 
             function loadYears() {
@@ -662,12 +657,12 @@ if ($id_kampus) {
                 }
 
                 try {
-                    // Load study programs berdasarkan department
+                    // Load study programs by selected department
                     const res = await fetch(`${apiBase}/cdc/study-programs/${cdcKampusId}`);
                     const json = await res.json();
 
                     if (json.success && json.data.length > 0) {
-                        // Filter study programs berdasarkan department yang dipilih
+                        // Filter study programs by selected department
                         const filteredPrograms = json.data.filter(item => item.major === department);
 
                         studyProgramSelect.innerHTML = '<option value="">All Study Programs</option>';
@@ -693,8 +688,6 @@ if ($id_kampus) {
 
                 try {
                     let apiUrl = `${apiBase}/cdc/submissions`;
-
-                    // Jika menggunakan filter, build query params
                     if (useFilter) {
                         const department = document.getElementById("filter_department").value;
                         const studyProgram = document.getElementById("filter_study_program").value;
@@ -913,149 +906,138 @@ if ($id_kampus) {
                 return new Date(timestamp).toLocaleDateString("en-GB");
             }
 
-            // --------------------------
-// Helper: bulan -> ROMAWI
-// --------------------------
-function monthToRoman(monthIndexZeroBased) {
-  const map = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
-  return map[monthIndexZeroBased] || "";
-}
+            // Bulan ke angka Romawi
+            function monthToRoman(monthIndexZeroBased) {
+                const map = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+                return map[monthIndexZeroBased] || "";
+            }
 
-// --------------------------
-// Perubahan pada handleApproval
-// --------------------------
-async function handleApproval(id, status) {
-  let comment = null;
+            // Perubahan pada handleApproval
+            async function handleApproval(id, status) {
+                let comment = null;
+                if (status === "REJECTED") {
+                    const { value: reason, isConfirmed } = await Swal.fire({
+                        title: "Why are you rejecting?",
+                        text: "Please provide your reason for rejecting this submission.",
+                        input: "textarea",
+                        inputPlaceholder: "Write the reason here...",
+                        inputAttributes: { 'aria-label': 'Reason for rejection' },
+                        showCancelButton: true,
+                        cancelButtonText: "Cancel",
+                        confirmButtonText: "Submit",
+                        preConfirm: (value) => {
+                            if (!value || !value.trim()) {
+                                Swal.showValidationMessage("Reason is required.");
+                                return false;
+                            }
+                            return value.trim();
+                        }
+                    });
 
-  // Jika reject, minta alasan (tetap seperti sebelumnya)
-  if (status === "REJECTED") {
-    const { value: reason, isConfirmed } = await Swal.fire({
-      title: "Why are you rejecting?",
-      text: "Please provide your reason for rejecting this submission.",
-      input: "textarea",
-      inputPlaceholder: "Write the reason here...",
-      inputAttributes: { 'aria-label': 'Reason for rejection' },
-      showCancelButton: true,
-      cancelButtonText: "Cancel",
-      confirmButtonText: "Submit",
-      preConfirm: (value) => {
-        if (!value || !value.trim()) {
-          Swal.showValidationMessage("Reason is required.");
-          return false;
-        }
-        return value.trim();
-      }
-    });
+                    if (!isConfirmed) return;
+                    comment = reason;
+                }
 
-    if (!isConfirmed) return;
-    comment = reason;
-  }
+                // Jika status ACCEPTED -> munculkan swal input nomor surat (khusus CDC)
+                if (status === "ACCEPTED") {
+                    const roman = monthToRoman(new Date().getMonth());
+                    const year = new Date().getFullYear();
+                    const suffix = `/WDIII.PL29/${roman}/${year}`;
 
-  // Jika status ACCEPTED -> munculkan swal input nomor surat (khusus CDC)
-  if (status === "ACCEPTED") {
-    // show popup to input left-most number only
-    const roman = monthToRoman(new Date().getMonth()); // 0-based
-    const year = new Date().getFullYear();
-    const suffix = `/WDIII.PL29/${roman}/${year}`;
-
-    const { isConfirmed, value: inputNumber } = await Swal.fire({
-      title: "Enter letter number for this internship letter",
-      html:
-        `<div style="display:flex;gap:8px;align-items:center;justify-content:center">
+                    const { isConfirmed, value: inputNumber } = await Swal.fire({
+                        title: "Enter letter number for this internship letter",
+                        html:
+                            `<div style="display:flex;gap:8px;align-items:center;justify-content:center">
           <input id="swal-input-number" class="swal2-input" placeholder="e.g. 15" style="max-width:120px" inputmode="numeric" />
           <div style="font-size:0.95rem;padding-left:4px;color:#6c757d">${suffix}</div>
         </div>`,
-      showCancelButton: true,
-      cancelButtonText: "Cancel",
-      confirmButtonText: "Accept",
-      reverseButton: false,
-      focusConfirm: false,
-      preConfirm: () => {
-        const val = document.getElementById('swal-input-number')?.value || "";
-        if (!val || !val.trim()) {
-          Swal.showValidationMessage("Number is required.");
-          return false;
-        }
-        // hanya angka diperbolehkan (boleh tambahkan lebih kompleks jika diperlukan)
-        if (!/^\d+$/.test(val.trim())) {
-          Swal.showValidationMessage("Only digits allowed.");
-          return false;
-        }
-        return val.trim();
-      }
-    });
+                        showCancelButton: true,
+                        cancelButtonText: "Cancel",
+                        confirmButtonText: "Accept",
+                        reverseButton: false,
+                        focusConfirm: false,
+                        preConfirm: () => {
+                            const val = document.getElementById('swal-input-number')?.value || "";
+                            if (!val || !val.trim()) {
+                                Swal.showValidationMessage("Number is required.");
+                                return false;
+                            }
+                            if (!/^\d+$/.test(val.trim())) {
+                                Swal.showValidationMessage("Only digits allowed.");
+                                return false;
+                            }
+                            return val.trim();
+                        }
+                    });
 
-    if (!isConfirmed) {
-      // Cancel -> tidak terjadi apa-apa (status tetap WAITING)
-      return;
-    }
+                    if (!isConfirmed) {
+                        return;
+                    }
 
-    // build full letter number
-    const fullLetterNumber = `${inputNumber}${suffix}`;
+                    // build full letter number
+                    const fullLetterNumber = `${inputNumber}${suffix}`;
 
-    // konfirmasi akhir sebelum kirim
-    const confirm = await Swal.fire({
-      title: "Confirm?",
-      text: `You are about to mark this submission as ACCEPTED and assign letter number: ${fullLetterNumber}`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, confirm"
-    });
+                    // konfirmasi akhir sebelum kirim
+                    const confirm = await Swal.fire({
+                        title: "Confirm?",
+                        text: `You are about to mark this submission as ACCEPTED and assign letter number: ${fullLetterNumber}`,
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Yes, confirm"
+                    });
 
-    if (!confirm.isConfirmed) return;
+                    if (!confirm.isConfirmed) return;
 
-    // send ke API (kirim letter_number)
-    await sendApprovalToAPI(id, status, comment, fullLetterNumber);
-    return;
-  }
+                    // send ke API (kirim letter_number)
+                    await sendApprovalToAPI(id, status, comment, fullLetterNumber);
+                    return;
+                }
 
-  // Untuk status selain ACCEPTED/REJECTED (atau jika ACCEPTED handled di atas)
-  const confirm = await Swal.fire({
-    title: "Confirm?",
-    text: `You are about to mark this submission as ${status}`,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes, confirm"
-  });
+                // Untuk status selain ACCEPTED/REJECTED (atau jika ACCEPTED handled di atas)
+                const confirm = await Swal.fire({
+                    title: "Confirm?",
+                    text: `You are about to mark this submission as ${status}`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes, confirm"
+                });
 
-  if (!confirm.isConfirmed) return;
+                if (!confirm.isConfirmed) return;
 
-  await sendApprovalToAPI(id, status, comment);
-}
+                await sendApprovalToAPI(id, status, comment);
+            }
 
-// --------------------------
-// sendApprovalToAPI menerima optional letter_number
-// --------------------------
-async function sendApprovalToAPI(id, status, comment = "-", letter_number = null) {
-  try {
-    const payload = {
-      id_letter: id,
-      status,
-      user_id: currentUserId,
-      user_name: currentUserName,
-      comment
-    };
-    if (letter_number) payload.letter_number = letter_number;
+            // sendApprovalToAPI menerima optional letter_number
+            async function sendApprovalToAPI(id, status, comment = "-", letter_number = null) {
+                try {
+                    const payload = {
+                        id_letter: id,
+                        status,
+                        user_id: currentUserId,
+                        user_name: currentUserName,
+                        comment
+                    };
+                    if (letter_number) payload.letter_number = letter_number;
 
-    const res = await fetch(`${apiBase}/cdc/approval`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+                    const res = await fetch(`${apiBase}/cdc/approval`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
 
-    const json = await res.json();
+                    const json = await res.json();
 
-    if (json.success) {
-      Swal.fire("Success!", json.message, "success");
-      loadSubmissions();
-    } else {
-      Swal.fire("Error", json.message, "error");
-    }
-  } catch (err) {
-    console.error("Error sending approval:", err);
-    Swal.fire("Error", err.message, "error");
-  }
-}
+                    if (json.success) {
+                        Swal.fire("Success!", json.message, "success");
+                        loadSubmissions();
+                    } else {
+                        Swal.fire("Error", json.message, "error");
+                    }
+                } catch (err) {
+                    console.error("Error sending approval:", err);
+                    Swal.fire("Error", err.message, "error");
+                }
+            }
 
             async function viewReason(id_letter) {
                 try {
@@ -1071,7 +1053,7 @@ async function sendApprovalToAPI(id, status, comment = "-", letter_number = null
                     const json = await res.json();
                     const reason = json.comment || "-";
 
-                    // Tampilkan reason dengan opsi edit
+                    // Show reason with edit option
                     const result = await Swal.fire({
                         title: "Rejection reason",
                         html: `<div style="text-align:left; white-space:pre-wrap;">${escapeHtml(reason)}</div>`,
@@ -1128,7 +1110,7 @@ async function sendApprovalToAPI(id, status, comment = "-", letter_number = null
 
                     if (json.success) {
                         Swal.fire("Success", json.message, "success");
-                        loadSubmissions(); // Reload data
+                        loadSubmissions();
                     } else {
                         Swal.fire("Error", json.message, "error");
                     }
@@ -1138,7 +1120,7 @@ async function sendApprovalToAPI(id, status, comment = "-", letter_number = null
                 }
             }
 
-            // Escape HTML untuk prevent XSS injection di SweetAlert
+            // Escape HTML to prevent XSS injection in SweetAlert
             function escapeHtml(str) {
                 if (!str) return "";
                 return String(str)
@@ -1177,7 +1159,7 @@ async function sendApprovalToAPI(id, status, comment = "-", letter_number = null
 
             function applyFilter() {
                 console.log("Applying filters...");
-                loadSubmissions(true); 
+                loadSubmissions(true);
             }
 
             function viewDetail(id) {
@@ -1198,22 +1180,21 @@ async function sendApprovalToAPI(id, status, comment = "-", letter_number = null
                     cancelButtonText: "Cancel"
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // AJAX logout ke PHP
                         $.ajax({
                             url: "session_logout.php",
                             type: "POST",
                             data: {
                                 'token': _token
                             },
-                            success: function() {
-                                setTimeout(function() {
+                            success: function () {
+                                setTimeout(function () {
                                     localStorage.removeItem('first');
                                     localStorage.removeItem('first_chime');
                                     localStorage.removeItem('next_chime');
                                     window.location.href = 'role_login.php';
                                 }, 200);
                             },
-                            error: function() {
+                            error: function () {
                                 Swal.fire('Error', 'Logout failed, please try again.', 'error');
                             }
                         });
@@ -1358,7 +1339,7 @@ async function sendApprovalToAPI(id, status, comment = "-", letter_number = null
                             }
                         });
                     }
-                    
+
                     // REJECTED tanpa file (overdue)
                     else if (data.acceptance_status === 'REJECTED' && data.isOverdue) {
                         Swal.fire({
@@ -1414,7 +1395,6 @@ async function sendApprovalToAPI(id, status, comment = "-", letter_number = null
                 const department = document.getElementById("filter_department").value;
                 const yearDisplay = year ? year : "All Year";
 
-                // Mapping program studi KE BAHASA INGGRIS
                 const programMap = {
                     "AB": "Applied Business Administration",
                     "AK": "Accounting",
@@ -1450,7 +1430,6 @@ async function sendApprovalToAPI(id, status, comment = "-", letter_number = null
                 const departmentDisplay = department || "All Departments";
 
                 try {
-                    // Build URL dengan query params
                     let url = `${apiBase}/cdc/export-internship?year=${year}`;
 
                     if (department && department.trim() !== '') {
@@ -1549,10 +1528,7 @@ async function sendApprovalToAPI(id, status, comment = "-", letter_number = null
             }
 
             /**
-             * Fetch internship data (CDC) with start/end + optional filters
-             * @param {string} startDate YYYY-MM-DD
-             * @param {string} endDate YYYY-MM-DD
-             * @returns {Array|null}
+            Fetch internship data (CDC) with start/end + optional filters
              */
             async function fetchInternshipData(startDate, endDate) {
                 const yearDisplay = (startDate && endDate) ? `${startDate} to ${endDate}` : "All Range";
@@ -1609,198 +1585,192 @@ async function sendApprovalToAPI(id, status, comment = "-", letter_number = null
                 return year ? year : "All Year";
             }
 
-// Export to Excel (CDC) — tampilan mengikuti KOOR 100%
-async function exportToExcel() {
-    const { value: formValues } = await Swal.fire({
-        title: 'Select Date Range',
-        html:
-            '<label for="swal-start" style="display:block;text-align:left;margin-bottom:6px">Start date</label>' +
-            '<input id="swal-start" type="date" class="swal2-input" style="margin:0 auto;">' +
-            '<label for="swal-end" style="display:block;text-align:left;margin-top:8px;margin-bottom:6px">End date</label>' +
-            '<input id="swal-end" type="date" class="swal2-input" style="margin:0 auto;">',
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Export',
-        didOpen: () => {
-            const startInput = document.getElementById("swal-start");
-            const endInput = document.getElementById("swal-end");
+            // Export to Excel (CDC)
+            async function exportToExcel() {
+                const { value: formValues } = await Swal.fire({
+                    title: 'Select Internship Period',
+                    html:
+                        '<label for="swal-start" style="display:block;text-align:left;margin-bottom:6px">Start date</label>' +
+                        '<input id="swal-start" type="date" class="swal2-input" style="margin:0 auto;">' +
+                        '<label for="swal-end" style="display:block;text-align:left;margin-top:8px;margin-bottom:6px">End date</label>' +
+                        '<input id="swal-end" type="date" class="swal2-input" style="margin:0 auto;">',
+                    focusConfirm: false,
+                    showCancelButton: true,
+                    confirmButtonText: 'Export',
+                    didOpen: () => {
+                        const startInput = document.getElementById("swal-start");
+                        const endInput = document.getElementById("swal-end");
 
-            startInput.addEventListener("change", () => {
-                endInput.min = startInput.value;
-                endInput.value = "";
-            });
-        },
-        preConfirm: () => {
-            const start = document.getElementById('swal-start').value;
-            const end = document.getElementById('swal-end').value;
-
-            if (!start) return Swal.showValidationMessage('Start date is required');
-            if (!end) return Swal.showValidationMessage('End date is required');
-            if (new Date(start) > new Date(end))
-                return Swal.showValidationMessage('Start date must be before or equal to End date');
-
-            return { start, end };
-        }
-    });
-
-    if (!formValues) return;
-    const { start, end } = formValues;
-
-    Swal.fire({
-        title: 'Fetching data...',
-        text: 'Please wait...',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-    });
-
-    const data = await fetchInternshipData(start, end);
-
-    if (!data || data.length === 0) {
-        Swal.close();
-        Swal.fire({ icon: "info", title: "No Data Found", text: "No internship records found." });
-        return;
-    }
-
-    try {
-        const wb = XLSX.utils.book_new();
-
-        const excelData = [
-            ['INTERNSHIP DATA REPORT'],
-            [`Period: ${formatDate(start)} - ${formatDate(end)}`],
-            [`Total Students: ${data.length}`],
-            [],
-            [
-                'No','NIM','Name','Study Program','Department','Class','Semester',
-                'Coordinator','Company Name','Company Contact','Company Address',
-                'Start Date','End Date','Email','WhatsApp'
-            ],
-            ...data.map((item, index) => [
-                index + 1,
-                item.nim || '-',
-                item.student_name || '-',
-                item.program_study || '-',
-                item.department || '-',
-                item.class || '-',
-                item.semester || '-',
-                item.internship_coordinator || '-',
-                item.company_name || '-',
-                item.company_contact || '-',       // header TIDAK wrap
-                item.company_address || '-',       // wajib wrap
-                formatDate(item.start_date),
-                formatDate(item.end_date),
-                item.email || '-',
-                item.whatsapp_number || '-'
-            ])
-        ];
-
-        const ws = XLSX.utils.aoa_to_sheet(excelData);
-
-        // === Column Widths — SAMA KOOR ===
-        ws['!cols'] = [
-            { wch: 5 }, { wch: 15 }, { wch: 25 }, { wch: 35 }, { wch: 20 }, { wch: 10 },
-            { wch: 15 }, { wch: 25 }, { wch: 50 }, { wch: 15 },
-            { wch: 60 }, { wch: 14 }, { wch: 14 },
-            { wch: 30 }, { wch: 20 }
-        ];
-
-        // === Merge ===
-        ws['!merges'] = [
-            { s: { r: 0, c: 0 }, e: { r: 0, c: 14 } },
-            { s: { r: 1, c: 0 }, e: { r: 1, c: 14 } },
-            { s: { r: 2, c: 0 }, e: { r: 2, c: 14 } }
-        ];
-
-        // === Styles ===
-        const border = {
-            top: { style: 'thin' }, bottom: { style: 'thin' },
-            left: { style: 'thin' }, right: { style: 'thin' }
-        };
-
-        ws['A1'].s = { font: { name: 'Times New Roman', sz: 16, bold: true }, alignment: { horizontal: 'center' } };
-        ws['A2'].s = { alignment: { horizontal: 'center' } };
-        ws['A3'].s = { alignment: { horizontal: 'center' } };
-
-        const headerStyleWrap = {
-            font: { name: 'Times New Roman', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
-            fill: { fgColor: { rgb: '4472C4' } },
-            alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
-            border
-        };
-
-        const headerStyleNoWrap = {
-            font: { name: 'Times New Roman', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
-            fill: { fgColor: { rgb: '4472C4' } },
-            alignment: { horizontal: 'center', vertical: 'center', wrapText: false },
-            border
-        };
-
-        const headerCols = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O'];
-
-        headerCols.forEach((col, idx) => {
-            if (!ws[col + '5']) return;
-
-            // === company contact = index ke-9 -> NO WRAP ===
-            if (idx === 9) ws[col + '5'].s = headerStyleNoWrap;
-            else ws[col + '5'].s = headerStyleWrap;
-        });
-
-        // === Data Style ===
-        const dataStart = 6;
-
-        for (let r = dataStart; r < dataStart + data.length; r++) {
-            headerCols.forEach((col, index) => {
-                const cell = ws[col + r];
-                if (!cell) return;
-
-                // center untuk kolom No & NIM
-                const isCenter = (index === 0 || index === 1);
-
-                cell.s = {
-                    font: { name: 'Times New Roman', sz: 11 },
-                    alignment: {
-                        horizontal: isCenter ? 'center' : 'left',
-                        vertical: 'top',
-                        wrapText: true
+                        startInput.addEventListener("change", () => {
+                            endInput.min = startInput.value;
+                            endInput.value = "";
+                        });
                     },
-                    border
-                };
-            });
-        }
+                    preConfirm: () => {
+                        const start = document.getElementById('swal-start').value;
+                        const end = document.getElementById('swal-end').value;
 
-        XLSX.utils.book_append_sheet(wb, ws, 'Internship Report');
-        XLSX.writeFile(wb, `Internship_${start}_to_${end}.xlsx`);
+                        if (!start) return Swal.showValidationMessage('Start date is required');
+                        if (!end) return Swal.showValidationMessage('End date is required');
+                        if (new Date(start) > new Date(end))
+                            return Swal.showValidationMessage('Start date must be before or equal to End date');
 
-        Swal.fire({ icon: "success", title: "Success", text: "Excel downloaded successfully!" });
+                        return { start, end };
+                    }
+                });
 
-    } catch (err) {
-        Swal.fire({ icon: "error", title: "Error", text: err.message });
-    }
-}
+                if (!formValues) return;
+                const { start, end } = formValues;
 
-function formatDate(dateString) {
-    const d = new Date(dateString);
-    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-}
+                Swal.fire({
+                    title: 'Fetching data...',
+                    text: 'Please wait...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
 
-async function fetchInternshipData(start, end) {
-    try {
-        const url = `${apiBase}/cdc/export-internship?start_date=${start}&end_date=${end}`;
-        const res = await fetch(url);
-        const json = await res.json();
+                const data = await fetchInternshipData(start, end);
 
-        if (!json.success || !json.data || json.data.length === 0) return null;
+                if (!data || data.length === 0) {
+                    Swal.close();
+                    Swal.fire({ icon: "info", title: "No Data Found", text: "No internship records found." });
+                    return;
+                }
 
-        return json.data;
+                try {
+                    const wb = XLSX.utils.book_new();
 
-    } catch (err) {
-        Swal.fire({ icon: "error", title: "Error", text: err.message });
-        return null;
-    }
-}
+                    const excelData = [
+                        ['INTERNSHIP DATA REPORT'],
+                        [`Period: ${formatDate(start)} - ${formatDate(end)}`],
+                        [`Total Students: ${data.length}`],
+                        [],
+                        [
+                            'No', 'NIM', 'Name', 'Study Program', 'Department', 'Class', 'Semester',
+                            'Coordinator', 'Company Name', 'Company Contact', 'Company Address',
+                            'Start Date', 'End Date', 'Email', 'WhatsApp'
+                        ],
+                        ...data.map((item, index) => [
+                            index + 1,
+                            item.nim || '-',
+                            item.student_name || '-',
+                            item.program_study || '-',
+                            item.department || '-',
+                            item.class || '-',
+                            item.semester || '-',
+                            item.internship_coordinator || '-',
+                            item.company_name || '-',
+                            item.company_contact || '-',
+                            item.company_address || '-',
+                            formatDate(item.start_date),
+                            formatDate(item.end_date),
+                            item.email || '-',
+                            item.whatsapp_number || '-'
+                        ])
+                    ];
 
+                    const ws = XLSX.utils.aoa_to_sheet(excelData);
 
+                    // Column Widths
+                    ws['!cols'] = [
+                        { wch: 5 }, { wch: 15 }, { wch: 25 }, { wch: 35 }, { wch: 20 }, { wch: 10 },
+                        { wch: 15 }, { wch: 25 }, { wch: 50 }, { wch: 15 },
+                        { wch: 60 }, { wch: 14 }, { wch: 14 },
+                        { wch: 30 }, { wch: 20 }
+                    ];
 
+                    // Merge
+                    ws['!merges'] = [
+                        { s: { r: 0, c: 0 }, e: { r: 0, c: 14 } },
+                        { s: { r: 1, c: 0 }, e: { r: 1, c: 14 } },
+                        { s: { r: 2, c: 0 }, e: { r: 2, c: 14 } }
+                    ];
 
+                    // Styles
+                    const border = {
+                        top: { style: 'thin' }, bottom: { style: 'thin' },
+                        left: { style: 'thin' }, right: { style: 'thin' }
+                    };
+
+                    ws['A1'].s = { font: { name: 'Times New Roman', sz: 16, bold: true }, alignment: { horizontal: 'center' } };
+                    ws['A2'].s = { alignment: { horizontal: 'center' } };
+                    ws['A3'].s = { alignment: { horizontal: 'center' } };
+
+                    const headerStyleWrap = {
+                        font: { name: 'Times New Roman', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
+                        fill: { fgColor: { rgb: '4472C4' } },
+                        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+                        border
+                    };
+
+                    const headerStyleNoWrap = {
+                        font: { name: 'Times New Roman', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
+                        fill: { fgColor: { rgb: '4472C4' } },
+                        alignment: { horizontal: 'center', vertical: 'center', wrapText: false },
+                        border
+                    };
+
+                    const headerCols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
+
+                    headerCols.forEach((col, idx) => {
+                        if (!ws[col + '5']) return;
+
+                        if (idx === 9) ws[col + '5'].s = headerStyleNoWrap;
+                        else ws[col + '5'].s = headerStyleWrap;
+                    });
+
+                    // === Data Style ===
+                    const dataStart = 6;
+
+                    for (let r = dataStart; r < dataStart + data.length; r++) {
+                        headerCols.forEach((col, index) => {
+                            const cell = ws[col + r];
+                            if (!cell) return;
+
+                            const isCenter = (index === 0 || index === 1);
+
+                            cell.s = {
+                                font: { name: 'Times New Roman', sz: 11 },
+                                alignment: {
+                                    horizontal: isCenter ? 'center' : 'left',
+                                    vertical: 'top',
+                                    wrapText: true
+                                },
+                                border
+                            };
+                        });
+                    }
+
+                    XLSX.utils.book_append_sheet(wb, ws, 'Internship Report');
+                    XLSX.writeFile(wb, `Internship_${start}_to_${end}.xlsx`);
+
+                    Swal.fire({ icon: "success", title: "Success", text: "Excel downloaded successfully!" });
+
+                } catch (err) {
+                    Swal.fire({ icon: "error", title: "Error", text: err.message });
+                }
+            }
+
+            function formatDate(dateString) {
+                const d = new Date(dateString);
+                return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+            }
+
+            async function fetchInternshipData(start, end) {
+                try {
+                    const url = `${apiBase}/cdc/export-internship?start_date=${start}&end_date=${end}`;
+                    const res = await fetch(url);
+                    const json = await res.json();
+
+                    if (!json.success || !json.data || json.data.length === 0) return null;
+
+                    return json.data;
+
+                } catch (err) {
+                    Swal.fire({ icon: "error", title: "Error", text: err.message });
+                    return null;
+                }
+            }
         </script>
 </body>
 

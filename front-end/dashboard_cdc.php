@@ -49,7 +49,6 @@ if ($id_kampus) {
 <html lang="en">
 
 <head>
-    <!-- Meta for Compatibility -->
     <meta charset="utf-8">
     <title>Dashboard CDC</title>
     <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
@@ -74,7 +73,7 @@ if ($id_kampus) {
                 "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
                 urls: ['./assets/css/fonts.min.css']
             },
-            active: function() {
+            active: function () {
                 sessionStorage.fonts = true;
             }
         });
@@ -85,41 +84,31 @@ if ($id_kampus) {
 
     <script src='./core/component/jquery.min.js'></script>
     <script>
-        $(function() {});
+        $(function () { });
     </script>
     <script defer src='./core/component/sweetalert2.min.js'></script>
     <script defer src='./core/component/soloalert.js'></script>
 
     <style type="text/css">
-        /* Posisi relatif untuk ikon agar badge bisa ditempatkan relatif terhadapnya */
         .notification-icon {
             position: relative;
-            /* Sesuaikan ukuran ikon jika diperlukan */
         }
 
-        /* Badge notifikasi kecil hijau */
         .custom-notification-badge {
             position: absolute;
             top: -8px;
-            /* Sesuaikan posisi badge secara vertikal */
             right: -8px;
-            /* Sesuaikan posisi badge secara horizontal */
             color: white;
             border-radius: 50%;
             padding: 2px 6px;
-            /* Ukuran badge */
             font-size: 10px;
-            /* Ukuran angka */
             line-height: 1;
             min-width: 16px;
-            /* Pastikan ukuran minimal badge */
             text-align: center;
-            /* Pusatkan angka di dalam badge */
         }
 
         .fc-sun {
             color: red;
-            /* Mengubah warna font menjadi merah pada hari Minggu */
         }
 
         .disabled2 {
@@ -151,7 +140,6 @@ if ($id_kampus) {
             word-wrap: break-word;
             min-width: 140px;
             max-width: 140px;
-            /* max-width:150px; */
         }
 
         .wrap2 {
@@ -159,7 +147,6 @@ if ($id_kampus) {
             word-wrap: break-word;
             min-width: 170px;
             max-width: 170px;
-            /* max-width:150px; */
         }
 
         .main-panel {
@@ -168,7 +155,6 @@ if ($id_kampus) {
 
         .sidebar a.active {
             background-color: #007bff;
-            /* warna biru */
             color: white !important;
             border-radius: 10px;
         }
@@ -177,9 +163,6 @@ if ($id_kampus) {
             color: white;
         }
 
-        /* ========== REFINED CSS - Ganti CSS Chart yang Lama ========== */
-
-        /* Filter Section - Lebih rapi */
         .filter-section {
             background: white;
             padding: 20px 25px;
@@ -243,7 +226,6 @@ if ($id_kampus) {
             border-color: #0d5bb8;
         }
 
-        /* Chart Cards - Lebih konsisten */
         .chart-card {
             height: 600px;
             overflow-y: auto;
@@ -266,7 +248,6 @@ if ($id_kampus) {
             width: 100% !important;
         }
 
-        /* Pie Card - Better spacing */
         .pie-card {
             height: 600px;
             overflow-y: auto;
@@ -285,7 +266,6 @@ if ($id_kampus) {
             font-weight: 700;
         }
 
-        /* Pie Items - Lebih clean */
         .pie-item {
             margin-bottom: 18px;
             padding: 18px;
@@ -316,7 +296,6 @@ if ($id_kampus) {
             line-height: 1.4;
         }
 
-        /* Container Pie - Smooth scroll */
         #pieContainer {
             flex: 1;
             overflow-y: auto;
@@ -342,7 +321,6 @@ if ($id_kampus) {
             background: #868e96;
         }
 
-        /* Legend Box - Tetap di bawah */
         .legend-box {
             margin-top: 15px;
             padding: 12px 15px;
@@ -368,7 +346,6 @@ if ($id_kampus) {
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
-        /* Scrollbar untuk Chart Card */
         .chart-card::-webkit-scrollbar {
             width: 6px;
         }
@@ -387,7 +364,6 @@ if ($id_kampus) {
             background: #868e96;
         }
 
-        /* Responsive Design */
         @media (max-width: 991px) {
 
             .chart-card,
@@ -461,7 +437,6 @@ if ($id_kampus) {
             }
         }
 
-        /* Pie Container - 2 Column Grid */
         #pieContainer {
             flex: 1;
             overflow-y: auto;
@@ -473,7 +448,6 @@ if ($id_kampus) {
             align-content: start;
         }
 
-        /* Pie Items - Optimized untuk 2 kolom */
         .pie-item {
             margin-bottom: 0;
             padding: 15px;
@@ -508,7 +482,6 @@ if ($id_kampus) {
             text-align: center;
         }
 
-        /* Scrollbar styling */
         #pieContainer::-webkit-scrollbar {
             width: 6px;
         }
@@ -527,7 +500,6 @@ if ($id_kampus) {
             background: #868e96;
         }
 
-        /* Responsive - Balik ke 1 kolom di mobile */
         @media (max-width: 1200px) {
             #pieContainer {
                 grid-template-columns: repeat(2, 1fr);
@@ -569,7 +541,6 @@ if ($id_kampus) {
 <body>
 
     <div class="wrapper">
-
         <div class="modal fade" id="Modalkalender" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -596,9 +567,11 @@ if ($id_kampus) {
             <!-- Logo Header -->
             <div class="logo-header" data-background-color="blue2">
                 <a href="landing_page.php" class="logo">
-                    <img src="./assets/img/my_internship_logo_grey5.png" alt="navbar brand" class="navbar-brand" style="width: 180px; height: auto;">
+                    <img src="./assets/img/my_internship_logo_grey5.png" alt="navbar brand" class="navbar-brand"
+                        style="width: 180px; height: auto;">
                 </a>
-                <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse" data-target="collapse" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse"
+                    data-target="collapse" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon">
                         <i class="icon-menu"></i>
                     </span>
@@ -618,9 +591,10 @@ if ($id_kampus) {
                     <div class="collapse" id="search-nav">
                         <ul class="navbar-nav navbar-left topbar-nav nav-search mr-md-3 align-items-center">
 
-                            <!-- Tanggal -->
+                            <!-- Date -->
                             <li class="nav-item dropdown hidden-caret">
-                                <a aria-label="Current Date and Calendar" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+                                <a aria-label="Current Date and Calendar" class="nav-link dropdown-toggle"
+                                    data-toggle="dropdown" href="#" aria-expanded="false">
                                     <span id="date">Wed, 08 Oct 2025</span>
                                 </a>
                                 <ul class="float-right dropdown-menu dropdown-calendar dropdown-user animated fadeIn">
@@ -632,9 +606,10 @@ if ($id_kampus) {
                                 </ul>
                             </li>
 
-                            <!-- Jam -->
+                            <!-- Time -->
                             <li class="nav-item dropdown hidden-caret">
-                                <a aria-label="Current Time" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+                                <a aria-label="Current Time" class="nav-link dropdown-toggle" data-toggle="dropdown"
+                                    href="#" aria-expanded="false">
                                     <span id="clock">22 : 12 : 24</span>
                                 </a>
                                 <ul class="float-right dropdown-menu dropdown-calendar dropdown-user animated fadeIn">
@@ -652,23 +627,27 @@ if ($id_kampus) {
                     </div>
                     <ul class="navbar-nav topbar-nav ml-md-auto align-items-center">
                         <li class="nav-item toggle-nav-search hidden-caret">
-                            <a class="nav-link" data-toggle="collapse" href="#search-nav" role="button" aria-expanded="false" aria-controls="search-nav">
+                            <a class="nav-link" data-toggle="collapse" href="#search-nav" role="button"
+                                aria-expanded="false" aria-controls="search-nav">
                                 <i class="fa fa-clock"></i>
                             </a>
                         </li>
                         <li class="nav-item dropdown hidden-caret">
-                            <a class="nav-link" href="#" role="button" data-toggle="modal" data-target="#Modalkalender" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link" href="#" role="button" data-toggle="modal" data-target="#Modalkalender"
+                                aria-haspopup="true" aria-expanded="false">
                                 <i class="fa fa-calendar"></i>
                             </a>
                         </li>
 
                         <!-- Notification -->
                         <li class="nav-item dropdown hidden-caret" id="notification">
-                            <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fa fa-bell"></i>
                                 <span id="count_notification"></span>
                             </a>
-                            <ul class='dropdown-menu messages-notif-box animated fadeIn' aria-labelledby='notifDropdown' id=''>
+                            <ul class='dropdown-menu messages-notif-box animated fadeIn' aria-labelledby='notifDropdown'
+                                id=''>
                                 <li>
                                     <div class='dropdown-title'>New Notification</div>
                                 </li>
@@ -678,22 +657,27 @@ if ($id_kampus) {
                             </ul>
                         </li>
 
-                        <!-- Profil -->
+                        <!-- Profile -->
                         <li class="nav-item dropdown hidden-caret">
-                            <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#" aria-expanded="false">
+                            <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#"
+                                aria-expanded="false">
                                 <div class="avatar-sm">
-                                    <img src="./assets/img/profilelecturer.jpg" alt="..." class="avatar-img rounded-circle">
+                                    <img src="./assets/img/profilelecturer.jpg" alt="..."
+                                        class="avatar-img rounded-circle">
                                 </div>
                             </a>
                             <ul class="dropdown-menu dropdown-user animated fadeIn">
                                 <div class="dropdown-user-scroll scrollbar-outer">
                                     <li>
                                         <div class="user-box">
-                                            <div class="avatar-lg"><img src="./assets/img/profilelecturer.jpg" alt="image profile" class="avatar-img rounded"></div>
+                                            <div class="avatar-lg"><img src="./assets/img/profilelecturer.jpg"
+                                                    alt="image profile" class="avatar-img rounded"></div>
                                             <div class="u-text">
                                                 <h5><?php echo htmlspecialchars($user['name']); ?></h5>
-                                                <p class="text-muted"> CDC at :<br><?= htmlspecialchars($nama_kampus) ?></p>
-                                                <a href="index.php?page=industry_profile" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
+                                                <p class="text-muted"> CDC at :<br><?= htmlspecialchars($nama_kampus) ?>
+                                                </p>
+                                                <a href="index.php?page=industry_profile"
+                                                    class="btn btn-xs btn-secondary btn-sm">View Profile</a>
                                             </div>
                                         </div>
                                     </li>
@@ -701,7 +685,6 @@ if ($id_kampus) {
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="index.php?page=industry_profile">My Profile</a>
                                         <a class="dropdown-item" href="index.php?page=my_company">My Internship</a>
-                                        <!-- <a class="dropdown-item" href="#">Inbox</a> -->
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="#" onclick="logout_confirm()">Logout</a>
                                     </li>
@@ -726,7 +709,8 @@ if ($id_kampus) {
                             <a data-toggle="collapse" href="#collapseExample" aria-expanded="true">
                                 <span>
                                     <span class="wrap2"><?php echo htmlspecialchars($user['name']); ?></span>
-                                    <span class="user-level wrap2">CDC at : <br><?php echo htmlspecialchars($nama_kampus); ?></span>
+                                    <span class="user-level wrap2">CDC at :
+                                        <br><?php echo htmlspecialchars($nama_kampus); ?></span>
                                 </span>
                                 </span>
                             </a>
@@ -798,19 +782,20 @@ if ($id_kampus) {
                 </div>
             </div>
 
-            <!-- ====== NEW CONTENT (Filter + Charts Section) ====== -->
             <div class="container-fluid mt-4">
-
                 <!-- Filter Section -->
-                <div class="filter-section mb-4 p-3 bg-white rounded shadow-sm d-flex justify-content-between align-items-center flex-wrap">
+                <div
+                    class="filter-section mb-4 p-3 bg-white rounded shadow-sm d-flex justify-content-between align-items-center flex-wrap">
                     <div class="department-nav d-flex align-items-center gap-2">
 
-                        <div class="current-dept font-weight-bold text-dark bg-light px-3 py-2 rounded" id="currentDept">All Departments</div>
+                        <div class="current-dept font-weight-bold text-dark bg-light px-3 py-2 rounded"
+                            id="currentDept">All Departments</div>
 
                     </div>
                     <div>
-                        <select class="year-filter border-primary rounded px-3 py-2 font-weight-bold text-primary" id="yearFilter" onchange="filterByYear()">
-                            <option value="all" selected>All Years</option>  
+                        <select class="year-filter border-primary rounded px-3 py-2 font-weight-bold text-primary"
+                            id="yearFilter" onchange="filterByYear()">
+                            <option value="all" selected>All Years</option>
                             <option value="2025">2025</option>
                             <option value="2024">2024</option>
                             <option value="2023">2023</option>
@@ -833,7 +818,8 @@ if ($id_kampus) {
                     <!-- RIGHT PIE CHARTS -->
                     <div class="col-md-5 mb-4">
                         <div class="pie-card">
-                            <h5 class="text-center font-weight-bold mb-3" id="pieTitle">Internship Acceptance Rate by Department</h5>
+                            <h5 class="text-center font-weight-bold mb-3" id="pieTitle">Internship Acceptance Rate by
+                                Department</h5>
 
                             <div id="pieContainer"></div>
 
@@ -861,10 +847,10 @@ if ($id_kampus) {
                 </div>
             </footer>
 
-            <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+            <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+                integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
 
             <!--   Core JS Files   -->
-            <!-- <script src="./assets/js/core/jquery.3.2.1.min.js"></script> -->
             <script src="./assets/js/core/popper.min.js"></script>
             <script src="./assets/js/core/bootstrap.min.js"></script>
 
@@ -894,693 +880,663 @@ if ($id_kampus) {
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
             <script>
-// ============================================
-// LOGOUT & UTILITY FUNCTIONS
-// ============================================
-function logout_confirm() {
-    let _token = $('meta[name="csrf-token"]').attr('content');
+                // LOGOUT & UTILITY FUNCTIONS
+                function logout_confirm() {
+                    let _token = $('meta[name="csrf-token"]').attr('content');
 
-    Swal.fire({
-        title: 'Logout from your account ?',
-        text: 'Are you sure you want to end the current session?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: "#DD6B55",
-        confirmButtonText: "Yes, I'm sure!",
-        cancelButtonText: "Cancel"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $.ajax({
-                url: "session_logout.php",
-                type: "POST",
-                data: { 'token': _token },
-                success: function() {
-                    setTimeout(function() {
-                        localStorage.removeItem('first');
-                        localStorage.removeItem('first_chime');
-                        localStorage.removeItem('next_chime');
-                        localStorage.removeItem('dashboard_dept_index');
-                        localStorage.removeItem('dashboard_year');
-                        window.location.href = 'role_login.php';
-                    }, 200);
-                },
-                error: function() {
-                    Swal.fire('Error', 'Logout failed, please try again.', 'error');
-                }
-            });
-        }
-    });
-}
-
-function copyToClipboard(text) {
-    var tempInput = document.createElement("input");
-    document.body.appendChild(tempInput);
-    tempInput.value = text;
-    tempInput.select();
-    document.execCommand("copy");
-    document.body.removeChild(tempInput);
-    alert("Text copied to clipboard: " + text);
-}
-
-// ============================================
-// CLOCK & CALENDAR FUNCTIONS
-// ============================================
-function clock_run() {
-    'use strict';
-    let d = new Date();
-    let en_day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    let en_month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    let day = en_day[d.getDay()];
-    let date = d.getDate();
-    let month = en_month[d.getMonth()];
-    let year = (d.getYear() + 1900);
-    let curr_date = day + ', ' + date + ' ' + month + ' ' + year;
-    
-    $("#date").text(curr_date);
-    
-    setInterval(function() {
-        let d = new Date();
-        let hours = d.getHours();
-        let minutes = d.getMinutes();
-        let seconds = d.getSeconds();
-        let time = ((hours < 10 ? "0" : "") + hours) + ' : ' +
-                   ((minutes < 10 ? "0" : "") + minutes) + ' : ' +
-                   ((seconds < 10 ? "0" : "") + seconds);
-        
-        $("#clock").text(time);
-        $("#clock2").text(time);
-    }, 1000);
-}
-
-function show_calendar() {
-    var $calendar = $('#calendar');
-    $calendar.fullCalendar({
-        fixedWeekCount: false
-    });
-}
-
-// ============================================
-// SIDEBAR NAVIGATION HIGHLIGHT
-// ============================================
-function initSidebarHighlight() {
-    const navItems = document.querySelectorAll(".sidebar .nav-item");
-    
-    navItems.forEach(item => {
-        item.addEventListener("click", function() {
-            navItems.forEach(i => i.classList.remove("active"));
-            this.classList.add("active");
-        });
-    });
-    
-    const currentPage = window.location.href;
-    navItems.forEach(item => {
-        const link = item.querySelector("a");
-        if (link && currentPage.includes(link.getAttribute("href"))) {
-            navItems.forEach(i => i.classList.remove("active"));
-            item.classList.add("active");
-        }
-    });
-}
-
-// ============================================
-// GLOBAL VARIABLES
-// ============================================
-let departmentsData = {};
-let departments = [];
-let currentDeptIndex = 0;
-let responseChart = null;
-let pieCharts = [];
-
-// ============================================
-// LOCAL STORAGE - PERSISTENT STATE
-// ============================================
-function saveDashboardState() {
-    try {
-        localStorage.setItem('dashboard_dept_index', currentDeptIndex.toString());
-        const yearSelect = document.getElementById('yearFilter');
-        if (yearSelect) {
-            localStorage.setItem('dashboard_year', yearSelect.value);
-        }
-        console.log('State saved: Department Index ' + currentDeptIndex + ', Year ' + (yearSelect ? yearSelect.value : 'N/A'));
-    } catch (e) {
-        console.error('Error saving dashboard state:', e);
-    }
-}
-
-function loadDashboardState() {
-    try {
-        const savedIndex = localStorage.getItem('dashboard_dept_index');
-        const savedYear = localStorage.getItem('dashboard_year');
-        
-        const state = {
-            deptIndex: savedIndex !== null ? parseInt(savedIndex) : 0,
-           year: savedYear || 'all'
-        };
-        
-        console.log('State loaded: Department Index ' + state.deptIndex + ', Year ' + state.year);
-        return state;
-    } catch (e) {
-        console.error('Error loading dashboard state:', e);
-        return {
-            deptIndex: 0,
-            year: new Date().getFullYear().toString()
-        };
-    }
-}
-
-// ============================================
-// FETCH DASHBOARD DATA FROM API
-// ============================================
-async function fetchDashboardData(year) {
-    try {
-        console.log('Fetching data for year: ' + year);
-        
-        let url = 'http://localhost:8000/api/student/dashboard/statistics';
-        if (year && year !== 'all') {
-        url += '?year=' + encodeURIComponent(year);
-}
-        const response = await fetch(url);
-        const result = await response.json();
-
-        if (result.success) {
-            const data = result.data;
-            departments = data.departments;
-            
-            if (departments.length === 0) {
-                console.warn('No departments found');
-                return false;
-            }
-            
-            console.log('Found ' + departments.length + ' departments:', departments);
-            
-            departmentsData = {};
-            
-            // Group data by department
-            departments.forEach(dept => {
-                const deptResponseTime = data.responseTime.filter(r => r.department === dept);
-                const deptAcceptanceRate = data.acceptanceRate.filter(r => r.department === dept);
-                
-                const programs = deptResponseTime.map(r => r.program);
-                const responseTimes = deptResponseTime.map(r => parseFloat(r.avgResponseTimeKoor)); 
-                const acceptanceRates = deptAcceptanceRate.map(r => [r.acceptanceRate, r.rejectionRate]);
-                
-                departmentsData[dept] = {
-                    programs: programs,
-                    responseTime: responseTimes,
-                    acceptanceRates: acceptanceRates,
-                    hasData: deptResponseTime.some(r => r.hasData) || deptAcceptanceRate.some(r => r.hasData)
-                };
-                
-                console.log('  ' + dept + ': ' + programs.length + ' programs, Has Data: ' + departmentsData[dept].hasData);
-            });
-            
-            return true;
-        } else {
-            console.error('API Error:', result.message);
-            return false;
-        }
-    } catch (error) {
-        console.error('Fetch Error:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Connection Error',
-            text: 'Failed to load dashboard data. Please check your connection.',
-            confirmButtonColor: '#dc3545'
-        });
-        return false;
-    }
-}
-
-// ============================================
-// BAR CHART - Response Time
-// ============================================
-function createResponseChart(labels, data) {
-    const canvas = document.getElementById('responseChart');
-    if (!canvas) {
-        console.error('Canvas responseChart not found!');
-        return;
-    }
-
-    // Destroy previous chart
-    if (responseChart) {
-        try {
-            responseChart.destroy();
-        } catch (e) {
-            console.error('Error destroying chart:', e);
-        }
-        responseChart = null;
-    }
-
-    // Clear canvas
-    canvas.removeAttribute('width');
-    canvas.removeAttribute('height');
-    canvas.removeAttribute('style');
-
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Calculate dimensions
-    const barHeight = 80;
-    const minHeight = 400;
-    const chartHeight = Math.max(minHeight, labels.length * barHeight);
-    const containerWidth = canvas.parentElement.offsetWidth;
-
-    // Set canvas size
-    canvas.width = containerWidth;
-    canvas.height = chartHeight;
-    canvas.style.width = '100%';
-    canvas.style.height = chartHeight + 'px';
-
-    // Create chart
-    responseChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Average Response Time (Days)',
-                data: data,
-                backgroundColor: '#4e73df',
-                borderRadius: 5,
-                barThickness: 55
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: false,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    max: Math.max(7, Math.ceil(Math.max(...data) * 1.1)),
-                    ticks: { stepSize: 1, font: { size: 11 } },
-                    title: { display: true, text: 'Days', font: { size: 12, weight: 'bold' } },
-                    grid: { color: '#e9ecef' }
-                },
-                y: {
-                    ticks: { color: '#495057', font: { size: 11 }, autoSkip: false },
-                    grid: { display: false }
-                }
-            },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.8)',
-                    padding: 10,
-                    callbacks: {
-                        label: (context) => `Response Time: ${context.parsed.x.toFixed(2)} days`
-                    }
-                }
-            }
-        }
-    });
-    
-    console.log('Bar chart created: ' + labels.length + ' programs');
-}
-
-// ============================================
-// PIE CHARTS - Acceptance Rate
-// ============================================
-function updatePieCharts(pieData) {
-    const container = document.getElementById('pieContainer');
-    if (!container) {
-        console.error('Pie container not found!');
-        return;
-    }
-
-    // Destroy old charts
-    pieCharts.forEach((c, index) => {
-        try {
-            c.destroy();
-        } catch (e) {
-            console.error('Error destroying pie chart ' + index + ':', e);
-        }
-    });
-    pieCharts = [];
-
-    // Clear container
-    container.innerHTML = '';
-
-    // Create new pie charts
-    pieData.forEach((item, i) => {
-        const pieDiv = document.createElement('div');
-        pieDiv.className = 'pie-item mb-3';
-
-        const title = document.createElement('div');
-        title.className = 'text-center font-weight-bold mb-2';
-        title.style.fontSize = '13px';
-        title.textContent = item.name;
-
-        const canvas = document.createElement('canvas');
-        canvas.id = `pie-${i}`;
-
-        pieDiv.appendChild(title);
-        pieDiv.appendChild(canvas);
-        container.appendChild(pieDiv);
-
-        const ctx = canvas.getContext('2d');
-        const chart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: ['Accepted', 'Rejected'],
-                datasets: [{
-                    data: item.data,
-                    backgroundColor: ['#28a745', '#dc3545'],
-                    borderColor: '#fff',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: 'rgba(0,0,0,0.8)',
-                        padding: 10,
-                        callbacks: {
-                            label: (ctx) => `${ctx.label}: ${ctx.formattedValue}%`
+                    Swal.fire({
+                        title: 'Logout from your account ?',
+                        text: 'Are you sure you want to end the current session?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "Yes, I'm sure!",
+                        cancelButtonText: "Cancel"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $.ajax({
+                                url: "session_logout.php",
+                                type: "POST",
+                                data: { 'token': _token },
+                                success: function () {
+                                    setTimeout(function () {
+                                        localStorage.removeItem('first');
+                                        localStorage.removeItem('first_chime');
+                                        localStorage.removeItem('next_chime');
+                                        localStorage.removeItem('dashboard_dept_index');
+                                        localStorage.removeItem('dashboard_year');
+                                        window.location.href = 'role_login.php';
+                                    }, 200);
+                                },
+                                error: function () {
+                                    Swal.fire('Error', 'Logout failed, please try again.', 'error');
+                                }
+                            });
                         }
+                    });
+                }
+
+                function copyToClipboard(text) {
+                    var tempInput = document.createElement("input");
+                    document.body.appendChild(tempInput);
+                    tempInput.value = text;
+                    tempInput.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(tempInput);
+                    alert("Text copied to clipboard: " + text);
+                }
+
+                // CLOCK & CALENDAR FUNCTIONS
+                function clock_run() {
+                    'use strict';
+                    let d = new Date();
+                    let en_day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    let en_month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    let day = en_day[d.getDay()];
+                    let date = d.getDate();
+                    let month = en_month[d.getMonth()];
+                    let year = (d.getYear() + 1900);
+                    let curr_date = day + ', ' + date + ' ' + month + ' ' + year;
+
+                    $("#date").text(curr_date);
+
+                    setInterval(function () {
+                        let d = new Date();
+                        let hours = d.getHours();
+                        let minutes = d.getMinutes();
+                        let seconds = d.getSeconds();
+                        let time = ((hours < 10 ? "0" : "") + hours) + ' : ' +
+                            ((minutes < 10 ? "0" : "") + minutes) + ' : ' +
+                            ((seconds < 10 ? "0" : "") + seconds);
+
+                        $("#clock").text(time);
+                        $("#clock2").text(time);
+                    }, 1000);
+                }
+
+                function show_calendar() {
+                    var $calendar = $('#calendar');
+                    $calendar.fullCalendar({
+                        fixedWeekCount: false
+                    });
+                }
+
+                // SIDEBAR NAVIGATION HIGHLIGHT
+                function initSidebarHighlight() {
+                    const navItems = document.querySelectorAll(".sidebar .nav-item");
+
+                    navItems.forEach(item => {
+                        item.addEventListener("click", function () {
+                            navItems.forEach(i => i.classList.remove("active"));
+                            this.classList.add("active");
+                        });
+                    });
+
+                    const currentPage = window.location.href;
+                    navItems.forEach(item => {
+                        const link = item.querySelector("a");
+                        if (link && currentPage.includes(link.getAttribute("href"))) {
+                            navItems.forEach(i => i.classList.remove("active"));
+                            item.classList.add("active");
+                        }
+                    });
+                }
+
+                // GLOBAL VARIABLES
+                let departmentsData = {};
+                let departments = [];
+                let currentDeptIndex = 0;
+                let responseChart = null;
+                let pieCharts = [];
+
+                // LOCAL STORAGE - PERSISTENT STATE
+                function saveDashboardState() {
+                    try {
+                        localStorage.setItem('dashboard_dept_index', currentDeptIndex.toString());
+                        const yearSelect = document.getElementById('yearFilter');
+                        if (yearSelect) {
+                            localStorage.setItem('dashboard_year', yearSelect.value);
+                        }
+                        console.log('State saved: Department Index ' + currentDeptIndex + ', Year ' + (yearSelect ? yearSelect.value : 'N/A'));
+                    } catch (e) {
+                        console.error('Error saving dashboard state:', e);
                     }
                 }
-            }
-        });
 
-        pieCharts.push(chart);
-    });
-    
-    console.log('Created ' + pieData.length + ' pie charts');
-}
+                function loadDashboardState() {
+                    try {
+                        const savedIndex = localStorage.getItem('dashboard_dept_index');
+                        const savedYear = localStorage.getItem('dashboard_year');
 
-// ============================================
-// NAVIGATION FUNCTIONS
-// ============================================
-function navigateDepartment(dir) {
-    currentDeptIndex += dir;
-    if (currentDeptIndex < 0) currentDeptIndex = 0;
-    if (currentDeptIndex >= departments.length) currentDeptIndex = departments.length - 1;
+                        const state = {
+                            deptIndex: savedIndex !== null ? parseInt(savedIndex) : 0,
+                            year: savedYear || 'all'
+                        };
 
-    console.log('Navigating to department index: ' + currentDeptIndex);
+                        console.log('State loaded: Department Index ' + state.deptIndex + ', Year ' + state.year);
+                        return state;
+                    } catch (e) {
+                        console.error('Error loading dashboard state:', e);
+                        return {
+                            deptIndex: 0,
+                            year: new Date().getFullYear().toString()
+                        };
+                    }
+                }
 
-    // SAVE state immediately
-    saveDashboardState();
+                // FETCH DASHBOARD DATA FROM API
+                async function fetchDashboardData(year) {
+                    try {
+                        console.log('Fetching data for year: ' + year);
 
-    updateDashboard();
-    updateNavButtons();
+                        let url = 'http://localhost:8000/api/student/dashboard/statistics';
+                        if (year && year !== 'all') {
+                            url += '?year=' + encodeURIComponent(year);
+                        }
+                        const response = await fetch(url);
+                        const result = await response.json();
 
-    // Scroll to chart
-    const chartRow = document.querySelector('#responseChart')?.closest('.row');
-    if (chartRow) {
-        chartRow.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
+                        if (result.success) {
+                            const data = result.data;
+                            departments = data.departments;
 
-function updateNavButtons() {
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
+                            if (departments.length === 0) {
+                                console.warn('No departments found');
+                                return false;
+                            }
 
-    if (prevBtn) prevBtn.disabled = currentDeptIndex === 0;
-    if (nextBtn) nextBtn.disabled = currentDeptIndex === departments.length - 1;
-}
+                            console.log('Found ' + departments.length + ' departments:', departments);
 
-function updateDashboard() {
-    if (departments.length === 0) {
-        const currentDeptEl = document.getElementById('currentDept');
-        if (currentDeptEl) currentDeptEl.textContent = 'No Data Available';
-        
-        showNoDataState();
-        return;
-    }
-    
-    const dept = departments[currentDeptIndex];
-    const data = departmentsData[dept];
+                            departmentsData = {};
 
-    console.log('Updating dashboard for: ' + dept + ' (index ' + currentDeptIndex + ')');
+                            // Group data by department
+                            departments.forEach(dept => {
+                                const deptResponseTime = data.responseTime.filter(r => r.department === dept);
+                                const deptAcceptanceRate = data.acceptanceRate.filter(r => r.department === dept);
 
-    // Update department title
-    const currentDeptEl = document.getElementById('currentDept');
-    if (currentDeptEl) {
-        currentDeptEl.textContent = dept + ' Department';
-    }
+                                const programs = deptResponseTime.map(r => r.program);
+                                const responseTimes = deptResponseTime.map(r => parseFloat(r.avgResponseTimeKoor));
+                                const acceptanceRates = deptAcceptanceRate.map(r => [r.acceptanceRate, r.rejectionRate]);
 
-    // Check if department has programs
-    if (!data || !data.programs || data.programs.length === 0) {
-        console.log('No programs found for ' + dept);
-        showNoDataState();
-        return;
-    }
+                                departmentsData[dept] = {
+                                    programs: programs,
+                                    responseTime: responseTimes,
+                                    acceptanceRates: acceptanceRates,
+                                    hasData: deptResponseTime.some(r => r.hasData) || deptAcceptanceRate.some(r => r.hasData)
+                                };
 
-    // Render charts
-    console.log('Rendering charts for ' + dept + ': ' + data.programs.length + ' programs');
-    createResponseChart(data.programs, data.responseTime);
+                                console.log('  ' + dept + ': ' + programs.length + ' programs, Has Data: ' + departmentsData[dept].hasData);
+                            });
 
-    const pies = data.programs.map((p, i) => ({
-        name: p,
-        data: data.acceptanceRates[i] || [0, 0]
-    }));
-    updatePieCharts(pies);
+                            return true;
+                        } else {
+                            console.error('API Error:', result.message);
+                            return false;
+                        }
+                    } catch (error) {
+                        console.error('Fetch Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Connection Error',
+                            text: 'Failed to load dashboard data. Please check your connection.',
+                            confirmButtonColor: '#dc3545'
+                        });
+                        return false;
+                    }
+                }
 
-    const pieTitle = document.getElementById('pieTitle');
-    if (pieTitle) {
-        pieTitle.textContent = 'Internship Acceptance Rate — ' + dept;
-    }
-}
+                // BAR CHART - Response Time
+                function createResponseChart(labels, data) {
+                    const canvas = document.getElementById('responseChart');
+                    if (!canvas) {
+                        console.error('Canvas responseChart not found!');
+                        return;
+                    }
 
-function showNoDataState() {
-    // Destroy bar chart
-    if (responseChart) {
-        try {
-            responseChart.destroy();
-        } catch (e) {}
-        responseChart = null;
-    }
+                    // Destroy previous chart
+                    if (responseChart) {
+                        try {
+                            responseChart.destroy();
+                        } catch (e) {
+                            console.error('Error destroying chart:', e);
+                        }
+                        responseChart = null;
+                    }
 
-    // Destroy pie charts
-    pieCharts.forEach(c => {
-        try {
-            c.destroy();
-        } catch (e) {}
-    });
-    pieCharts = [];
+                    // Clear canvas
+                    canvas.removeAttribute('width');
+                    canvas.removeAttribute('height');
+                    canvas.removeAttribute('style');
 
-    // Clear bar chart canvas
-    const responseCanvas = document.getElementById('responseChart');
-    if (responseCanvas) {
-        const ctx = responseCanvas.getContext('2d');
-        responseCanvas.width = responseCanvas.parentElement.offsetWidth;
-        responseCanvas.height = 400;
-        responseCanvas.style.width = '100%';
-        responseCanvas.style.height = '400px';
-        ctx.clearRect(0, 0, responseCanvas.width, responseCanvas.height);
-    }
-    
-    // Clear pie container
-    const pieContainer = document.getElementById('pieContainer');
-    if (pieContainer) {
-        pieContainer.innerHTML = '';
-    }
-    
-    console.log('Blank state rendered');
-}
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-// ============================================
-// FILTER BY YEAR - KEEP CURRENT DEPARTMENT
-// ============================================
-async function filterByYear() {
-    const yearSelect = document.getElementById('yearFilter');
-    if (!yearSelect) {
-        console.error('Year filter not found!');
-        return;
-    }
+                    // Calculate dimensions
+                    const barHeight = 80;
+                    const minHeight = 400;
+                    const chartHeight = Math.max(minHeight, labels.length * barHeight);
+                    const containerWidth = canvas.parentElement.offsetWidth;
 
-    const selectedValue = yearSelect.value;
-    currentYearFilter = selectedValue;
-    
-    console.log('Filter changed to year: ' + selectedValue);
-    console.log('Current department before filter: ' + (departments[currentDeptIndex] || 'N/A') + ' (index ' + currentDeptIndex + ')');
-    
-    // Show loading indicator
-    const currentDeptEl = document.getElementById('currentDept');
-    const originalText = currentDeptEl ? currentDeptEl.textContent : '';
-    if (currentDeptEl) {
-        currentDeptEl.textContent = 'Loading...';
-    }
-    
-    // CRITICAL: Remember current department NAME (not just index)
-    const currentDeptName = departments[currentDeptIndex];
-    
-    // Fetch new data
-    const success = await fetchDashboardData(selectedValue);
-    
-    if (success && departments.length > 0) {
-        // TRY to find the same department in new data
-        const newIndex = departments.findIndex(dept => dept === currentDeptName);
-        
-        if (newIndex !== -1) {
-            // Department exists in new year data - STAY at this department
-            currentDeptIndex = newIndex;
-            console.log('Department "' + currentDeptName + '" found at index ' + newIndex + ' - STAYING HERE');
-        } else {
-            // Department doesn't exist in new year - go to first department
-            currentDeptIndex = 0;
-            console.log('Department "' + currentDeptName + '" not found in year ' + selectedValue + ' - Reset to first department');
-        }
-        
-        // SAVE state to localStorage
-        saveDashboardState();
-        
-        // Update UI
-        updateDashboard();
-        updateNavButtons();
-        
-        console.log('Filter complete: Now at ' + departments[currentDeptIndex] + ' (index ' + currentDeptIndex + ')');
-    } else {
-        // No data found
-        departments = [];
-        departmentsData = {};
-        currentDeptIndex = 0;
-        
-        if (currentDeptEl) {
-            currentDeptEl.textContent = 'No Data Available';
-        }
-        
-        showNoDataState();
-        updateNavButtons();
-        
-        console.log('No data available for selected year');
-    }
-}
+                    // Set canvas size
+                    canvas.width = containerWidth;
+                    canvas.height = chartHeight;
+                    canvas.style.width = '100%';
+                    canvas.style.height = chartHeight + 'px';
 
-// ============================================
-// NAVIGATION UI SETUP
-// ============================================
-function setupNavigationUI() {
-    let currentDeptElement = document.getElementById('currentDept');
-    if (!currentDeptElement) {
-        console.warn('Element #currentDept not found');
-        return;
-    }
+                    // Create chart
+                    responseChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Average Response Time (Days)',
+                                data: data,
+                                backgroundColor: '#4e73df',
+                                borderRadius: 5,
+                                barThickness: 55
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: false,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    max: Math.max(7, Math.ceil(Math.max(...data) * 1.1)),
+                                    ticks: { stepSize: 1, font: { size: 11 } },
+                                    title: { display: true, text: 'Days', font: { size: 12, weight: 'bold' } },
+                                    grid: { color: '#e9ecef' }
+                                },
+                                y: {
+                                    ticks: { color: '#495057', font: { size: 11 }, autoSkip: false },
+                                    grid: { display: false }
+                                }
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0,0,0,0.8)',
+                                    padding: 10,
+                                    callbacks: {
+                                        label: (context) => `Response Time: ${context.parsed.x.toFixed(2)} days`
+                                    }
+                                }
+                            }
+                        }
+                    });
 
-    let deptNavContainer = currentDeptElement.parentElement;
-    deptNavContainer.className = 'department-nav d-flex align-items-center';
-    deptNavContainer.style.cssText = 'gap: 10px;';
+                    console.log('Bar chart created: ' + labels.length + ' programs');
+                }
 
-    const prevBtn = document.createElement('button');
-    prevBtn.id = 'prevBtn';
-    prevBtn.className = 'btn btn-outline-primary';
-    prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-    prevBtn.title = 'Previous Department';
-    prevBtn.style.cssText = 'width: 45px; height: 45px; padding: 0;';
+                // PIE CHARTS - Acceptance Rate
+                function updatePieCharts(pieData) {
+                    const container = document.getElementById('pieContainer');
+                    if (!container) {
+                        console.error('Pie container not found!');
+                        return;
+                    }
 
-    const nextBtn = document.createElement('button');
-    nextBtn.id = 'nextBtn';
-    nextBtn.className = 'btn btn-outline-primary';
-    nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-    nextBtn.title = 'Next Department';
-    nextBtn.style.cssText = 'width: 45px; height: 45px; padding: 0;';
+                    // Destroy old charts
+                    pieCharts.forEach((c, index) => {
+                        try {
+                            c.destroy();
+                        } catch (e) {
+                            console.error('Error destroying pie chart ' + index + ':', e);
+                        }
+                    });
+                    pieCharts = [];
 
-    currentDeptElement.className = 'current-dept font-weight-bold text-dark bg-light px-4 py-2 rounded text-center';
-    currentDeptElement.style.cssText = 'min-width: 350px; max-width: 450px; margin: 0;';
+                    // Clear container
+                    container.innerHTML = '';
 
-    deptNavContainer.insertBefore(prevBtn, currentDeptElement);
-    deptNavContainer.appendChild(nextBtn);
+                    // Create new pie charts
+                    pieData.forEach((item, i) => {
+                        const pieDiv = document.createElement('div');
+                        pieDiv.className = 'pie-item mb-3';
 
-    prevBtn.addEventListener('click', () => navigateDepartment(-1));
-    nextBtn.addEventListener('click', () => navigateDepartment(1));
-}
+                        const title = document.createElement('div');
+                        title.className = 'text-center font-weight-bold mb-2';
+                        title.style.fontSize = '13px';
+                        title.textContent = item.name;
 
-// ============================================
-// BROWSER SECURITY
-// ============================================
-function setupBrowserSecurity() {
-    window.addEventListener("pageshow", function(event) {
-        if (event.persisted) window.location.reload();
-    });
-    
-    window.history.pushState(null, "", window.location.href);
-    window.onpopstate = function() {
-        window.history.pushState(null, "", window.location.href);
-    };
-}
+                        const canvas = document.createElement('canvas');
+                        canvas.id = `pie-${i}`;
 
-// ============================================
-// INITIALIZATION
-// ============================================
-$(document).ready(function() {
-    clock_run();
-    show_calendar();
-});
+                        pieDiv.appendChild(title);
+                        pieDiv.appendChild(canvas);
+                        container.appendChild(pieDiv);
 
-document.addEventListener('DOMContentLoaded', async function() {
-    console.log('Dashboard initialization started');
+                        const ctx = canvas.getContext('2d');
+                        const chart = new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: ['Accepted', 'Rejected'],
+                                datasets: [{
+                                    data: item.data,
+                                    backgroundColor: ['#28a745', '#dc3545'],
+                                    borderColor: '#fff',
+                                    borderWidth: 2
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: {
+                                        backgroundColor: 'rgba(0,0,0,0.8)',
+                                        padding: 10,
+                                        callbacks: {
+                                            label: (ctx) => `${ctx.label}: ${ctx.formattedValue}%`
+                                        }
+                                    }
+                                }
+                            }
+                        });
 
-    const sessionKey = 'dashboard_session_loaded';
-    const hasLoadedBefore = sessionStorage.getItem(sessionKey);
-    
-    if (!hasLoadedBefore) {
-        // Fresh login - Reset year filter ke default "all"
-        console.log('Fresh login detected - Resetting year filter to "all"');
-        localStorage.setItem('dashboard_year', 'all');
-        localStorage.setItem('dashboard_dept_index', '0');
-        
-        // Tandai bahwa dashboard sudah pernah di-load di session ini
-        sessionStorage.setItem(sessionKey, 'true');
-    } else {
-        console.log('Continuing existing session - Preserving year filter');
-    }
-    
-    initSidebarHighlight();
-    setupNavigationUI();
-    setupBrowserSecurity();
-    
-    // Load saved state
-    const savedState = loadDashboardState();
-    
-    // Set year filter to saved value
-    const yearSelect = document.getElementById('yearFilter');
-    if (yearSelect) {
-        yearSelect.value = savedState.year;
-        console.log('Year filter set to: ' + savedState.year);
-    }
-    
-    // Show loading
-    const currentDeptEl = document.getElementById('currentDept');
-    if (currentDeptEl) {
-        currentDeptEl.textContent = 'Loading...';
-    }
-    
-    // Fetch data with saved year
-    const success = await fetchDashboardData(savedState.year);
-    
-    if (success && departments.length > 0) {
-        // Validate saved index
-        if (savedState.deptIndex >= 0 && savedState.deptIndex < departments.length) {
-            currentDeptIndex = savedState.deptIndex;
-            console.log('Restored to department: ' + departments[currentDeptIndex] + ' (index ' + currentDeptIndex + ')');
-        } else {
-            currentDeptIndex = 0;
-            console.log('Saved index ' + savedState.deptIndex + ' out of bounds - Reset to first department');
-        }
-        
-        // Render dashboard
-        updateDashboard();
-        updateNavButtons();
-        
-        console.log('Dashboard initialized successfully');
-    } else {
-        // No data
-        currentDeptIndex = 0;
-        
-        if (currentDeptEl) {
-            currentDeptEl.textContent = 'No Data Available';
-        }
-        
-        showNoDataState();
-        updateNavButtons();
-        
-        console.log('Dashboard initialized with no data');
-    }
-});
-</script>
+                        pieCharts.push(chart);
+                    });
+
+                    console.log('Created ' + pieData.length + ' pie charts');
+                }
+
+                // NAVIGATION FUNCTIONS
+                function navigateDepartment(dir) {
+                    currentDeptIndex += dir;
+                    if (currentDeptIndex < 0) currentDeptIndex = 0;
+                    if (currentDeptIndex >= departments.length) currentDeptIndex = departments.length - 1;
+
+                    console.log('Navigating to department index: ' + currentDeptIndex);
+
+                    // SAVE state immediately
+                    saveDashboardState();
+
+                    updateDashboard();
+                    updateNavButtons();
+
+                    // Scroll to chart
+                    const chartRow = document.querySelector('#responseChart')?.closest('.row');
+                    if (chartRow) {
+                        chartRow.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+
+                function updateNavButtons() {
+                    const prevBtn = document.getElementById('prevBtn');
+                    const nextBtn = document.getElementById('nextBtn');
+
+                    if (prevBtn) prevBtn.disabled = currentDeptIndex === 0;
+                    if (nextBtn) nextBtn.disabled = currentDeptIndex === departments.length - 1;
+                }
+
+                function updateDashboard() {
+                    if (departments.length === 0) {
+                        const currentDeptEl = document.getElementById('currentDept');
+                        if (currentDeptEl) currentDeptEl.textContent = 'No Data Available';
+
+                        showNoDataState();
+                        return;
+                    }
+
+                    const dept = departments[currentDeptIndex];
+                    const data = departmentsData[dept];
+
+                    console.log('Updating dashboard for: ' + dept + ' (index ' + currentDeptIndex + ')');
+
+                    // Update department title
+                    const currentDeptEl = document.getElementById('currentDept');
+                    if (currentDeptEl) {
+                        currentDeptEl.textContent = dept + ' Department';
+                    }
+
+                    // Check if department has programs
+                    if (!data || !data.programs || data.programs.length === 0) {
+                        console.log('No programs found for ' + dept);
+                        showNoDataState();
+                        return;
+                    }
+
+                    // Render charts
+                    console.log('Rendering charts for ' + dept + ': ' + data.programs.length + ' programs');
+                    createResponseChart(data.programs, data.responseTime);
+
+                    const pies = data.programs.map((p, i) => ({
+                        name: p,
+                        data: data.acceptanceRates[i] || [0, 0]
+                    }));
+                    updatePieCharts(pies);
+
+                    const pieTitle = document.getElementById('pieTitle');
+                    if (pieTitle) {
+                        pieTitle.textContent = 'Internship Acceptance Rate — ' + dept;
+                    }
+                }
+
+                function showNoDataState() {
+                    // Destroy bar chart
+                    if (responseChart) {
+                        try {
+                            responseChart.destroy();
+                        } catch (e) { }
+                        responseChart = null;
+                    }
+
+                    // Destroy pie charts
+                    pieCharts.forEach(c => {
+                        try {
+                            c.destroy();
+                        } catch (e) { }
+                    });
+                    pieCharts = [];
+
+                    // Clear bar chart canvas
+                    const responseCanvas = document.getElementById('responseChart');
+                    if (responseCanvas) {
+                        const ctx = responseCanvas.getContext('2d');
+                        responseCanvas.width = responseCanvas.parentElement.offsetWidth;
+                        responseCanvas.height = 400;
+                        responseCanvas.style.width = '100%';
+                        responseCanvas.style.height = '400px';
+                        ctx.clearRect(0, 0, responseCanvas.width, responseCanvas.height);
+                    }
+
+                    // Clear pie container
+                    const pieContainer = document.getElementById('pieContainer');
+                    if (pieContainer) {
+                        pieContainer.innerHTML = '';
+                    }
+
+                    console.log('Blank state rendered');
+                }
+
+                // FILTER BY YEAR
+                async function filterByYear() {
+                    const yearSelect = document.getElementById('yearFilter');
+                    if (!yearSelect) {
+                        console.error('Year filter not found!');
+                        return;
+                    }
+
+                    const selectedValue = yearSelect.value;
+                    currentYearFilter = selectedValue;
+
+                    console.log('Filter changed to year: ' + selectedValue);
+                    console.log('Current department before filter: ' + (departments[currentDeptIndex] || 'N/A') + ' (index ' + currentDeptIndex + ')');
+
+                    // Show loading indicator
+                    const currentDeptEl = document.getElementById('currentDept');
+                    const originalText = currentDeptEl ? currentDeptEl.textContent : '';
+                    if (currentDeptEl) {
+                        currentDeptEl.textContent = 'Loading...';
+                    }
+
+                    // Current department name
+                    const currentDeptName = departments[currentDeptIndex];
+
+                    // Fetch new data
+                    const success = await fetchDashboardData(selectedValue);
+
+                    if (success && departments.length > 0) {
+                        // TRY to find the same department in new data
+                        const newIndex = departments.findIndex(dept => dept === currentDeptName);
+
+                        if (newIndex !== -1) {
+                            // Department exists in new year data
+                            currentDeptIndex = newIndex;
+                            console.log('Department "' + currentDeptName + '" found at index ' + newIndex + ' - STAYING HERE');
+                        } else {
+                            // Department doesn't exist in new year
+                            currentDeptIndex = 0;
+                            console.log('Department "' + currentDeptName + '" not found in year ' + selectedValue + ' - Reset to first department');
+                        }
+
+                        saveDashboardState();
+                        updateDashboard();
+                        updateNavButtons();
+
+                        console.log('Filter complete: Now at ' + departments[currentDeptIndex] + ' (index ' + currentDeptIndex + ')');
+                    } else {
+                        // No data found
+                        departments = [];
+                        departmentsData = {};
+                        currentDeptIndex = 0;
+
+                        if (currentDeptEl) {
+                            currentDeptEl.textContent = 'No Data Available';
+                        }
+
+                        showNoDataState();
+                        updateNavButtons();
+
+                        console.log('No data available for selected year');
+                    }
+                }
+
+                // NAVIGATION UI SETUP
+                function setupNavigationUI() {
+                    let currentDeptElement = document.getElementById('currentDept');
+                    if (!currentDeptElement) {
+                        console.warn('Element #currentDept not found');
+                        return;
+                    }
+
+                    let deptNavContainer = currentDeptElement.parentElement;
+                    deptNavContainer.className = 'department-nav d-flex align-items-center';
+                    deptNavContainer.style.cssText = 'gap: 10px;';
+
+                    const prevBtn = document.createElement('button');
+                    prevBtn.id = 'prevBtn';
+                    prevBtn.className = 'btn btn-outline-primary';
+                    prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                    prevBtn.title = 'Previous Department';
+                    prevBtn.style.cssText = 'width: 45px; height: 45px; padding: 0;';
+
+                    const nextBtn = document.createElement('button');
+                    nextBtn.id = 'nextBtn';
+                    nextBtn.className = 'btn btn-outline-primary';
+                    nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                    nextBtn.title = 'Next Department';
+                    nextBtn.style.cssText = 'width: 45px; height: 45px; padding: 0;';
+
+                    currentDeptElement.className = 'current-dept font-weight-bold text-dark bg-light px-4 py-2 rounded text-center';
+                    currentDeptElement.style.cssText = 'min-width: 350px; max-width: 450px; margin: 0;';
+
+                    deptNavContainer.insertBefore(prevBtn, currentDeptElement);
+                    deptNavContainer.appendChild(nextBtn);
+
+                    prevBtn.addEventListener('click', () => navigateDepartment(-1));
+                    nextBtn.addEventListener('click', () => navigateDepartment(1));
+                }
+
+                // BROWSER SECURITY
+                function setupBrowserSecurity() {
+                    window.addEventListener("pageshow", function (event) {
+                        if (event.persisted) window.location.reload();
+                    });
+
+                    window.history.pushState(null, "", window.location.href);
+                    window.onpopstate = function () {
+                        window.history.pushState(null, "", window.location.href);
+                    };
+                }
+
+                // INITIALIZATION
+                $(document).ready(function () {
+                    clock_run();
+                    show_calendar();
+                });
+
+                document.addEventListener('DOMContentLoaded', async function () {
+                    console.log('Dashboard initialization started');
+
+                    const sessionKey = 'dashboard_session_loaded';
+                    const hasLoadedBefore = sessionStorage.getItem(sessionKey);
+
+                    if (!hasLoadedBefore) {
+                        // Fresh login - Reset year filter ke default "all"
+                        console.log('Fresh login detected - Resetting year filter to "all"');
+                        localStorage.setItem('dashboard_year', 'all');
+                        localStorage.setItem('dashboard_dept_index', '0');
+
+                        sessionStorage.setItem(sessionKey, 'true');
+                    } else {
+                        console.log('Continuing existing session - Preserving year filter');
+                    }
+
+                    initSidebarHighlight();
+                    setupNavigationUI();
+                    setupBrowserSecurity();
+
+                    // Load saved state
+                    const savedState = loadDashboardState();
+
+                    // Set year filter to saved value
+                    const yearSelect = document.getElementById('yearFilter');
+                    if (yearSelect) {
+                        yearSelect.value = savedState.year;
+                        console.log('Year filter set to: ' + savedState.year);
+                    }
+
+                    // Show loading
+                    const currentDeptEl = document.getElementById('currentDept');
+                    if (currentDeptEl) {
+                        currentDeptEl.textContent = 'Loading...';
+                    }
+
+                    // Fetch data with saved year
+                    const success = await fetchDashboardData(savedState.year);
+
+                    if (success && departments.length > 0) {
+                        // Validate saved index
+                        if (savedState.deptIndex >= 0 && savedState.deptIndex < departments.length) {
+                            currentDeptIndex = savedState.deptIndex;
+                            console.log('Restored to department: ' + departments[currentDeptIndex] + ' (index ' + currentDeptIndex + ')');
+                        } else {
+                            currentDeptIndex = 0;
+                            console.log('Saved index ' + savedState.deptIndex + ' out of bounds - Reset to first department');
+                        }
+
+                        // Render dashboard
+                        updateDashboard();
+                        updateNavButtons();
+
+                        console.log('Dashboard initialized successfully');
+                    } else {
+                        // No data
+                        currentDeptIndex = 0;
+
+                        if (currentDeptEl) {
+                            currentDeptEl.textContent = 'No Data Available';
+                        }
+
+                        showNoDataState();
+                        updateNavButtons();
+
+                        console.log('Dashboard initialized with no data');
+                    }
+                });
+            </script>
 
 </body>
 

@@ -231,10 +231,11 @@
 <body class="login">
   <div class="container-fluid login-container d-flex">
     <div class="row w-100 g-0">
+      <!-- Left Section -->
       <div class="col-lg-6 left-section">
         <img src="./assets/img/logo_my_internship.png" alt="MyInternship Logo">
       </div>
-
+      <!-- Right Section -->
       <div class="col-lg-6 right-section">
         <div class="card card-login">
           <h4>CDC Administrator Login</h4>
@@ -242,12 +243,14 @@
           <form method="POST" id="loginForm">
             <div class="mb-3">
               <label for="username">Username <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="username" name="username" placeholder="Enter CDC username" required>
+              <input type="text" class="form-control" id="username" name="username" placeholder="Enter CDC username"
+                required>
             </div>
 
             <div class="mb-3 password-wrapper">
               <label for="password">Password <span class="text-danger">*</span></label>
-              <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+              <input type="password" class="form-control" id="password" name="password"
+                placeholder="Enter your password" required>
               <i class="fas fa-eye toggle-password" id="togglePassword"></i>
             </div>
 
@@ -291,7 +294,7 @@
     // Toggle password visibility
     const togglePassword = document.querySelector("#togglePassword");
     const password = document.querySelector("#password");
-    togglePassword.addEventListener("click", function() {
+    togglePassword.addEventListener("click", function () {
       const type = password.getAttribute("type") === "password" ? "text" : "password";
       password.setAttribute("type", type);
       this.classList.toggle("fa-eye-slash");
@@ -317,7 +320,6 @@
       }
 
       try {
-        // Step 1: Login ke backend Express API
         const response = await fetch("http://localhost:8000/api/login_cdc", {
           method: "POST",
           headers: {
@@ -332,7 +334,6 @@
         const data = await response.json();
 
         if (data.success) {
-          // Step 2: Setelah login berhasil → buat session di PHP
           try {
             const rememberChecked = document.getElementById("remember").checked;
 
@@ -352,7 +353,6 @@
             const sessionData = await sessionResp.json();
 
             if (sessionData.success) {
-              // Redirect ke dashboard CDC
               window.location.href = "dashboard_cdc.php";
             } else {
               toast.fire({

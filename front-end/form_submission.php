@@ -1,7 +1,5 @@
 <?php
 session_start();
-
-// Jika tidak ada session student → redirect ke role_login.php
 if (!isset($_SESSION['student']) || empty($_SESSION['student']['nim'])) {
     header('Location: role_login.php');
     exit;
@@ -15,7 +13,6 @@ $user = $student;
 <html lang="en">
 
 <head>
-    <!-- Meta for Compatibility -->
     <meta charset="utf-8">
     <title>Form Submission</title>
     <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
@@ -43,7 +40,7 @@ $user = $student;
                 "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
                 urls: ['./assets/css/fonts.min.css']
             },
-            active: function() {
+            active: function () {
                 sessionStorage.fonts = true;
             }
         });
@@ -57,7 +54,6 @@ $user = $student;
     <script defer src='./core/component/soloalert.js'></script>
 
     <style type="text/css">
-        /* Posisi relatif untuk ikon agar badge bisa ditempatkan relatif terhadapnya */
         .notification-icon {
             position: relative;
         }
@@ -108,7 +104,6 @@ $user = $student;
             word-wrap: break-word;
             min-width: 140px;
             max-width: 140px;
-            /* max-width:150px; */
         }
 
         .wrap2 {
@@ -116,7 +111,6 @@ $user = $student;
             word-wrap: break-word;
             min-width: 170px;
             max-width: 170px;
-            /* max-width:150px; */
         }
 
         .main-panel {
@@ -125,7 +119,6 @@ $user = $student;
 
         .sidebar a.active {
             background-color: #007bff;
-            /* warna biru */
             color: white !important;
             border-radius: 10px;
         }
@@ -144,7 +137,6 @@ $user = $student;
             font-weight: 700;
         }
 
-        /* tweak: beri jarak untuk label agar rapi */
         .form-group label {
             display: inline-block;
             margin-bottom: 6px;
@@ -181,9 +173,11 @@ $user = $student;
             <!-- Logo Header -->
             <div class="logo-header" data-background-color="blue2">
                 <a href="index.php" class="logo">
-                    <img src="assets/img/logo_header.png" alt="navbar brand" class="navbar-brand" style="width: 180px; height: auto;">
+                    <img src="assets/img/logo_header.png" alt="navbar brand" class="navbar-brand"
+                        style="width: 180px; height: auto;">
                 </a>
-                <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse" data-target="collapse" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse"
+                    data-target="collapse" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon">
                         <i class="icon-menu"></i>
                     </span>
@@ -203,9 +197,10 @@ $user = $student;
                     <div class="collapse" id="search-nav">
                         <ul class="navbar-nav navbar-left topbar-nav nav-search mr-md-3 align-items-center">
 
-                            <!-- Tanggal -->
+                            <!-- Date -->
                             <li class="nav-item dropdown hidden-caret">
-                                <a aria-label="Current Date and Calendar" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+                                <a aria-label="Current Date and Calendar" class="nav-link dropdown-toggle"
+                                    data-toggle="dropdown" href="#" aria-expanded="false">
                                     <span id="date">Wed, 08 Oct 2025</span>
                                 </a>
                                 <ul class="float-right dropdown-menu dropdown-calendar dropdown-user animated fadeIn">
@@ -217,9 +212,10 @@ $user = $student;
                                 </ul>
                             </li>
 
-                            <!-- Jam -->
+                            <!-- Time -->
                             <li class="nav-item dropdown hidden-caret">
-                                <a aria-label="Current Time" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+                                <a aria-label="Current Time" class="nav-link dropdown-toggle" data-toggle="dropdown"
+                                    href="#" aria-expanded="false">
                                     <span id="clock">22 : 12 : 24</span>
                                 </a>
                                 <ul class="float-right dropdown-menu dropdown-calendar dropdown-user animated fadeIn">
@@ -237,23 +233,27 @@ $user = $student;
                     </div>
                     <ul class="navbar-nav topbar-nav ml-md-auto align-items-center">
                         <li class="nav-item toggle-nav-search hidden-caret">
-                            <a class="nav-link" data-toggle="collapse" href="#search-nav" role="button" aria-expanded="false" aria-controls="search-nav">
+                            <a class="nav-link" data-toggle="collapse" href="#search-nav" role="button"
+                                aria-expanded="false" aria-controls="search-nav">
                                 <i class="fa fa-clock"></i>
                             </a>
                         </li>
                         <li class="nav-item dropdown hidden-caret">
-                            <a class="nav-link" href="#" role="button" data-toggle="modal" data-target="#Modalkalender" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link" href="#" role="button" data-toggle="modal" data-target="#Modalkalender"
+                                aria-haspopup="true" aria-expanded="false">
                                 <i class="fa fa-calendar"></i>
                             </a>
                         </li>
 
                         <!-- Notification -->
                         <li class="nav-item dropdown hidden-caret" id="notification">
-                            <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fa fa-bell"></i>
                                 <span id="count_notification"></span>
                             </a>
-                            <ul class='dropdown-menu messages-notif-box animated fadeIn' aria-labelledby='notifDropdown' id=''>
+                            <ul class='dropdown-menu messages-notif-box animated fadeIn' aria-labelledby='notifDropdown'
+                                id=''>
                                 <li>
                                     <div class='dropdown-title'>New Notification</div>
                                 </li>
@@ -263,9 +263,10 @@ $user = $student;
                             </ul>
                         </li>
 
-                        <!-- Profil -->
+                        <!-- Profile -->
                         <li class="nav-item dropdown hidden-caret">
-                            <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#" aria-expanded="false">
+                            <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#"
+                                aria-expanded="false">
                                 <div class="avatar-sm">
                                     <img src="assets/img/profile.png" alt="..." class="avatar-img rounded-circle">
                                 </div>
@@ -274,11 +275,13 @@ $user = $student;
                                 <div class="dropdown-user-scroll scrollbar-outer">
                                     <li>
                                         <div class="user-box">
-                                            <div class="avatar-lg"><img src="" alt="image profile" class="avatar-img rounded"></div>
+                                            <div class="avatar-lg"><img src="" alt="image profile"
+                                                    class="avatar-img rounded"></div>
                                             <div class="u-text">
                                                 <h5><?= htmlspecialchars($user['name']) ?></h5>
                                                 <p class="text-muted">Mahasiswa</p>
-                                                <a href="index.php?page=industry_profile" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
+                                                <a href="index.php?page=industry_profile"
+                                                    class="btn btn-xs btn-secondary btn-sm">View Profile</a>
                                             </div>
                                         </div>
                                     </li>
@@ -287,7 +290,6 @@ $user = $student;
                                         <a class="dropdown-item" href="index.php">My Dashboard</a>
                                         <a class="dropdown-item" href="index.php?page=industry_profile">My Profile</a>
                                         <a class="dropdown-item" href="index.php?page=my_company">My Company</a>
-                                        <!-- <a class="dropdown-item" href="#">Inbox</a> -->
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="index.php?page=home">Home</a>
                                         <a class="dropdown-item" href="index.php?page=announcements">Announcements</a>
@@ -423,7 +425,8 @@ $user = $student;
 
             <!-- Content -->
             <div class="page-inner mt--5">
-                <div id="form-blocker-wrapper" class="form-container" style="background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); padding: 40px; position: relative;">
+                <div id="form-blocker-wrapper" class="form-container"
+                    style="background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); padding: 40px; position: relative;">
                     <form id="submissionForm">
                         <div class="form-group" style="margin-bottom: 15px;">
                             <label style="font-weight: 500;">NIM</label>
@@ -459,7 +462,8 @@ $user = $student;
                             </label>
                         </div>
 
-                        <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <div class="form-group"
+                            style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
                             <label style="font-weight: 500; margin: 0;">Semester <span class="required">*</span></label>
                             <select class="form-select" id="semesterField"
                                 style="background:#e9ecef;border:none;border-radius:6px;height:35px;width:80px;text-align-last:center;text-align:center;">
@@ -483,8 +487,9 @@ $user = $student;
                         </div>
 
                         <div class="form-group" style="margin-bottom: 15px;">
-                            <!-- Label di atas -->
-                            <label style="font-weight: 500; display: block; margin-bottom: 5px;">Company Name <span id="companySelectStar" class="required" style="display:inline-block;">*</span></label>
+                            <label style="font-weight: 500; display: block; margin-bottom: 5px;">Company Name <span
+                                    id="companySelectStar" class="required"
+                                    style="display:inline-block;">*</span></label>
 
                             <!-- Dropdown searchable -->
                             <select id="companySelect" class="form-select"
@@ -499,17 +504,20 @@ $user = $student;
 
                             <!-- Input new company & contact company di bawah checkbox -->
                             <div class="form-group">
-                                <label style="font-weight: 500;">Company Name <span id="newCompanyNameStar" class="required" style="display:none;">*</span></label>
+                                <label style="font-weight: 500;">Company Name <span id="newCompanyNameStar"
+                                        class="required" style="display:none;">*</span></label>
                                 <input type="text" class="form-control" id="newCompanyName"
                                     style="background:#e9ecef;border:none;border-radius:6px;height:35px;width:70%;margin-bottom: 15px;">
 
-                                <label style="font-weight: 500;">Company Contact <span id="newCompanyContactStar" class="required" style="display:none;">*</span></label>
+                                <label style="font-weight: 500;">Company Contact <span id="newCompanyContactStar"
+                                        class="required" style="display:none;">*</span></label>
                                 <input type="text" class="form-control" id="newCompanyContact"
                                     style="background:#e9ecef;border:none;border-radius:6px;height:35px;width:70%;">
                             </div>
 
                             <div class="form-group" style="margin-bottom: 15px;">
-                                <label style="font-weight: 500;">Company Address <span id="companyAddressStar" class="required" style="display:none;">*</span></label>
+                                <label style="font-weight: 500;">Company Address <span id="companyAddressStar"
+                                        class="required" style="display:none;">*</span></label>
                                 <input type="text" class="form-control" id="companyAddress" readonly
                                     style="background:#e9ecef;border:none;border-radius:6px;height:35px;width:70%;">
                             </div>
@@ -534,13 +542,15 @@ $user = $student;
                             </div>
 
                             <div class="form-group" style="margin-bottom: 15px;">
-                                <label style="font-weight: 500;">Active WhatsApp Number <span class="required">*</span></label>
+                                <label style="font-weight: 500;">Active WhatsApp Number <span
+                                        class="required">*</span></label>
                                 <input type="text" class="form-control" id="phoneField"
                                     style="background:#e9ecef;border:none;border-radius:6px;height:35px;width:70%;">
                             </div>
 
                             <div class="form-group" style="margin-bottom: 25px;">
-                                <label style="font-weight: 500;">Select the language for the letter<span class="required">*</span></label><br>
+                                <label style="font-weight: 500;">Select the language for the letter<span
+                                        class="required">*</span></label><br>
 
                                 <label style="margin-right: 20px;">
                                     <input type="radio" name="language" id="LANG_ID" value="ID"> Bahasa Indonesia
@@ -552,20 +562,20 @@ $user = $student;
                             </div>
 
                             <div style="margin-right: 380px; text-align: right;">
-                                <button type="submit" style="background:#5A9BF6;color:#fff;border:none;border-radius:6px;width:120px;height:40px;font-weight:500;cursor: pointer;">Submit</button>
+                                <button type="submit"
+                                    style="background:#5A9BF6;color:#fff;border:none;border-radius:6px;width:120px;height:40px;font-weight:500;cursor: pointer;">Submit</button>
                             </div>
                     </form>
                 </div>
             </div>
 
-            <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+            <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+                integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
 
-            <!-- Tambahkan di sebelum </body> -->
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
             <!--   Core JS Files   -->
-            <!-- <script src="./assets/js/core/jquery.3.2.1.min.js"></script> -->
             <script src="./assets/js/core/popper.min.js"></script>
             <script src="./assets/js/core/bootstrap.min.js"></script>
 
@@ -592,7 +602,7 @@ $user = $student;
             <script src="./assets/js/plugin/chart.js/chart.min.js"></script>
 
             <script>
-                $(document).ready(function() {
+                $(document).ready(function () {
                     clock_run();
                     show_calendar();
                 });
@@ -606,7 +616,7 @@ $user = $student;
 
                     $calendar = $('#calendar');
                     $calendar.fullCalendar({
-                        fixedWeekCount: false, // Set false agar jumlah minggu yang ditampilkan menyesuaikan dengan bulan aktif
+                        fixedWeekCount: false,
                     });
                 }
 
@@ -629,7 +639,7 @@ $user = $student;
                         $("#date").text(curr_date);
                     }
 
-                    setInterval(function() {
+                    setInterval(function () {
                         let d = new Date();
                         let day = en_day[d.getDay()];
                         let date = d.getDate();
@@ -674,13 +684,13 @@ $user = $student;
                         url: 'index.php?request=validation_get',
                         type: 'GET',
 
-                        success: function(response, xhr, status, error) {
+                        success: function (response, xhr, status, error) {
                             console.log('Getting form notification');
 
                             $('body').append(response);
                         },
 
-                        error: function(xhr, status, error) {
+                        error: function (xhr, status, error) {
                             console.log('Failed Getting form notification');
                         }
                     });
@@ -696,22 +706,20 @@ $user = $student;
 
                 function spinner() {
 
-                    // var icon_spinner = event.target.childNodes[0];
                     var icon_spinner = event.target.querySelector('i');
                     var icon_old = icon_spinner.className;
                     var spinner = "fas fa-spinner fa-spin mr-1";
 
-                    // console.log(icon_spinner);
                     icon_spinner.className = '';
                     icon_spinner.className = spinner;
 
-                    setTimeout(function() {
+                    setTimeout(function () {
                         icon_spinner.className = '';
                         icon_spinner.className = icon_old;
                     }, 2000);
                 }
 
-                $(document).ready(function() {
+                $(document).ready(function () {
                     $('#companySelect').select2({
                         placeholder: "Choose Company",
                         allowClear: true,
@@ -720,20 +728,17 @@ $user = $student;
                 });
 
                 // Highlight menu
-                document.addEventListener("DOMContentLoaded", function() {
+                document.addEventListener("DOMContentLoaded", function () {
                     const navItems = document.querySelectorAll(".sidebar .nav-item");
 
                     navItems.forEach(item => {
-                        item.addEventListener("click", function() {
-                            // Hapus active dari semua nav-item
+                        item.addEventListener("click", function () {
                             navItems.forEach(i => i.classList.remove("active"));
 
-                            // Tambahkan active ke item yang diklik
                             this.classList.add("active");
                         });
                     });
 
-                    // Aktif sesuai halaman yang dibuka
                     const currentPage = window.location.href;
                     navItems.forEach(item => {
                         const link = item.querySelector("a");
@@ -757,450 +762,450 @@ $user = $student;
     </footer>
 
     <script>
-(function() {
+        (function () {
 
-    const nim = <?= json_encode($student['nim']) ?>;
-    const API_BASE = 'http://localhost:8000/api/student';
+            const nim = <?= json_encode($student['nim']) ?>;
+            const API_BASE = 'http://localhost:8000/api/student';
 
-    let __formBlockerElement = null;
+            let __formBlockerElement = null;
 
-    function createFormBlocker() {
-        const wrapper = document.getElementById('form-blocker-wrapper');
-        if (!wrapper) return;
-        if (__formBlockerElement) return;
+            function createFormBlocker() {
+                const wrapper = document.getElementById('form-blocker-wrapper');
+                if (!wrapper) return;
+                if (__formBlockerElement) return;
 
-        const blocker = document.createElement('div');
-        blocker.id = 'form-blocker';
-        Object.assign(blocker.style, {
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(255,255,255,0)',
-            zIndex: 50,
-            pointerEvents: 'auto',
-            cursor: 'not-allowed'
-        });
+                const blocker = document.createElement('div');
+                blocker.id = 'form-blocker';
+                Object.assign(blocker.style, {
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(255,255,255,0)',
+                    zIndex: 50,
+                    pointerEvents: 'auto',
+                    cursor: 'not-allowed'
+                });
 
-        wrapper.style.position = "relative";
-        wrapper.appendChild(blocker);
-        __formBlockerElement = blocker;
-    }
+                wrapper.style.position = "relative";
+                wrapper.appendChild(blocker);
+                __formBlockerElement = blocker;
+            }
 
-    function resetSwalState() {
-        const old = document.querySelector('.swal2-container');
-        if (old) old.remove();
-        if (Swal && Swal.close) Swal.close();
-    }
+            function resetSwalState() {
+                const old = document.querySelector('.swal2-container');
+                if (old) old.remove();
+                if (Swal && Swal.close) Swal.close();
+            }
 
-    function removeFormBlocker() {
-        if (!__formBlockerElement) return;
-        __formBlockerElement.remove();
-        __formBlockerElement = null;
-    }
+            function removeFormBlocker() {
+                if (!__formBlockerElement) return;
+                __formBlockerElement.remove();
+                __formBlockerElement = null;
+            }
 
-    window.logout_confirm = function() {
-        let _token = $('meta[name="csrf-token"]').attr('content');
-        Swal.fire({
-            title: 'Logout from your account ?',
-            text: 'Are you sure you want to end the current session?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: "#DD6B55",
-            confirmButtonText: "Yes, I\'m sure!",
-            cancelButtonText: "Cancel"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: "session_logout.php",
-                    type: "POST",
-                    data: {'token': _token},
-                    success: function() {
-                        setTimeout(function() {
-                            localStorage.removeItem('first');
-                            localStorage.removeItem('first_chime');
-                            localStorage.removeItem('next_chime');
-                            window.location.href = 'role_login.php';
-                        }, 200);
+            window.logout_confirm = function () {
+                let _token = $('meta[name="csrf-token"]').attr('content');
+                Swal.fire({
+                    title: 'Logout from your account ?',
+                    text: 'Are you sure you want to end the current session?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Yes, I\'m sure!",
+                    cancelButtonText: "Cancel"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "session_logout.php",
+                            type: "POST",
+                            data: { 'token': _token },
+                            success: function () {
+                                setTimeout(function () {
+                                    localStorage.removeItem('first');
+                                    localStorage.removeItem('first_chime');
+                                    localStorage.removeItem('next_chime');
+                                    window.location.href = 'role_login.php';
+                                }, 200);
+                            }
+                        });
+                    } else {
+                        setTimeout(() => {
+                            resetSwalState();
+                            checkActive();
+                        }, 50);
+                        removeFormBlocker();
                     }
                 });
-            } else {
-                setTimeout(() => {
-                    resetSwalState();
-                    checkActive();
-                }, 50);
-                removeFormBlocker();
-            }
-        });
-    };
+            };
 
-    function showActiveSubmissionAlertAndBlockForm() {
-        if (__formBlockerElement) return;
-        if (Swal && Swal.close) Swal.close();
-        createFormBlocker();
+            function showActiveSubmissionAlertAndBlockForm() {
+                if (__formBlockerElement) return;
+                if (Swal && Swal.close) Swal.close();
+                createFormBlocker();
 
-        Swal.fire({
-            title: 'You have an active internship submission',
-            html: '<p>You cannot submit a new application until your current submission is processed.</p>',
-            icon: 'info',
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            showConfirmButton: false,
-            backdrop: true
-        });
-    }
-
-    function closeActiveSubmissionAlertAndUnblock() {
-        if (Swal && Swal.close) Swal.close();
-        removeFormBlocker();
-    }
-
-    async function checkActive() {
-        try {
-            const res = await fetch(`${API_BASE}/check-submission/${encodeURIComponent(nim)}`);
-            const j = await res.json();
-            if (!j.last) {
-                removeFormBlocker();
-                closeActiveSubmissionAlertAndUnblock();
-                return;
-            }
-
-            const acceptanceStatus = j.last?.acceptance_status || '-';
-            const finalStatus = j.last?.status ? j.last.status.toUpperCase() : '-';
-
-            if (finalStatus === 'WAITING') {
-                if (!__formBlockerElement && !(Swal && Swal.isVisible && Swal.isVisible())) {
-                    showActiveSubmissionAlertAndBlockForm();
-                }
-                return;
-            }
-
-            if (finalStatus === 'REJECTED') {
-                removeFormBlocker();
                 Swal.fire({
-                    html: `<div style="font-size: 40px; margin-bottom: 10px;">😊</div>
-                           <h3 style="font-weight: bold;">Don't be sad, you'll get accepted next time!</h3>`,
-                    showConfirmButton: false,
-                    allowOutsideClick: true,
-                    backdrop: true,
-                    timer: 1500,
-                });
-                return;
-            }
-
-            if (finalStatus === 'ACCEPTED' && acceptanceStatus === '-') {
-                showActiveSubmissionAlertAndBlockForm();
-                return;
-            }
-
-            if (finalStatus === 'ACCEPTED' && acceptanceStatus === 'ACCEPTED') {
-                Swal.fire({
-                    html: `<div style="font-size: 40px; margin-bottom: 10px;">😆</div>
-                           <h3 style="font-weight: bold;">Congratulations on being accepted for your internship!</h3>`,
-                    showConfirmButton: false,
+                    title: 'You have an active internship submission',
+                    html: '<p>You cannot submit a new application until your current submission is processed.</p>',
+                    icon: 'info',
                     allowOutsideClick: false,
                     allowEscapeKey: false,
-                    backdrop: true,
-                    didOpen: () => {
-                        const cont = document.querySelector('.swal2-container');
-                        if (cont) {
-                            cont.style.pointerEvents = 'none';
-                            const popup = cont.querySelector('.swal2-popup');
-                            if (popup) popup.style.zIndex = 30000;
-                        }
-                    }
-                });
-                createFormBlocker();
-                return;
-            }
-
-            if (finalStatus === 'ACCEPTED' && acceptanceStatus === 'REJECTED') {
-                removeFormBlocker();
-                Swal.fire({
-                    html: `<div style="font-size: 40px; margin-bottom: 10px;">😊</div>
-                           <h3 style="font-weight: bold;">Don't be sad, you'll get accepted next time!</h3>`,
                     showConfirmButton: false,
-                    allowOutsideClick: true,
-                    backdrop: true,
-                    timer: 1500,
+                    backdrop: true
                 });
-                return;
             }
-        } catch (err) {
-            console.error('checkActive error', err);
-        }
-    }
 
-    $(document).ready(function() {
-        checkActive();
-    });
+            function closeActiveSubmissionAlertAndUnblock() {
+                if (Swal && Swal.close) Swal.close();
+                removeFormBlocker();
+            }
 
-    async function loadStudentProfile() {
-        try {
-            const res = await fetch(`${API_BASE}/form-submission/${encodeURIComponent(nim)}`);
-            if (!res.ok) return;
-            const j = await res.json();
+            async function checkActive() {
+                try {
+                    const res = await fetch(`${API_BASE}/check-submission/${encodeURIComponent(nim)}`);
+                    const j = await res.json();
+                    if (!j.last) {
+                        removeFormBlocker();
+                        closeActiveSubmissionAlertAndUnblock();
+                        return;
+                    }
 
-            const s = j.student || {};
-            if (document.getElementById('nimField')) document.getElementById('nimField').value = s.nim || '';
-            if (document.getElementById('nameField')) document.getElementById('nameField').value = s.name || '';
-            if (document.getElementById('programField')) document.getElementById('programField').value = s.program_study || '';
-            if (document.getElementById('departmentField')) document.getElementById('departmentField').value = j.department || '';
-            if (document.getElementById('coordinatorField')) document.getElementById('coordinatorField').value = j.coordinator || '';
-            if (s.email && document.getElementById('emailField')) document.getElementById('emailField').value = s.email;
-        } catch (err) {
-            console.error('loadStudentProfile error', err);
-        }
-    }
+                    const acceptanceStatus = j.last?.acceptance_status || '-';
+                    const finalStatus = j.last?.status ? j.last.status.toUpperCase() : '-';
 
-    async function loadCompanies() {
-        try {
-            const res = await fetch(`${API_BASE}/company`);
-            const list = await res.json();
-            const sel = document.getElementById('companySelect');
-            if (!sel) return;
-            sel.innerHTML = '<option value="" selected>Choose Company</option>';
-            list.forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c.id;
-                opt.textContent = c.name;
-                sel.appendChild(opt);
+                    if (finalStatus === 'WAITING') {
+                        if (!__formBlockerElement && !(Swal && Swal.isVisible && Swal.isVisible())) {
+                            showActiveSubmissionAlertAndBlockForm();
+                        }
+                        return;
+                    }
+
+                    if (finalStatus === 'REJECTED') {
+                        removeFormBlocker();
+                        Swal.fire({
+                            html: `<div style="font-size: 40px; margin-bottom: 10px;">😊</div>
+                           <h3 style="font-weight: bold;">Don't be sad, you'll get accepted next time!</h3>`,
+                            showConfirmButton: false,
+                            allowOutsideClick: true,
+                            backdrop: true,
+                            timer: 1500,
+                        });
+                        return;
+                    }
+
+                    if (finalStatus === 'ACCEPTED' && acceptanceStatus === '-') {
+                        showActiveSubmissionAlertAndBlockForm();
+                        return;
+                    }
+
+                    if (finalStatus === 'ACCEPTED' && acceptanceStatus === 'ACCEPTED') {
+                        Swal.fire({
+                            html: `<div style="font-size: 40px; margin-bottom: 10px;">😆</div>
+                           <h3 style="font-weight: bold;">Congratulations on being accepted for your internship!</h3>`,
+                            showConfirmButton: false,
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            backdrop: true,
+                            didOpen: () => {
+                                const cont = document.querySelector('.swal2-container');
+                                if (cont) {
+                                    cont.style.pointerEvents = 'none';
+                                    const popup = cont.querySelector('.swal2-popup');
+                                    if (popup) popup.style.zIndex = 30000;
+                                }
+                            }
+                        });
+                        createFormBlocker();
+                        return;
+                    }
+
+                    if (finalStatus === 'ACCEPTED' && acceptanceStatus === 'REJECTED') {
+                        removeFormBlocker();
+                        Swal.fire({
+                            html: `<div style="font-size: 40px; margin-bottom: 10px;">😊</div>
+                           <h3 style="font-weight: bold;">Don't be sad, you'll get accepted next time!</h3>`,
+                            showConfirmButton: false,
+                            allowOutsideClick: true,
+                            backdrop: true,
+                            timer: 1500,
+                        });
+                        return;
+                    }
+                } catch (err) {
+                    console.error('checkActive error', err);
+                }
+            }
+
+            $(document).ready(function () {
+                checkActive();
             });
 
-            if (window.jQuery && jQuery().select2) {
-                $('#companySelect').select2({ width: '70%' });
-            }
-        } catch (err) {
-            console.error('loadCompanies error', err);
-        }
+            async function loadStudentProfile() {
+                try {
+                    const res = await fetch(`${API_BASE}/form-submission/${encodeURIComponent(nim)}`);
+                    if (!res.ok) return;
+                    const j = await res.json();
 
-        $('#companySelect').on('select2:select', async function(e) {
-            const id = e.params.data.id;
-            const $addr = $('#companyAddress');
-            const checkbox = document.getElementById('companyExist');
-            if (checkbox && checkbox.checked) return; // jika checkbox dicentang, jangan override
-
-            if (!id) {
-                $addr.val('').prop('readonly', true);
-                return;
-            }
-
-            try {
-                const res = await fetch(`${API_BASE}/company/${id}`);
-                const c = await res.json();
-                $addr.val(c.address || '').prop('readonly', true);
-            } catch (err) {
-                console.error(err);
-            }
-        });
-    }
-
-    document.addEventListener('change', async function(e) {
-        if (!e.target) return;
-
-        const checkbox = document.getElementById('companyExist');
-        const sel = document.getElementById('companySelect');
-        const addrEl = document.getElementById('companyAddress');
-        const newFields = document.getElementById('newCompanyName');
-        const newContact = document.getElementById('newCompanyContact');
-
-        // Dropdown change
-        if (e.target.id === 'companySelect' && (!checkbox || !checkbox.checked)) {
-            const id = e.target.value;
-            if (!id) {
-                if (addrEl) addrEl.value = '';
-                return;
-            }
-            try {
-                const res = await fetch(`${API_BASE}/company/${encodeURIComponent(id)}`);
-                if (!res.ok) return;
-                const c = await res.json();
-                if (addrEl) {
-                    addrEl.value = c.address || '';
-                    addrEl.readOnly = true;
-                }
-            } catch (err) {
-                console.error('company detail error', err);
-            }
-        }
-
-        // Checkbox change
-        if (e.target.id === 'companyExist') {
-            const checked = e.target.checked;
-
-            if (newFields && newFields.parentElement) newFields.parentElement.style.display = checked ? '' : 'none';
-            if (newContact && newContact.parentElement) newContact.parentElement.style.display = checked ? '' : 'none';
-
-            if (sel) sel.disabled = checked;
-            if (checked) {
-                sel.value = '';
-                if (window.jQuery && jQuery().select2) $('#companySelect').val(null).trigger('change');
-                if (addrEl) { addrEl.value = ''; addrEl.readOnly = false; }
-                if (newFields) newFields.value = '';
-                if (newContact) newContact.value = '';
-            } else {
-                if (sel && sel.value) {
-                    fetch(`${API_BASE}/company/${encodeURIComponent(sel.value)}`)
-                        .then(r => r.json())
-                        .then(c => { if(addrEl) addrEl.value = c.address || ''; if(addrEl) addrEl.readOnly = true; })
-                        .catch(err => console.error(err));
-                } else if (addrEl) {
-                    addrEl.value = '';
-                    addrEl.readOnly = true;
+                    const s = j.student || {};
+                    if (document.getElementById('nimField')) document.getElementById('nimField').value = s.nim || '';
+                    if (document.getElementById('nameField')) document.getElementById('nameField').value = s.name || '';
+                    if (document.getElementById('programField')) document.getElementById('programField').value = s.program_study || '';
+                    if (document.getElementById('departmentField')) document.getElementById('departmentField').value = j.department || '';
+                    if (document.getElementById('coordinatorField')) document.getElementById('coordinatorField').value = j.coordinator || '';
+                    if (s.email && document.getElementById('emailField')) document.getElementById('emailField').value = s.email;
+                } catch (err) {
+                    console.error('loadStudentProfile error', err);
                 }
             }
 
-            // toggle required stars
-            const newCompanyNameStar = document.getElementById('newCompanyNameStar');
-            const newCompanyContactStar = document.getElementById('newCompanyContactStar');
-            const companyAddressStar = document.getElementById('companyAddressStar');
-            const companySelectStar = document.getElementById('companySelectStar');
+            async function loadCompanies() {
+                try {
+                    const res = await fetch(`${API_BASE}/company`);
+                    const list = await res.json();
+                    const sel = document.getElementById('companySelect');
+                    if (!sel) return;
+                    sel.innerHTML = '<option value="" selected>Choose Company</option>';
+                    list.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = c.name;
+                        sel.appendChild(opt);
+                    });
 
-            if (checked) {
-                if (newCompanyNameStar) newCompanyNameStar.style.display = 'inline-block';
-                if (newCompanyContactStar) newCompanyContactStar.style.display = 'inline-block';
-                if (companyAddressStar) companyAddressStar.style.display = 'inline-block';
-                if (companySelectStar) companySelectStar.style.display = 'none';
-            } else {
+                    if (window.jQuery && jQuery().select2) {
+                        $('#companySelect').select2({ width: '70%' });
+                    }
+                } catch (err) {
+                    console.error('loadCompanies error', err);
+                }
+
+                $('#companySelect').on('select2:select', async function (e) {
+                    const id = e.params.data.id;
+                    const $addr = $('#companyAddress');
+                    const checkbox = document.getElementById('companyExist');
+                    if (checkbox && checkbox.checked) return;
+
+                    if (!id) {
+                        $addr.val('').prop('readonly', true);
+                        return;
+                    }
+
+                    try {
+                        const res = await fetch(`${API_BASE}/company/${id}`);
+                        const c = await res.json();
+                        $addr.val(c.address || '').prop('readonly', true);
+                    } catch (err) {
+                        console.error(err);
+                    }
+                });
+            }
+
+            document.addEventListener('change', async function (e) {
+                if (!e.target) return;
+
+                const checkbox = document.getElementById('companyExist');
+                const sel = document.getElementById('companySelect');
+                const addrEl = document.getElementById('companyAddress');
+                const newFields = document.getElementById('newCompanyName');
+                const newContact = document.getElementById('newCompanyContact');
+
+                // Dropdown change
+                if (e.target.id === 'companySelect' && (!checkbox || !checkbox.checked)) {
+                    const id = e.target.value;
+                    if (!id) {
+                        if (addrEl) addrEl.value = '';
+                        return;
+                    }
+                    try {
+                        const res = await fetch(`${API_BASE}/company/${encodeURIComponent(id)}`);
+                        if (!res.ok) return;
+                        const c = await res.json();
+                        if (addrEl) {
+                            addrEl.value = c.address || '';
+                            addrEl.readOnly = true;
+                        }
+                    } catch (err) {
+                        console.error('company detail error', err);
+                    }
+                }
+
+                // Checkbox change
+                if (e.target.id === 'companyExist') {
+                    const checked = e.target.checked;
+
+                    if (newFields && newFields.parentElement) newFields.parentElement.style.display = checked ? '' : 'none';
+                    if (newContact && newContact.parentElement) newContact.parentElement.style.display = checked ? '' : 'none';
+
+                    if (sel) sel.disabled = checked;
+                    if (checked) {
+                        sel.value = '';
+                        if (window.jQuery && jQuery().select2) $('#companySelect').val(null).trigger('change');
+                        if (addrEl) { addrEl.value = ''; addrEl.readOnly = false; }
+                        if (newFields) newFields.value = '';
+                        if (newContact) newContact.value = '';
+                    } else {
+                        if (sel && sel.value) {
+                            fetch(`${API_BASE}/company/${encodeURIComponent(sel.value)}`)
+                                .then(r => r.json())
+                                .then(c => { if (addrEl) addrEl.value = c.address || ''; if (addrEl) addrEl.readOnly = true; })
+                                .catch(err => console.error(err));
+                        } else if (addrEl) {
+                            addrEl.value = '';
+                            addrEl.readOnly = true;
+                        }
+                    }
+
+                    // toggle required stars
+                    const newCompanyNameStar = document.getElementById('newCompanyNameStar');
+                    const newCompanyContactStar = document.getElementById('newCompanyContactStar');
+                    const companyAddressStar = document.getElementById('companyAddressStar');
+                    const companySelectStar = document.getElementById('companySelectStar');
+
+                    if (checked) {
+                        if (newCompanyNameStar) newCompanyNameStar.style.display = 'inline-block';
+                        if (newCompanyContactStar) newCompanyContactStar.style.display = 'inline-block';
+                        if (companyAddressStar) companyAddressStar.style.display = 'inline-block';
+                        if (companySelectStar) companySelectStar.style.display = 'none';
+                    } else {
+                        if (newCompanyNameStar) newCompanyNameStar.style.display = 'none';
+                        if (newCompanyContactStar) newCompanyContactStar.style.display = 'none';
+                        if (companyAddressStar) companyAddressStar.style.display = 'none';
+                        if (companySelectStar) companySelectStar.style.display = 'inline-block';
+                    }
+                }
+            });
+
+            const form = document.getElementById('submissionForm');
+            if (form) {
+                form.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    const checked = document.getElementById('companyExist') && document.getElementById('companyExist').checked;
+
+                    const payload = {
+                        nim: nim,
+                        company_id: checked ? null : (document.getElementById('companySelect') ? document.getElementById('companySelect').value : null),
+                        company_name: checked ? (document.getElementById('newCompanyName') ? document.getElementById('newCompanyName').value : null) : null,
+                        company_contact: checked ? (document.getElementById('newCompanyContact') ? document.getElementById('newCompanyContact').value : null) : null,
+                        company_address: document.getElementById('companyAddress') ? document.getElementById('companyAddress').value : null,
+                        start_date: document.getElementById('startDate') ? document.getElementById('startDate').value : null,
+                        end_date: document.getElementById('endDate') ? document.getElementById('endDate').value : null,
+                        semester: document.getElementById('semesterField') ? document.getElementById('semesterField').value : null,
+                        class: (document.querySelector('input[name="class"]:checked') ? document.querySelector('input[name="class"]:checked').value : null),
+                        email: document.getElementById('emailField') ? document.getElementById('emailField').value : null,
+                        phone: document.getElementById('phoneField') ? document.getElementById('phoneField').value : null
+                    };
+
+                    const missing = [];
+                    if (!payload.class) missing.push('Class');
+                    if (!payload.semester) missing.push('Semester');
+                    if (!payload.start_date) missing.push('Start Date');
+                    if (!payload.end_date) missing.push('End Date');
+                    if (!payload.email) missing.push('Email');
+                    if (!payload.phone) missing.push('Active WhatsApp Number');
+
+                    const langVal = (document.querySelector('input[name="language"]:checked') ? document.querySelector('input[name="language"]:checked').value : null);
+                    if (!langVal) missing.push('Language for Letter');
+                    payload.language = langVal;
+
+                    if (!payload.company_id && !payload.company_name) missing.push('Company (choose or enter new company)');
+                    if (!payload.company_address) missing.push('Company Address');
+
+                    if (missing.length) {
+                        Swal.fire({ icon: 'error', title: 'Missing required fields', html: `<div>Please fill: <ul style="text-align:left;">${missing.map(m => `<li>${m}</li>`).join('')}</ul></div>` });
+                        return;
+                    }
+
+                    async function submitForm(force = false) {
+                        try {
+                            const res = await fetch(`${API_BASE}/form-submission`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ ...payload, force })
+                            });
+                            const j = await res.json();
+                            if (res.ok && j.success) {
+                                Swal.fire('Success', 'Submission successfully created', 'success').then(() => { window.location.href = 'approval_status.php'; });
+                            } else if (j.code === 'COMPANY_SIMILAR') {
+                                const result = await Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Similar Company Found',
+                                    html: `The company name you entered is similar to "<b>${j.similar_company}</b>". Do you want to proceed anyway?`,
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Yes, submit',
+                                    cancelButtonText: 'No, cancel'
+                                });
+                                if (result.isConfirmed) submitForm(true);
+                            } else {
+                                Swal.fire('Error', j.error || 'Submission failed', 'error');
+                            }
+                        } catch (err) {
+                            console.error('submit error', err);
+                            Swal.fire('Error', 'Server error while submitting', 'error');
+                        }
+                    }
+
+                    submitForm();
+                });
+            }
+
+            (async () => {
+                await checkActive();
+                await loadStudentProfile();
+                await loadCompanies();
+
+                const newFields = document.getElementById('newCompanyName');
+                const newContact = document.getElementById('newCompanyContact');
+                if (newFields && newFields.parentElement) newFields.parentElement.style.display = 'none';
+                if (newContact && newContact.parentElement) newContact.parentElement.style.display = 'none';
+            })();
+
+            (function initRequiredStars() {
+                const newCompanyNameStar = document.getElementById('newCompanyNameStar');
+                const newCompanyContactStar = document.getElementById('newCompanyContactStar');
+                const companyAddressStar = document.getElementById('companyAddressStar');
+                const companySelectStar = document.getElementById('companySelectStar');
+
                 if (newCompanyNameStar) newCompanyNameStar.style.display = 'none';
                 if (newCompanyContactStar) newCompanyContactStar.style.display = 'none';
                 if (companyAddressStar) companyAddressStar.style.display = 'none';
                 if (companySelectStar) companySelectStar.style.display = 'inline-block';
-            }
-        }
-    });
+            })();
 
-    const form = document.getElementById('submissionForm');
-    if (form) {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const checked = document.getElementById('companyExist') && document.getElementById('companyExist').checked;
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
 
-            const payload = {
-                nim: nim,
-                company_id: checked ? null : (document.getElementById('companySelect') ? document.getElementById('companySelect').value : null),
-                company_name: checked ? (document.getElementById('newCompanyName') ? document.getElementById('newCompanyName').value : null) : null,
-                company_contact: checked ? (document.getElementById('newCompanyContact') ? document.getElementById('newCompanyContact').value : null) : null,
-                company_address: document.getElementById('companyAddress') ? document.getElementById('companyAddress').value : null,
-                start_date: document.getElementById('startDate') ? document.getElementById('startDate').value : null,
-                end_date: document.getElementById('endDate') ? document.getElementById('endDate').value : null,
-                semester: document.getElementById('semesterField') ? document.getElementById('semesterField').value : null,
-                class: (document.querySelector('input[name="class"]:checked') ? document.querySelector('input[name="class"]:checked').value : null),
-                email: document.getElementById('emailField') ? document.getElementById('emailField').value : null,
-                phone: document.getElementById('phoneField') ? document.getElementById('phoneField').value : null
-            };
-
-            const missing = [];
-            if (!payload.class) missing.push('Class');
-            if (!payload.semester) missing.push('Semester');
-            if (!payload.start_date) missing.push('Start Date');
-            if (!payload.end_date) missing.push('End Date');
-            if (!payload.email) missing.push('Email');
-            if (!payload.phone) missing.push('Active WhatsApp Number');
-
-            const langVal = (document.querySelector('input[name="language"]:checked') ? document.querySelector('input[name="language"]:checked').value : null);
-            if (!langVal) missing.push('Language for Letter');
-            payload.language = langVal;
-
-            if (!payload.company_id && !payload.company_name) missing.push('Company (choose or enter new company)');
-            if (!payload.company_address) missing.push('Company Address');
-
-            if (missing.length) {
-                Swal.fire({ icon: 'error', title: 'Missing required fields', html: `<div>Please fill: <ul style="text-align:left;">${missing.map(m => `<li>${m}</li>`).join('')}</ul></div>` });
-                return;
+            function formatDate(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
             }
 
-            async function submitForm(force=false) {
-                try {
-                    const res = await fetch(`${API_BASE}/form-submission`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ ...payload, force })
-                    });
-                    const j = await res.json();
-                    if(res.ok && j.success){
-                        Swal.fire('Success','Submission successfully created','success').then(()=>{ window.location.href='approval_status.php'; });
-                    } else if(j.code==='COMPANY_SIMILAR'){
-                        const result = await Swal.fire({
-                            icon:'warning',
-                            title:'Similar Company Found',
-                            html:`The company name you entered is similar to "<b>${j.similar_company}</b>". Do you want to proceed anyway?`,
-                            showCancelButton:true,
-                            confirmButtonText:'Yes, submit',
-                            cancelButtonText:'No, cancel'
-                        });
-                        if(result.isConfirmed) submitForm(true);
-                    } else {
-                        Swal.fire('Error', j.error || 'Submission failed', 'error');
-                    }
-                } catch(err){
-                    console.error('submit error', err);
-                    Swal.fire('Error','Server error while submitting','error');
+            startDateInput.addEventListener('change', () => {
+                const startValue = startDateInput.value;
+                if (startValue) {
+                    const startDate = new Date(startValue);
+                    const minEndDate = new Date(startDate);
+                    minEndDate.setDate(startDate.getDate() + 1);
+                    endDateInput.min = formatDate(minEndDate);
+                    if (endDateInput.value && new Date(endDateInput.value) < minEndDate) endDateInput.value = '';
                 }
-            }
+            });
 
-            submitForm();
-        });
-    }
+            endDateInput.addEventListener('change', () => {
+                const endValue = endDateInput.value;
+                if (endValue) {
+                    const endDate = new Date(endValue);
+                    const maxStartDate = new Date(endDate);
+                    maxStartDate.setDate(endDate.getDate() - 1);
+                    startDateInput.max = formatDate(maxStartDate);
+                    if (startDateInput.value && new Date(startDateInput.value) > maxStartDate) startDateInput.value = '';
+                }
+            });
 
-    (async () => {
-        await checkActive();
-        await loadStudentProfile();
-        await loadCompanies();
-
-        const newFields = document.getElementById('newCompanyName');
-        const newContact = document.getElementById('newCompanyContact');
-        if (newFields && newFields.parentElement) newFields.parentElement.style.display = 'none';
-        if (newContact && newContact.parentElement) newContact.parentElement.style.display = 'none';
-    })();
-
-    (function initRequiredStars() {
-        const newCompanyNameStar = document.getElementById('newCompanyNameStar');
-        const newCompanyContactStar = document.getElementById('newCompanyContactStar');
-        const companyAddressStar = document.getElementById('companyAddressStar');
-        const companySelectStar = document.getElementById('companySelectStar');
-
-        if (newCompanyNameStar) newCompanyNameStar.style.display = 'none';
-        if (newCompanyContactStar) newCompanyContactStar.style.display = 'none';
-        if (companyAddressStar) companyAddressStar.style.display = 'none';
-        if (companySelectStar) companySelectStar.style.display = 'inline-block';
-    })();
-
-    const startDateInput = document.getElementById('startDate');
-    const endDateInput = document.getElementById('endDate');
-
-    function formatDate(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
-    startDateInput.addEventListener('change', () => {
-        const startValue = startDateInput.value;
-        if (startValue) {
-            const startDate = new Date(startValue);
-            const minEndDate = new Date(startDate);
-            minEndDate.setDate(startDate.getDate() + 1);
-            endDateInput.min = formatDate(minEndDate);
-            if (endDateInput.value && new Date(endDateInput.value) < minEndDate) endDateInput.value = '';
-        }
-    });
-
-    endDateInput.addEventListener('change', () => {
-        const endValue = endDateInput.value;
-        if (endValue) {
-            const endDate = new Date(endValue);
-            const maxStartDate = new Date(endDate);
-            maxStartDate.setDate(endDate.getDate() - 1);
-            startDateInput.max = formatDate(maxStartDate);
-            if (startDateInput.value && new Date(startDateInput.value) > maxStartDate) startDateInput.value = '';
-        }
-    });
-
-})();
-</script>
+        })();
+    </script>
 
 
 

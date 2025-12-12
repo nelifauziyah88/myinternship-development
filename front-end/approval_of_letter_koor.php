@@ -41,7 +41,6 @@ if ($id_kampus) {
 <html lang="en">
 
 <head>
-    <!-- Meta for Compatibility -->
     <meta charset="utf-8">
     <title>Approval Coordinator</title>
     <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
@@ -138,7 +137,6 @@ if ($id_kampus) {
             word-wrap: break-word;
             min-width: 140px;
             max-width: 140px;
-            /* max-width:150px; */
         }
 
         .wrap2 {
@@ -146,7 +144,6 @@ if ($id_kampus) {
             word-wrap: break-word;
             min-width: 170px;
             max-width: 170px;
-            /* max-width:150px; */
         }
 
         .main-panel {
@@ -155,13 +152,9 @@ if ($id_kampus) {
 
         .btn-xs {
             padding: 4px 8px;
-            /* lebih kecil dari btn-sm */
             font-size: 0.75rem;
-            /* teks sedikit lebih kecil */
             line-height: 1.2;
-            /* supaya height-nya rendah */
             border-radius: 4px;
-            /* tetap sedikit membulat */
         }
 
         .badge.waiting {
@@ -188,7 +181,6 @@ if ($id_kampus) {
             font-weight: 500;
         }
 
-        /* Export Button Styling */
         .btn-danger,
         .btn-success {
             transition: all 0.3s ease;
@@ -206,7 +198,6 @@ if ($id_kampus) {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
-        /* Prevent focus on background elements when SweetAlert is open */
         .swal2-shown .wrapper,
         .swal2-shown body> :not(.swal2-container) {
             pointer-events: none;
@@ -221,7 +212,6 @@ if ($id_kampus) {
             pointer-events: all;
         }
 
-        /* Ensure buttons in background are not focusable */
         .swal2-shown button:not(.swal2-popup button),
         .swal2-shown input:not(.swal2-popup input),
         .swal2-shown select:not(.swal2-popup select),
@@ -285,7 +275,7 @@ if ($id_kampus) {
                     <div class="collapse" id="search-nav">
                         <ul class="navbar-nav navbar-left topbar-nav nav-search mr-md-3 align-items-center">
 
-                            <!-- Tanggal -->
+                            <!-- Date -->
                             <li class="nav-item dropdown hidden-caret">
                                 <a aria-label="Current Date and Calendar" class="nav-link dropdown-toggle"
                                     data-toggle="dropdown" href="#" aria-expanded="false">
@@ -300,7 +290,7 @@ if ($id_kampus) {
                                 </ul>
                             </li>
 
-                            <!-- Jam -->
+                            <!-- Time -->
                             <li class="nav-item dropdown hidden-caret">
                                 <a aria-label="Current Time" class="nav-link dropdown-toggle" data-toggle="dropdown"
                                     href="#" aria-expanded="false">
@@ -351,7 +341,7 @@ if ($id_kampus) {
                             </ul>
                         </li>
 
-                        <!-- Profil -->
+                        <!-- Profile -->
                         <li class="nav-item dropdown hidden-caret">
                             <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#"
                                 aria-expanded="false">
@@ -381,7 +371,6 @@ if ($id_kampus) {
                                         <a class="dropdown-item" href="cdc_dashboard.php">My Dashboard</a>
                                         <a class="dropdown-item" href="#">My Profile</a>
                                         <a class="dropdown-item" href="#">My Company</a>
-                                        <!-- <a class="dropdown-item" href="#">Inbox</a> -->
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="#">Home</a>
                                         <a class="dropdown-item" href="#">Announcements</a>
@@ -458,7 +447,7 @@ if ($id_kampus) {
                         <li class="nav-item active">
                             <a href="approval_of_letter_koor.php" class="collapsed" aria-expanded="false">
                                 <i class="fas fa-briefcase"></i>
-                                <p>Approval Of Letter</p>
+                                <p>Approval Letter</p>
                             </a>
                         </li>
                         <li class="nav-section">
@@ -487,7 +476,7 @@ if ($id_kampus) {
         <!-- End Sidebar -->
 
         <div class="main-panel">
-            <!-- Approval Status Header - FULL WIDTH -->
+            <!-- Approval Status Header -->
             <div class="panel-header bg-primary-gradient">
                 <div class="page-inner py-5">
                     <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row">
@@ -625,9 +614,6 @@ if ($id_kampus) {
         </div>
 
         <script>
-            // ========================================
-            // KONFIGURASI AWAL
-            // ========================================
             // Mendapatkan ID dosen dari PHP
             const lecturerId = "<?php echo $nim_nik_unit; ?>";
             // Mendapatkan nama user saat ini dari PHP
@@ -635,18 +621,12 @@ if ($id_kampus) {
             // Base URL untuk API endpoint
             const apiBase = "http://localhost:8000/api";
 
-            // ========================================
             // EVENT LISTENER - LOAD SUBMISSIONS SAAT HALAMAN SIAP
-            // ========================================
             document.addEventListener("DOMContentLoaded", loadSubmissions);
 
-            // ========================================
             // FUNGSI UTAMA - LOAD DATA SUBMISSIONS
-            // ========================================
             async function loadSubmissions() {
-                // Dapatkan element tbody
                 const body = document.getElementById("tableBody");
-                // Tampilkan loading state
                 body.innerHTML = "<tr><td colspan='8'>Loading...</td></tr>";
 
                 try {
@@ -654,7 +634,7 @@ if ($id_kampus) {
                     const res = await fetch(`${apiBase}/lecturer/submissions/${lecturerId}`);
                     const json = await res.json();
 
-                    // Validasi response - cek jika tidak ada data
+                    // Validasi response
                     if (!json.success || !json.data || json.data.length === 0) {
                         body.innerHTML = "<tr><td colspan='8' class='text-center text-muted'>No data found.</td></tr>";
                         return;
@@ -663,11 +643,7 @@ if ($id_kampus) {
                     // Reset table body jika ada data
                     body.innerHTML = "";
 
-                    // ========================================
-                    // LOOP DATA - RENDER SETIAP SUBMISSION
-                    // ========================================
                     json.data.forEach((item, index) => {
-                        // Format tanggal submission
                         const date = new Date(item.created_at).toLocaleDateString("en-GB");
 
                         // Helper function untuk format waktu
@@ -677,12 +653,9 @@ if ($id_kampus) {
                             return d.toLocaleDateString("en-GB");
                         };
 
-                        // ========================================
-                        // RENDER KOLOM COORDINATOR APPROVAL
-                        // ========================================
                         let coordinatorHtml = "";
 
-                        // Status: WAITING - tampilkan dropdown approve/reject
+                        // Status: WAITING
                         if (item.koor_approval === "WAITING") {
                             coordinatorHtml = `
           <div class="dropdown text-center">
@@ -699,7 +672,7 @@ if ($id_kampus) {
             </div>
           </div>`;
                         }
-                        // Status: ACCEPTED - tampilkan badge approved dengan timestamp
+                        // Status: ACCEPTED
                         else if (item.koor_approval === "ACCEPTED") {
                             coordinatorHtml = `
           <div class="text-center">
@@ -707,7 +680,7 @@ if ($id_kampus) {
             <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
           </div>`;
                         }
-                        // Status: REJECTED - tampilkan badge rejected dengan tombol show reason
+                        // Status: REJECTED
                         else if (item.koor_approval === "REJECTED") {
                             coordinatorHtml = `<div class="text-center">
          <span class='badge rejected'>Rejected</span>
@@ -718,9 +691,7 @@ if ($id_kampus) {
        </div>`;
                         }
 
-                        // ========================================
                         // RENDER KOLOM CDC APPROVAL
-                        // ========================================
                         let cdcHtml = "";
 
                         // Jika coordinator belum approve, CDC tidak bisa approve (tampilkan -)
@@ -747,19 +718,11 @@ if ($id_kampus) {
             <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
           </div>`;
                         }
-                        // Default: tampilkan -
                         else {
                             cdcHtml = `-`;
                         }
 
-                        // ========================================
-                        // KOLOM HASIL (PLACEHOLDER)
-                        // ========================================
                         const result = "-";
-
-                        // ========================================
-                        // RENDER TABLE ROW
-                        // ========================================
                         body.innerHTML += `
         <tr>
           <td class="text-center">${index + 1}</td>
@@ -777,15 +740,11 @@ if ($id_kampus) {
         </tr>`;
                     });
                 } catch (err) {
-                    // Handle error saat fetch data
                     console.error(err);
                     body.innerHTML = "<tr><td colspan='8' class='text-danger'>Error loading data.</td></tr>";
                 }
             }
 
-            // ========================================
-            // FUNGSI UPDATE APPROVAL STATUS
-            // ========================================
             async function updateApproval(id, status, el) {
                 // Tampilkan konfirmasi SweetAlert
                 const confirm = await Swal.fire({
@@ -816,22 +775,16 @@ if ($id_kampus) {
 
                     // Handle response dari API
                     if (json.success) {
-                        // Jika sukses, tampilkan notifikasi dan reload data
                         Swal.fire("Success!", json.message, "success");
                         loadSubmissions();
                     } else {
-                        // Jika gagal, tampilkan pesan error
                         Swal.fire("Error", json.message, "error");
                     }
                 } catch (err) {
-                    // Handle error saat fetch
                     Swal.fire("Error", err.message, "error");
                 }
             }
 
-            // ========================================
-            // FUNGSI NAVIGATE KE DETAIL SUBMISSION
-            // ========================================
             function viewDetail(id) {
                 // Redirect ke halaman detail dengan parameter id
                 window.location.href = `detail_submissions_koor.php?id=${id}`;
@@ -877,17 +830,11 @@ if ($id_kampus) {
         <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style/dist/xlsx.min.js"></script>
 
         <script>
-            // ============================================================
-            // JQUERY INITIALIZATION - Clock & Calendar
-            // ============================================================
             $(document).ready(function () {
                 clock_run();
                 show_calendar();
             });
 
-            /**
-             * Initialize and display calendar widget
-             */
             function show_calendar() {
                 var date = new Date();
                 var d = date.getDate();
@@ -897,14 +844,11 @@ if ($id_kampus) {
 
                 $calendar = $('#calendar');
                 $calendar.fullCalendar({
-                    fixedWeekCount: false, // Set false agar jumlah minggu yang ditampilkan menyesuaikan dengan bulan aktif
+                    fixedWeekCount: false,
                 });
             }
 
-            /**
-             * Run real-time clock display
-             * Updates date and time every second
-             */
+            // Run real-time clock display
             function clock_run() {
                 'use strict';
                 let d = new Date();
@@ -952,13 +896,6 @@ if ($id_kampus) {
         </script>
 
         <script type="text/javascript">
-            // ============================================================
-            // UTILITY FUNCTIONS
-            // ============================================================
-            /**
-             * Copy text to clipboard
-             * @param {string} text - Text to copy
-             */
             function copyToClipboard(text) {
                 var tempInput = document.createElement("input");
                 document.body.appendChild(tempInput);
@@ -972,10 +909,7 @@ if ($id_kampus) {
                 alert("Text copied to clipboard: " + text);
             }
 
-            /**
-             * Get notification form via AJAX
-             * @param {string} formSelector - Form selector (not used in current implementation)
-             */
+            // Get notification form via AJAX
             function getNotificationForm(formSelector) {
                 $.ajax({
                     url: 'index.php?request=validation_get',
@@ -993,9 +927,7 @@ if ($id_kampus) {
                 return true;
             }
 
-            /**
-             * Logout confirmation and session cleanup
-             */
+            // Logout confirmation and session cleanup
             function logout_confirm() {
                 let _token = $('meta[name="csrf-token"]').attr('content');
 
@@ -1009,7 +941,6 @@ if ($id_kampus) {
                     cancelButtonText: "Cancel"
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // AJAX logout ke PHP
                         $.ajax({
                             url: "session_logout.php",
                             type: "POST",
@@ -1033,11 +964,7 @@ if ($id_kampus) {
                 });
             }
 
-            /**
-             * Show native browser confirmation dialog
-             * @param {string} notif - Notification message
-             * @param {string} lokasi - URL to redirect if confirmed
-             */
+            // Show native browser confirmation dialog
             function konfirmasi(notif, lokasi) {
                 var x = confirm(notif);
                 if (x === true) {
@@ -1045,9 +972,7 @@ if ($id_kampus) {
                 }
             }
 
-            /**
-             * Show spinner animation on button icon
-             */
+            // Show spinner animation on button icon
             function spinner() {
                 var icon_spinner = event.target.querySelector('i');
                 var icon_old = icon_spinner.className;
@@ -1062,17 +987,9 @@ if ($id_kampus) {
                 }, 2000);
             }
 
-            // ============================================================
-            // GLOBAL VARIABLES FOR FILTERING & SORTING
-            // ============================================================
-            let allSubmissions = []; // Store all submission data
-            let sortAscending = true; // Track sort direction
+            let allSubmissions = [];
+            let sortAscending = true;
 
-            // ============================================================
-            // DATA LOADING & RENDERING
-            // ============================================================
-
-            // Initialize on page load
             document.addEventListener("DOMContentLoaded", () => {
                 loadSubmissions();
                 loadYears();
@@ -1089,10 +1006,7 @@ if ($id_kampus) {
                 }
             }
 
-            /**
-             * Load all submissions data from API
-             * Stores data globally for filtering and sorting
-             */
+            // Load all submissions data from API
             async function loadSubmissions() {
                 const body = document.getElementById("tableBody");
                 body.innerHTML = "<tr><td colspan='8'>Loading...</td></tr>";
@@ -1107,11 +1021,7 @@ if ($id_kampus) {
                         allSubmissions = [];
                         return;
                     }
-
-                    // Store data globally for filtering/sorting
                     allSubmissions = json.data;
-
-                    // Render table with all data
                     renderTable(allSubmissions);
 
                 } catch (err) {
@@ -1121,10 +1031,7 @@ if ($id_kampus) {
                 }
             }
 
-            /**
-             * Render table rows from data array
-             * @param {Array} data - Array of submission objects
-             */
+            // Render table rows from data array
             function renderTable(data) {
                 const body = document.getElementById("tableBody");
 
@@ -1147,10 +1054,9 @@ if ($id_kampus) {
                 data.forEach((item, index) => {
                     const date = new Date(item.created_at).toLocaleDateString("en-GB");
 
-                    // === BUILD COORDINATOR APPROVAL COLUMN ===
+                    // BUILD COORDINATOR APPROVAL COLUMN
                     let coordinatorHtml = "";
                     if (item.koor_approval === "WAITING") {
-                        // Show action dropdown
                         coordinatorHtml = `
                 <div class="dropdown text-center">
                     <button class="btn btn-warning btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
@@ -1184,10 +1090,9 @@ if ($id_kampus) {
                 </div>`;
                     }
 
-                    // === BUILD CDC APPROVAL COLUMN ===
+                    // BUILD CDC APPROVAL COLUMN
                     let cdcHtml = "";
                     if (item.koor_approval === "WAITING") {
-                        // CDC can't process if coordinator hasn't approved
                         cdcHtml = `-`;
                     } else if (item.cdc_approval === "WAITING" && item.koor_approval === "ACCEPTED") {
                         cdcHtml = `<span class="badge waiting">Waiting</span>`;
@@ -1206,11 +1111,7 @@ if ($id_kampus) {
                     } else {
                         cdcHtml = `-`;
                     }
-
-                    // === BUILD RESULT BADGE ===
                     const resultHtml = buildResultBadge(item);
-
-                    // === BUILD TABLE ROW ===
                     body.innerHTML += `
             <tr>
                 <td class="text-center">${index + 1}</td>
@@ -1229,20 +1130,8 @@ if ($id_kampus) {
                 });
             }
 
-            // ============================================================
-            // HELPER - BUILD RESULT BADGE
-            // ============================================================
-
-            /**
-             * Build badge untuk result company dengan button view reply
-             * 
-             * @param {Object} item - Data submission lengkap
-             * @returns {string} HTML string untuk badge result
-             */
             function buildResultBadge(item) {
                 const acceptance = item.acceptance_status;
-
-                // Jika belum ada acceptance status dari company
                 if (!acceptance || acceptance === '-') {
                     return `<span>-</span>`;
                 }
@@ -1274,64 +1163,51 @@ if ($id_kampus) {
                 return `<span>-</span>`;
             }
 
-            // ============================================================
-            // FILTERING & SORTING FUNCTIONS
-            // ============================================================
-
-            /**
-             * Apply filters to submission data
-             * Called when any filter input changes
-             */
+            // Apply filters to submission data
             function applyFilter() {
-    // Ambil value dari filter
-    const studentName = document.getElementById("filter_student_name")?.value.toLowerCase().trim();
-    const coordinatorStatus = document.getElementById("filter_coordinator")?.value.toLowerCase();
-    const cdcStatus = document.getElementById("filter_cdc")?.value.toLowerCase();
-    const companyResult = document.getElementById("filter_company")?.value.toLowerCase();
+                const studentName = document.getElementById("filter_student_name")?.value.toLowerCase().trim();
+                const coordinatorStatus = document.getElementById("filter_coordinator")?.value.toLowerCase();
+                const cdcStatus = document.getElementById("filter_cdc")?.value.toLowerCase();
+                const companyResult = document.getElementById("filter_company")?.value.toLowerCase();
 
-    if (!allSubmissions || !allSubmissions.length) return;
+                if (!allSubmissions || !allSubmissions.length) return;
 
-    const filteredData = allSubmissions.filter(item => {
-        // Filter by Student Name
-        const matchName = !studentName || (item.student_name && item.student_name.toLowerCase().includes(studentName));
+                const filteredData = allSubmissions.filter(item => {
+                    const matchName = !studentName || (item.student_name && item.student_name.toLowerCase().includes(studentName));
 
-        // Filter by Coordinator Approval
-        let matchCoordinator = true;
-        if (coordinatorStatus) {
-            const val = item.koor_approval?.toUpperCase() || '';
-            if (coordinatorStatus === "approved") matchCoordinator = val === "ACCEPTED";
-            else if (coordinatorStatus === "waiting") matchCoordinator = val === "WAITING";
-            else if (coordinatorStatus === "rejected") matchCoordinator = val === "REJECTED";
-        }
+                    // Filter by Coordinator Approval
+                    let matchCoordinator = true;
+                    if (coordinatorStatus) {
+                        const val = item.koor_approval?.toUpperCase() || '';
+                        if (coordinatorStatus === "approved") matchCoordinator = val === "ACCEPTED";
+                        else if (coordinatorStatus === "waiting") matchCoordinator = val === "WAITING";
+                        else if (coordinatorStatus === "rejected") matchCoordinator = val === "REJECTED";
+                    }
 
-        // Filter by CDC Approval
-        let matchCDC = true;
-        if (cdcStatus) {
-            const val = item.cdc_approval?.toUpperCase() || '';
-            if (cdcStatus === "approved") matchCDC = val === "ACCEPTED";
-            else if (cdcStatus === "waiting") matchCDC = val === "WAITING";
-            else if (cdcStatus === "rejected") matchCDC = val === "REJECTED";
-        }
+                    // Filter by CDC Approval
+                    let matchCDC = true;
+                    if (cdcStatus) {
+                        const val = item.cdc_approval?.toUpperCase() || '';
+                        if (cdcStatus === "approved") matchCDC = val === "ACCEPTED";
+                        else if (cdcStatus === "waiting") matchCDC = val === "WAITING";
+                        else if (cdcStatus === "rejected") matchCDC = val === "REJECTED";
+                    }
 
-        // Filter by Company Result
-        let matchCompany = true;
-        if (companyResult) {
-            const val = item.acceptance_status?.toUpperCase() || '';
-            if (companyResult === "accepted") matchCompany = val === "ACCEPTED";
-            else if (companyResult === "rejected") matchCompany = val === "REJECTED";
-        }
+                    // Filter by Company Result
+                    let matchCompany = true;
+                    if (companyResult) {
+                        const val = item.acceptance_status?.toUpperCase() || '';
+                        if (companyResult === "accepted") matchCompany = val === "ACCEPTED";
+                        else if (companyResult === "rejected") matchCompany = val === "REJECTED";
+                    }
 
-        return matchName && matchCoordinator && matchCDC && matchCompany;
-    });
+                    return matchName && matchCoordinator && matchCDC && matchCompany;
+                });
 
-    // Render ulang tabel
-    renderTable(filteredData);
-}
+                renderTable(filteredData);
+            }
 
-            /**
-             * Sort table by date
-             * Toggle between ascending and descending
-             */
+            // Sort table by date
             function sortTable() {
                 sortAscending = !sortAscending;
 
@@ -1343,21 +1219,10 @@ if ($id_kampus) {
                     sortIcon.className = "fas fa-sort-down";
                     allSubmissions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 }
-
-                // Re-apply filters after sorting
                 applyFilter();
             }
 
-            // ============================================================
-            // APPROVAL ACTIONS
-            // ============================================================
-
-            /**
-             * Update approval status (Approve action)
-             * @param {number} id - Letter ID
-             * @param {string} status - New status
-             * @param {HTMLElement} el - Clicked element
-             */
+            // Update approval status (Approve action)
             async function updateApproval(id, status, el) {
                 const confirm = await Swal.fire({
                     title: "Confirm?",
@@ -1396,11 +1261,7 @@ if ($id_kampus) {
                 }
             }
 
-            /**
-             * Prompt for rejection reason
-             * @param {number} id - Letter ID
-             * @param {HTMLElement} el - Clicked element
-             */
+            // Prompt for rejection reason
             async function promptReject(id, el) {
                 const {
                     value: reason,
@@ -1426,17 +1287,10 @@ if ($id_kampus) {
                 });
 
                 if (!isConfirmed) return;
-
-                // Show confirmation before submitting
                 await confirmThenApprove(id, "REJECTED", reason);
             }
 
-            /**
-             * Confirm approval action then execute
-             * @param {number} id - Letter ID
-             * @param {string} status - Approval status
-             * @param {string|null} comment - Optional comment
-             */
+            // Confirm approval action then execute
             async function confirmThenApprove(id, status, comment = null) {
                 const confirm = await Swal.fire({
                     title: "Confirm?",
@@ -1451,12 +1305,7 @@ if ($id_kampus) {
                 await performApprovalRequest(id, status, comment);
             }
 
-            /**
-             * Perform approval request to API
-             * @param {number} id - Letter ID
-             * @param {string} status - Approval status
-             * @param {string|null} comment - Optional comment
-             */
+            // Perform approval request to API
             async function performApprovalRequest(id, status, comment = null) {
                 try {
                     const res = await fetch(`${apiBase}/lecturer/approval`, {
@@ -1485,14 +1334,7 @@ if ($id_kampus) {
                 }
             }
 
-            // ============================================================
-            // REJECTION REASON MANAGEMENT
-            // ============================================================
-
-            /**
-             * View rejection reason with edit option
-             * @param {number} id_letter - Letter ID
-             */
+            // View rejection reason
             async function viewReason(id_letter) {
                 try {
                     const res = await fetch(`${apiBase}/lecturer/reason/${id_letter}`);
@@ -1521,11 +1363,7 @@ if ($id_kampus) {
                 }
             }
 
-            /**
-             * Edit rejection reason
-             * @param {number} id_letter - Letter ID
-             * @param {string} current - Current reason
-             */
+            // Edit rejection reason
             async function editReason(id_letter, current) {
                 const {
                     value: newReason,
@@ -1571,11 +1409,7 @@ if ($id_kampus) {
                 }
             }
 
-            /**
-             * Escape HTML to prevent XSS
-             * @param {string} str - String to escape
-             * @returns {string} Escaped string
-             */
+            // Escape HTML to prevent XSS
             function escapeHtml(str) {
                 if (!str) return "";
                 return String(str)
@@ -1586,23 +1420,12 @@ if ($id_kampus) {
                     .replace(/'/g, "&#039;");
             }
 
-            /**
-             * Navigate to detail page
-             * @param {number} id - Letter ID
-             */
+            // Navigate to detail page
             function viewDetail(id) {
                 window.location.href = `detail_submissions_koor.php?id=${id}`;
             }
 
-            // ============================================================
-            // FUNGSI VIEW COMPANY REPLY - ENHANCED VERSION
-            // ============================================================
-
-            /**
-             * View company reply - tampilkan file dengan informasi lengkap
-             * 
-             * @param {number} id_letter - ID letter submission
-             */
+            // View company reply
             async function viewCompanyReply(id_letter) {
                 try {
                     // Fetch company reply data dari API
@@ -1618,12 +1441,9 @@ if ($id_kampus) {
                     const json = await res.json();
                     const data = json.data;
 
-                    // Case 1: Ada file upload
                     if (data.company_reply_letter && data.company_reply_letter !== '-') {
                         const fileName = data.company_reply_letter;
                         const fileUrl = `./${data.company_reply_letter}`;
-
-                        // Tentukan apakah PDF atau gambar
                         const isPDF = fileName.toLowerCase().endsWith('.pdf');
 
                         // Badge styling berdasarkan status
@@ -1735,7 +1555,7 @@ if ($id_kampus) {
 
                         // Tampilkan modal dengan file
                         Swal.fire({
-                            title: '', // Kosongkan karena sudah ada info di dalam content
+                            title: '',
                             html: modalContent,
                             width: '900px',
                             showConfirmButton: true,
@@ -1745,7 +1565,7 @@ if ($id_kampus) {
                             }
                         });
                     }
-                    // Case 2: REJECTED tanpa file (overdue)
+
                     else if (data.acceptance_status === 'REJECTED' && data.isOverdue) {
                         Swal.fire({
                             title: "Company Reply - REJECTED",
@@ -1767,7 +1587,6 @@ if ($id_kampus) {
                             confirmButtonText: 'Close'
                         });
                     }
-                    // Case 3: Tidak ada data sama sekali
                     else {
                         Swal.fire({
                             title: "No Reply File Yet",
@@ -1793,9 +1612,7 @@ if ($id_kampus) {
                 }
             }
 
-            // ===============================
             // FORMAT DATE
-            // ===============================
             function formatDate(dateString) {
                 if (!dateString) return "-";
                 const date = new Date(dateString);
@@ -1805,169 +1622,167 @@ if ($id_kampus) {
                 return `${day}/${month}/${year}`;
             }
 
-            
-            // FULL REVISI SCRIPT KOOR DENGAN WRAPTEXT COMPANY ADDRESS
+            // Export Excel (Koor)
+            async function exportToExcel() {
+                const { value: formValues } = await Swal.fire({
+                    title: 'Select Date Range',
+                    html:
+                        '<label for="swal-start" style="display:block;text-align:left;margin-bottom:6px">Start date</label>' +
+                        '<input id="swal-start" type="date" class="swal2-input" style="margin:0 auto;">' +
+                        '<label for="swal-end" style="display:block;text-align:left;margin-top:8px;margin-bottom:6px">End date</label>' +
+                        '<input id="swal-end" type="date" class="swal2-input" style="margin:0 auto;">',
+                    focusConfirm: false,
+                    showCancelButton: true,
+                    confirmButtonText: 'Export',
+                    didOpen: () => {
+                        const startInput = document.getElementById("swal-start");
+                        const endInput = document.getElementById("swal-end");
 
-async function exportToExcel() {
-    const { value: formValues } = await Swal.fire({
-        title: 'Select Date Range',
-        html:
-            '<label for="swal-start" style="display:block;text-align:left;margin-bottom:6px">Start date</label>' +
-            '<input id="swal-start" type="date" class="swal2-input" style="margin:0 auto;">' +
-            '<label for="swal-end" style="display:block;text-align:left;margin-top:8px;margin-bottom:6px">End date</label>' +
-            '<input id="swal-end" type="date" class="swal2-input" style="margin:0 auto;">',
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Export',
-        didOpen: () => {
-            const startInput = document.getElementById("swal-start");
-            const endInput = document.getElementById("swal-end");
-
-            startInput.addEventListener("change", () => {
-                endInput.min = startInput.value;
-                endInput.value = "";
-            });
-        },
-        preConfirm: () => {
-            const start = document.getElementById('swal-start').value;
-            const end = document.getElementById('swal-end').value;
-
-            if (!start) return Swal.showValidationMessage('Start date is required');
-            if (!end) return Swal.showValidationMessage('End date is required');
-            if (new Date(start) > new Date(end)) return Swal.showValidationMessage('Start date must be before or equal to End date');
-
-            return { start, end };
-        }
-    });
-
-    if (!formValues) return;
-
-    const { start, end } = formValues;
-
-    Swal.fire({
-        title: 'Fetching data...',
-        text: 'Please wait...',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-    });
-
-    const data = await fetchInternshipData(start, end);
-
-    if (!data || data.length === 0) {
-        Swal.close();
-        Swal.fire({ icon: "info", title: "No Data Found", text: "No internship records found." });
-        return;
-    }
-
-    try {
-        const wb = XLSX.utils.book_new();
-
-        const excelData = [
-            ['INTERNSHIP DATA REPORT'],
-            [`Period: ${formatDate(start)} - ${formatDate(end)}`],
-            [`Total Students: ${data.length}`],
-            [],
-            ['No', 'NIM', 'Name', 'Study Program', 'Class', 'Semester', 'Company Name', 'Company Contact', 'Company Address', 'Start Date', 'End Date', 'Email', 'WhatsApp'],
-            ...data.map((item, index) => [
-                index + 1,
-                item.nim || '-',
-                item.student_name || '-',
-                item.program_study || '-',
-                item.class || '-',
-                item.semester || '-',
-                item.company_name || '-',
-                item.company_contact || '-',
-                item.company_address || '-',
-                formatDate(item.start_date),
-                formatDate(item.end_date),
-                item.email || '-',
-                item.whatsapp_number || '-'
-            ])
-        ];
-
-        const ws = XLSX.utils.aoa_to_sheet(excelData);
-
-        ws['!cols'] = [
-            { wch: 5 }, { wch: 15 }, { wch: 25 }, { wch: 35 }, { wch: 20 }, { wch: 10 },
-            { wch: 40 }, { wch: 18 }, { wch: 60 }, { wch: 14 }, { wch: 14 },
-            { wch: 30 }, { wch: 20 }
-        ];
-
-        ws['!merges'] = [
-            { s: { r: 0, c: 0 }, e: { r: 0, c: 12 } },
-            { s: { r: 1, c: 0 }, e: { r: 1, c: 12 } },
-            { s: { r: 2, c: 0 }, e: { r: 2, c: 12 } }
-        ];
-
-        const border = {
-            top: { style: 'thin' }, bottom: { style: 'thin' },
-            left: { style: 'thin' }, right: { style: 'thin' }
-        };
-
-        const headerStyle = {
-            font: { name: 'Times New Roman', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
-            fill: { fgColor: { rgb: '4472C4' } },
-            alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
-            border
-        };
-
-        ws['A1'].s = { font: { name: 'Times New Roman', sz: 16, bold: true }, alignment: { horizontal: 'center' } };
-        ws['A2'].s = { alignment: { horizontal: 'center' } };
-        ws['A3'].s = { alignment: { horizontal: 'center' } };
-
-        const headerCols = ['A','B','C','D','E','F','G','H','I','J','K','L','M'];
-        headerCols.forEach(col => { if (ws[col + '5']) ws[col + '5'].s = headerStyle; });
-
-        const dataRowStart = 6;
-        for (let r = dataRowStart; r < dataRowStart + data.length; r++) {
-            headerCols.forEach((col, index) => {
-                const cell = ws[col + r];
-                if (!cell) return;
-                cell.s = {
-                    font: { name: 'Times New Roman', sz: 11 },
-                    alignment: {
-                        horizontal: index <= 1 ? 'center' : 'left',
-                        vertical: 'top',
-                        wrapText: true
+                        startInput.addEventListener("change", () => {
+                            endInput.min = startInput.value;
+                            endInput.value = "";
+                        });
                     },
-                    border
-                };
-            });
-        }
+                    preConfirm: () => {
+                        const start = document.getElementById('swal-start').value;
+                        const end = document.getElementById('swal-end').value;
 
-        XLSX.utils.book_append_sheet(wb, ws, 'Internship Report');
-        XLSX.writeFile(wb, `Internship_${start}_to_${end}.xlsx`);
+                        if (!start) return Swal.showValidationMessage('Start date is required');
+                        if (!end) return Swal.showValidationMessage('End date is required');
+                        if (new Date(start) > new Date(end)) return Swal.showValidationMessage('Start date must be before or equal to End date');
 
-        Swal.fire({ icon: "success", title: "Success", text: "Excel downloaded successfully!" });
+                        return { start, end };
+                    }
+                });
 
-    } catch (err) {
-        Swal.fire({ icon: "error", title: "Error", text: err.message });
-    }
-}
+                if (!formValues) return;
 
-function formatDate(dateString) {
-    const d = new Date(dateString);
-    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-}
+                const { start, end } = formValues;
 
-async function fetchInternshipData(start, end) {
-    try {
-        const url = `${apiBase}/lecturer/export-internship?start_date=${start}&end_date=${end}&nim_nik_unit=${lecturerId}`;
-        const res = await fetch(url);
-        const json = await res.json();
+                Swal.fire({
+                    title: 'Fetching data...',
+                    text: 'Please wait...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
 
-        if (!json.success || !json.data || json.data.length === 0) return null;
+                const data = await fetchInternshipData(start, end);
 
-        return json.data;
+                if (!data || data.length === 0) {
+                    Swal.close();
+                    Swal.fire({ icon: "info", title: "No Data Found", text: "No internship records found." });
+                    return;
+                }
 
-    } catch (err) {
-        Swal.fire({ icon: "error", title: "Error", text: err.message });
-        return null;
-    }
-}
+                try {
+                    const wb = XLSX.utils.book_new();
+
+                    const excelData = [
+                        ['INTERNSHIP DATA REPORT'],
+                        [`Period: ${formatDate(start)} - ${formatDate(end)}`],
+                        [`Total Students: ${data.length}`],
+                        [],
+                        ['No', 'NIM', 'Name', 'Study Program', 'Class', 'Semester', 'Company Name', 'Company Contact', 'Company Address', 'Start Date', 'End Date', 'Email', 'WhatsApp'],
+                        ...data.map((item, index) => [
+                            index + 1,
+                            item.nim || '-',
+                            item.student_name || '-',
+                            item.program_study || '-',
+                            item.class || '-',
+                            item.semester || '-',
+                            item.company_name || '-',
+                            item.company_contact || '-',
+                            item.company_address || '-',
+                            formatDate(item.start_date),
+                            formatDate(item.end_date),
+                            item.email || '-',
+                            item.whatsapp_number || '-'
+                        ])
+                    ];
+
+                    const ws = XLSX.utils.aoa_to_sheet(excelData);
+
+                    ws['!cols'] = [
+                        { wch: 5 }, { wch: 15 }, { wch: 25 }, { wch: 35 }, { wch: 20 }, { wch: 10 },
+                        { wch: 40 }, { wch: 18 }, { wch: 60 }, { wch: 14 }, { wch: 14 },
+                        { wch: 30 }, { wch: 20 }
+                    ];
+
+                    ws['!merges'] = [
+                        { s: { r: 0, c: 0 }, e: { r: 0, c: 12 } },
+                        { s: { r: 1, c: 0 }, e: { r: 1, c: 12 } },
+                        { s: { r: 2, c: 0 }, e: { r: 2, c: 12 } }
+                    ];
+
+                    const border = {
+                        top: { style: 'thin' }, bottom: { style: 'thin' },
+                        left: { style: 'thin' }, right: { style: 'thin' }
+                    };
+
+                    const headerStyle = {
+                        font: { name: 'Times New Roman', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
+                        fill: { fgColor: { rgb: '4472C4' } },
+                        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+                        border
+                    };
+
+                    ws['A1'].s = { font: { name: 'Times New Roman', sz: 16, bold: true }, alignment: { horizontal: 'center' } };
+                    ws['A2'].s = { alignment: { horizontal: 'center' } };
+                    ws['A3'].s = { alignment: { horizontal: 'center' } };
+
+                    const headerCols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
+                    headerCols.forEach(col => { if (ws[col + '5']) ws[col + '5'].s = headerStyle; });
+
+                    const dataRowStart = 6;
+                    for (let r = dataRowStart; r < dataRowStart + data.length; r++) {
+                        headerCols.forEach((col, index) => {
+                            const cell = ws[col + r];
+                            if (!cell) return;
+                            cell.s = {
+                                font: { name: 'Times New Roman', sz: 11 },
+                                alignment: {
+                                    horizontal: index <= 1 ? 'center' : 'left',
+                                    vertical: 'top',
+                                    wrapText: true
+                                },
+                                border
+                            };
+                        });
+                    }
+
+                    XLSX.utils.book_append_sheet(wb, ws, 'Internship Report');
+                    XLSX.writeFile(wb, `Internship_${start}_to_${end}.xlsx`);
+
+                    Swal.fire({ icon: "success", title: "Success", text: "Excel downloaded successfully!" });
+
+                } catch (err) {
+                    Swal.fire({ icon: "error", title: "Error", text: err.message });
+                }
+            }
+
+            function formatDate(dateString) {
+                const d = new Date(dateString);
+                return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+            }
+
+            async function fetchInternshipData(start, end) {
+                try {
+                    const url = `${apiBase}/lecturer/export-internship?start_date=${start}&end_date=${end}&nim_nik_unit=${lecturerId}`;
+                    const res = await fetch(url);
+                    const json = await res.json();
+
+                    if (!json.success || !json.data || json.data.length === 0) return null;
+
+                    return json.data;
+
+                } catch (err) {
+                    Swal.fire({ icon: "error", title: "Error", text: err.message });
+                    return null;
+                }
+            }
 
         </script>
-        
+
 </body>
 
 </html>

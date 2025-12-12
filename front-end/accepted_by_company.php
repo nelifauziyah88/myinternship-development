@@ -14,16 +14,11 @@ $id_kampus = $user['id_kampus'] ?? null;
 $nama_kampus = "Unknown";
 
 if ($id_kampus) {
-    // URL ke backend Express
     $api_url = "http://localhost:8000/api/kampus/" . urlencode($id_kampus);
-
-    // Ambil data dari backend
     $response = @file_get_contents($api_url);
 
     if ($response !== false) {
         $data = json_decode($response, true);
-
-        // Periksa apakah format API sesuai
         if (json_last_error() === JSON_ERROR_NONE && isset($data['nama_kampus'])) {
             $nama_kampus = $data['nama_kampus'];
         } else {
@@ -41,17 +36,13 @@ if ($id_kampus) {
 <html lang="en">
 
 <head>
-    <!-- Meta for Compatibility -->
     <meta charset="utf-8">
     <title>Internship Acceptance Confirmation Form</title>
     <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
     <!-- Icon -->
     <link rel="icon" href="./assets/img/iconM.png" type="image/x-icon" />
     <link href="./assets/img/iconM.png" rel="apple-touch-icon" type="image/x-icon">
-
     <link rel='stylesheet' href='./core/component/sweetalert2.min.css'>
-
-    <!-- Tambahkan di <head> -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     <!-- CSS Files -->
@@ -69,7 +60,7 @@ if ($id_kampus) {
                 "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
                 urls: ['./assets/css/fonts.min.css']
             },
-            active: function() {
+            active: function () {
                 sessionStorage.fonts = true;
             }
         });
@@ -80,7 +71,7 @@ if ($id_kampus) {
 
     <script src='./core/component/jquery.min.js'></script>
     <script>
-        $(function() {});
+        $(function () { });
     </script>
     <script defer src='./core/component/sweetalert2.min.js'></script>
     <script defer src='./core/component/soloalert.js'></script>
@@ -136,7 +127,6 @@ if ($id_kampus) {
             word-wrap: break-word;
             min-width: 140px;
             max-width: 140px;
-            /* max-width:150px; */
         }
 
         .wrap2 {
@@ -144,7 +134,6 @@ if ($id_kampus) {
             word-wrap: break-word;
             min-width: 170px;
             max-width: 170px;
-            /* max-width:150px; */
         }
 
         .main-panel {
@@ -296,9 +285,7 @@ if ($id_kampus) {
 </head>
 
 <body>
-
     <div class="wrapper">
-
         <div class="modal fade" id="Modalkalender" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -325,9 +312,11 @@ if ($id_kampus) {
             <!-- Logo Header -->
             <div class="logo-header" data-background-color="blue2">
                 <a href="landing_page.php" class="logo">
-                    <img src="assets/img/logo_header.png" alt="navbar brand" class="navbar-brand" style="width: 180px; height: auto;">
+                    <img src="assets/img/logo_header.png" alt="navbar brand" class="navbar-brand"
+                        style="width: 180px; height: auto;">
                 </a>
-                <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse" data-target="collapse" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse"
+                    data-target="collapse" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon">
                         <i class="icon-menu"></i>
                     </span>
@@ -347,9 +336,10 @@ if ($id_kampus) {
                     <div class="collapse" id="search-nav">
                         <ul class="navbar-nav navbar-left topbar-nav nav-search mr-md-3 align-items-center">
 
-                            <!-- Tanggal -->
+                            <!-- Date -->
                             <li class="nav-item dropdown hidden-caret">
-                                <a aria-label="Current Date and Calendar" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+                                <a aria-label="Current Date and Calendar" class="nav-link dropdown-toggle"
+                                    data-toggle="dropdown" href="#" aria-expanded="false">
                                     <span id="date">Wed, 08 Oct 2025</span>
                                 </a>
                                 <ul class="float-right dropdown-menu dropdown-calendar dropdown-user animated fadeIn">
@@ -361,9 +351,10 @@ if ($id_kampus) {
                                 </ul>
                             </li>
 
-                            <!-- Jam -->
+                            <!-- Time -->
                             <li class="nav-item dropdown hidden-caret">
-                                <a aria-label="Current Time" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+                                <a aria-label="Current Time" class="nav-link dropdown-toggle" data-toggle="dropdown"
+                                    href="#" aria-expanded="false">
                                     <span id="clock">22 : 12 : 24</span>
                                 </a>
                                 <ul class="float-right dropdown-menu dropdown-calendar dropdown-user animated fadeIn">
@@ -381,23 +372,27 @@ if ($id_kampus) {
                     </div>
                     <ul class="navbar-nav topbar-nav ml-md-auto align-items-center">
                         <li class="nav-item toggle-nav-search hidden-caret">
-                            <a class="nav-link" data-toggle="collapse" href="#search-nav" role="button" aria-expanded="false" aria-controls="search-nav">
+                            <a class="nav-link" data-toggle="collapse" href="#search-nav" role="button"
+                                aria-expanded="false" aria-controls="search-nav">
                                 <i class="fa fa-clock"></i>
                             </a>
                         </li>
                         <li class="nav-item dropdown hidden-caret">
-                            <a class="nav-link" href="#" role="button" data-toggle="modal" data-target="#Modalkalender" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link" href="#" role="button" data-toggle="modal" data-target="#Modalkalender"
+                                aria-haspopup="true" aria-expanded="false">
                                 <i class="fa fa-calendar"></i>
                             </a>
                         </li>
 
                         <!-- Notification -->
                         <li class="nav-item dropdown hidden-caret" id="notification">
-                            <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fa fa-bell"></i>
                                 <span id="count_notification"></span>
                             </a>
-                            <ul class='dropdown-menu messages-notif-box animated fadeIn' aria-labelledby='notifDropdown' id=''>
+                            <ul class='dropdown-menu messages-notif-box animated fadeIn' aria-labelledby='notifDropdown'
+                                id=''>
                                 <li>
                                     <div class='dropdown-title'>New Notification</div>
                                 </li>
@@ -409,7 +404,8 @@ if ($id_kampus) {
 
                         <!-- Profil -->
                         <li class="nav-item dropdown hidden-caret">
-                            <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#" aria-expanded="false">
+                            <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#"
+                                aria-expanded="false">
                                 <div class="avatar-sm">
                                     <img src="assets/img/profile.png" alt="..." class="avatar-img rounded-circle">
                                 </div>
@@ -418,11 +414,13 @@ if ($id_kampus) {
                                 <div class="dropdown-user-scroll scrollbar-outer">
                                     <li>
                                         <div class="user-box">
-                                            <div class="avatar-lg"><img src="assets/img/profile.png" alt="image profile" class="avatar-img rounded"></div>
+                                            <div class="avatar-lg"><img src="assets/img/profile.png" alt="image profile"
+                                                    class="avatar-img rounded"></div>
                                             <div class="u-text">
                                                 <h5><?= htmlspecialchars($user['name']) ?></h5>
                                                 <p class="text-muted">Mahasiswa</p>
-                                                <a href="index.php?page=industry_profile" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
+                                                <a href="index.php?page=industry_profile"
+                                                    class="btn btn-xs btn-secondary btn-sm">View Profile</a>
                                             </div>
                                         </div>
                                     </li>
@@ -430,9 +428,9 @@ if ($id_kampus) {
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="#">My Profile</a>
                                         <a class="dropdown-item" href="#">My Internship</a>
-                                        <!-- <a class="dropdown-item" href="#">Inbox</a> -->
                                         <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="landing_page.php" onclick="logout_confirm()">Logout</a>
+                                        <a class="dropdown-item" href="landing_page.php"
+                                            onclick="logout_confirm()">Logout</a>
                                     </li>
                                 </div>
                             </ul>
@@ -487,7 +485,6 @@ if ($id_kampus) {
                             </a>
                         </li>
 
-                        <!-- Student Section -->
                         <li class="nav-section">
                             <span class="sidebar-mini-icon">
                                 <i class="fa fa-ellipsis-h"></i>
@@ -502,7 +499,6 @@ if ($id_kampus) {
                             </a>
                         </li>
 
-                        <!-- Internship Approval Section -->
                         <li class="nav-section">
                             <span class="sidebar-mini-icon">
                                 <i class="fa fa-ellipsis-h"></i>
@@ -524,21 +520,23 @@ if ($id_kampus) {
                             </a>
                         </li>
 
-                        <!-- Account Section -->
                         <li class="nav-section">
                             <span class="sidebar-mini-icon">
                                 <i class="fa fa-ellipsis-h"></i>
                             </span>
                             <h4 class="text-section">Account</h4>
                         </li>
+
                         <li class="nav-item ">
                             <a href="#" class="collapsed" aria-expanded="false">
                                 <i class="fas fa-user"></i>
                                 <p>Profile</p>
                             </a>
                         </li>
+
                         <li class="nav-item">
-                            <a href="landing_page.php" onclick="logout_confirm()" class="collapsed" aria-expanded="false">
+                            <a href="landing_page.php" onclick="logout_confirm()" class="collapsed"
+                                aria-expanded="false">
                                 <i class="fas fa-sign-out-alt"></i>
                                 <p>Logout</p>
                             </a>
@@ -567,10 +565,9 @@ if ($id_kampus) {
                     <div class="col-md-12">
                         <div class="form-container">
                             <form id="acceptedForm" method="POST" enctype="multipart/form-data">
-                                <!-- hidden helper fields (important) -->
-                                 <input type="hidden" name="id_letter" value="<?= $id_letter ?>">
-                                <input type="hidden" name="company_not_exist" value="0"> <!-- akan di-update oleh JS -->
-                                <input type="hidden" name="id_company" value=""> <!-- id_company jika company sudah ada -->
+                                <input type="hidden" name="id_letter" value="<?= $id_letter ?>">
+                                <input type="hidden" name="company_not_exist" value="0">
+                                <input type="hidden" name="id_company" value="">
                                 <input type="hidden" name="company_name_hidden" value="">
                                 <input type="hidden" name="company_address_hidden" value="">
                                 <input type="hidden" name="city_hidden" value="">
@@ -580,7 +577,6 @@ if ($id_kampus) {
                                 <input type="hidden" name="hrd_name_hidden" value="">
                                 <input type="hidden" name="hrd_whatsapp_hidden" value="">
 
-                                <!-- Auto fill readonly -->
                                 <div class="form-group">
                                     <label>NIM<span style="color:red;">*</span></label>
                                     <input type="text" name="nim" class="form-control" readonly style="width:70%;">
@@ -588,55 +584,65 @@ if ($id_kampus) {
 
                                 <div class="form-group">
                                     <label>Name<span style="color:red;">*</span></label>
-                                    <input type="text" name="student_name" class="form-control" readonly style="width:70%;">
+                                    <input type="text" name="student_name" class="form-control" readonly
+                                        style="width:70%;">
                                 </div>
 
                                 <div class="form-group">
                                     <label>Study Program<span style="color:red;">*</span></label>
-                                    <input type="text" name="study_program" class="form-control" readonly style="width:70%;">
+                                    <input type="text" name="study_program" class="form-control" readonly
+                                        style="width:70%;">
                                 </div>
 
                                 <div class="form-group">
                                     <label>Department<span style="color:red;">*</span></label>
-                                    <input type="text" name="department" class="form-control" readonly style="width:70%;">
+                                    <input type="text" name="department" class="form-control" readonly
+                                        style="width:70%;">
                                 </div>
 
                                 <div class="form-group">
                                     <label style="margin-bottom: 10px;">Class<span style="color:red;">*</span></label>
                                     <div class="radio-group">
-                                        <!-- value sama persis dengan DB -->
-                                        <label><input type="radio" name="class" value="REGULAR CLASS"> Regular class</label>
-                                        <label><input type="radio" name="class" value="EVENING CLASS"> Evening class</label>
+                                        <label><input type="radio" name="class" value="REGULAR CLASS"> Regular
+                                            class</label>
+                                        <label><input type="radio" name="class" value="EVENING CLASS"> Evening
+                                            class</label>
                                     </div>
                                 </div>
 
                                 <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
                                     <label style="margin: 0;">Semester<span style="color:red;">*</span></label>
-                                    <input name="semester" class="form-control" style="width:80px; text-align-last:center;" readonly>
+                                    <input name="semester" class="form-control"
+                                        style="width:80px; text-align-last:center;" readonly>
                                     </input>
                                 </div>
 
                                 <div class="form-group">
                                     <label>Internship Coordinator<span style="color:red;">*</span></label>
-                                    <input type="text" name="internship_coordinator" class="form-control" readonly style="width:70%;">
+                                    <input type="text" name="internship_coordinator" class="form-control" readonly
+                                        style="width:70%;">
                                 </div>
 
                                 <div class="form-group">
                                     <label>Company Name <span style="color:red;">*</span></label>
-                                    <input type="text" name="company_name" class="form-control" placeholder="Enter company name" style="width:70%; background:#e9ecef;">
+                                    <input type="text" name="company_name" class="form-control"
+                                        placeholder="Enter company name" style="width:70%; background:#e9ecef;">
                                 </div>
 
                                 <div class="form-group">
                                     <label>Company Address <span style="color:red;">*</span></label>
-                                    <input type="text" name="company_address" class="form-control" placeholder="Enter company address" style="width:70%;">
+                                    <input type="text" name="company_address" class="form-control"
+                                        placeholder="Enter company address" style="width:70%;">
                                 </div>
 
                                 <div class="form-group">
                                     <label style="margin-bottom: 10px;">City <span style="color:red;">*</span></label>
                                     <div class="radio-options">
                                         <label><input type="radio" name="city" value="batam"> Batam</label>
-                                        <label><input type="radio" name="city" value="tanjung_pinang"> Tanjung Pinang</label>
-                                        <label><input type="radio" name="city" value="tanjung_balai"> Tanjung Balai Karimun</label>
+                                        <label><input type="radio" name="city" value="tanjung_pinang"> Tanjung
+                                            Pinang</label>
+                                        <label><input type="radio" name="city" value="tanjung_balai"> Tanjung Balai
+                                            Karimun</label>
                                         <label><input type="radio" name="city" value="other"> Other</label>
                                     </div>
                                     <input type="text" name="city_other" class="form-control"
@@ -645,9 +651,11 @@ if ($id_kampus) {
                                 </div>
 
                                 <div class="form-group">
-                                    <label style="margin-bottom: 10px;">Province <span style="color:red;">*</span></label>
+                                    <label style="margin-bottom: 10px;">Province <span
+                                            style="color:red;">*</span></label>
                                     <div class="radio-options">
-                                        <label><input type="radio" name="province" value="riau_islands"> Riau Islands</label>
+                                        <label><input type="radio" name="province" value="riau_islands"> Riau
+                                            Islands</label>
                                         <label><input type="radio" name="province" value="other"> Other</label>
                                     </div>
                                     <input type="text" name="province_other" class="form-control"
@@ -656,7 +664,8 @@ if ($id_kampus) {
                                 </div>
 
                                 <div class="form-group">
-                                    <label style="margin-bottom: 10px;">Country <span style="color:red;">*</span></label>
+                                    <label style="margin-bottom: 10px;">Country <span
+                                            style="color:red;">*</span></label>
                                     <div class="radio-options">
                                         <label><input type="radio" name="country" value="indonesia"> Indonesia</label>
                                         <label><input type="radio" name="country" value="overseas"> Overseas</label>
@@ -665,22 +674,27 @@ if ($id_kampus) {
 
                                 <div class="form-group">
                                     <label>HRD Email <span style="color:red;">*</span></label>
-                                    <input type="email" name="hrd_email" class="form-control" placeholder="Enter HRD email" style="width:70%;">
+                                    <input type="email" name="hrd_email" class="form-control"
+                                        placeholder="Enter HRD email" style="width:70%;">
                                 </div>
 
                                 <div class="form-group">
                                     <label>HRD Name <span style="color:red;">*</span></label>
-                                    <input type="text" name="hrd_name" class="form-control" placeholder="Enter HRD name" style="width:70%;">
+                                    <input type="text" name="hrd_name" class="form-control" placeholder="Enter HRD name"
+                                        style="width:70%;">
                                 </div>
 
                                 <div class="form-group">
-                                    <label>Active HR Department WhatsApp Number <span style="color:red;">*</span></label>
-                                    <input type="text" name="hrd_whatsapp" class="form-control" placeholder="Enter HR WhatsApp number" style="width:70%;">
+                                    <label>Active HR Department WhatsApp Number <span
+                                            style="color:red;">*</span></label>
+                                    <input type="text" name="hrd_whatsapp" class="form-control"
+                                        placeholder="Enter HR WhatsApp number" style="width:70%;">
                                 </div>
 
                                 <div class="form-group">
                                     <label>Placement Department/Division <span style="color:red;">*</span></label>
-                                    <input type="text" name="placement_department" class="form-control" placeholder="Enter department/division" style="width:70%;">
+                                    <input type="text" name="placement_department" class="form-control"
+                                        placeholder="Enter department/division" style="width:70%;">
                                 </div>
 
                                 <div class="form-group" style="display:flex; gap:15px;">
@@ -695,32 +709,41 @@ if ($id_kampus) {
                                 </div>
 
                                 <div class="form-group">
-                                    <label style="margin-bottom: 12px;">How did you get the internship information? <span style="color:red;">*</span></label>
+                                    <label style="margin-bottom: 12px;">How did you get the internship information?
+                                        <span style="color:red;">*</span></label>
                                     <div class="radio-options">
-                                        <label><input type="radio" name="info_source" value="self-observation"> Self-observation</label>
-                                        <label><input type="radio" name="info_source" value="cdc"> From CDC Polibatam</label>
-                                        <label><input type="radio" name="info_source" value="coordinator"> From Internship Coordinator</label>
-                                        <label><input type="radio" name="info_source" value="myinternship"> From MyInternship</label>
-                                        <label><input type="radio" name="info_source" value="workplace"> Interning at the Workplace</label>
+                                        <label><input type="radio" name="info_source" value="self-observation">
+                                            Self-observation</label>
+                                        <label><input type="radio" name="info_source" value="cdc"> From CDC
+                                            Polibatam</label>
+                                        <label><input type="radio" name="info_source" value="coordinator"> From
+                                            Internship Coordinator</label>
+                                        <label><input type="radio" name="info_source" value="myinternship"> From
+                                            MyInternship</label>
+                                        <label><input type="radio" name="info_source" value="workplace"> Interning at
+                                            the Workplace</label>
                                     </div>
                                 </div>
 
                                 <div class="form-group">
                                     <label>Email <span style="color:red;">*</span></label>
-                                    <input type="email" name="email" class="form-control" placeholder="Enter your email" style="width:70%;">
+                                    <input type="email" name="email" class="form-control" placeholder="Enter your email"
+                                        style="width:70%;">
                                 </div>
 
                                 <div class="form-group">
                                     <label>Active WhatsApp Number <span style="color:red;">*</span></label>
-                                    <input type="text" name="whatsapp" class="form-control" placeholder="Enter WhatsApp number" style="width:70%;">
+                                    <input type="text" name="whatsapp" class="form-control"
+                                        placeholder="Enter WhatsApp number" style="width:70%;">
                                 </div>
 
                                 <div class="form-group" style="margin-bottom: 30px;">
                                     <label style="margin-bottom: 10px;">
-                                        Internship Response Letter / Proof of Acceptance <span style="color:red;">*</span>
+                                        Internship Response Letter / Proof of Acceptance <span
+                                            style="color:red;">*</span>
                                     </label>
 
-                                    <!-- DROPZONE -->
+                                    <!-- DROPZONE FILE -->
                                     <div id="dropzone" class="dropzone">
                                         <div class="dz-content">
                                             <div class="dz-icon"><i class="fas fa-cloud-upload-alt"></i></div>
@@ -730,7 +753,8 @@ if ($id_kampus) {
                                     </div>
 
                                     <!-- HIDDEN FILE INPUT -->
-                                    <input type="file" id="fileInput" name="attachment" accept="application/pdf" style="display:none;">
+                                    <input type="file" id="fileInput" name="attachment" accept="application/pdf"
+                                        style="display:none;">
 
                                     <!-- FILE LIST PREVIEW -->
                                     <div id="fileList" class="file-list" style="display:none;"></div>
@@ -745,7 +769,6 @@ if ($id_kampus) {
                                     </button>
                                 </div>
                             </form>
-
                         </div>
                     </div>
                 </div>
@@ -759,12 +782,12 @@ if ($id_kampus) {
                 </div>
             </footer>
 
-            <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+            <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+                integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
             <!--   Core JS Files   -->
-            <!-- <script src="./assets/js/core/jquery.3.2.1.min.js"></script> -->
             <script src="./assets/js/core/popper.min.js"></script>
             <script src="./assets/js/core/bootstrap.min.js"></script>
 
@@ -791,7 +814,7 @@ if ($id_kampus) {
             <script src="./assets/js/plugin/chart.js/chart.min.js"></script>
 
             <script>
-                $(document).ready(function() {
+                $(document).ready(function () {
 
                     clock_run();
 
@@ -830,7 +853,7 @@ if ($id_kampus) {
                         $("#date").text(curr_date);
                     }
 
-                    setInterval(function() {
+                    setInterval(function () {
                         let d = new Date();
                         let day = en_day[d.getDay()];
                         let date = d.getDate();
@@ -875,13 +898,13 @@ if ($id_kampus) {
                         url: 'index.php?request=validation_get',
                         type: 'GET',
 
-                        success: function(response, xhr, status, error) {
+                        success: function (response, xhr, status, error) {
                             console.log('Getting form notification');
 
                             $('body').append(response);
                         },
 
-                        error: function(xhr, status, error) {
+                        error: function (xhr, status, error) {
                             console.log('Failed Getting form notification');
                         }
                     });
@@ -901,7 +924,6 @@ if ($id_kampus) {
                         confirmButtonText: "Yes, I'm sure !",
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // AJAX
                             $.ajax({
                                 url: "index.php?request=logout",
                                 type: "POST",
@@ -909,8 +931,8 @@ if ($id_kampus) {
                                     'token': _token
                                 },
 
-                                success: function() {
-                                    setTimeout(function() {
+                                success: function () {
+                                    setTimeout(function () {
                                         localStorage.setItem('first', null);
                                         localStorage.setItem('first_chime', null);
                                         localStorage.setItem('next_chime', null);
@@ -931,32 +953,26 @@ if ($id_kampus) {
                 }
 
                 function spinner() {
-
-                    // var icon_spinner = event.target.childNodes[0];
                     var icon_spinner = event.target.querySelector('i');
                     var icon_old = icon_spinner.className;
                     var spinner = "fas fa-spinner fa-spin mr-1";
 
-                    // console.log(icon_spinner);
                     icon_spinner.className = '';
                     icon_spinner.className = spinner;
 
-                    setTimeout(function() {
+                    setTimeout(function () {
                         icon_spinner.className = '';
                         icon_spinner.className = icon_old;
                     }, 2000);
                 }
 
                 // Highlight menu
-                document.addEventListener("DOMContentLoaded", function() {
+                document.addEventListener("DOMContentLoaded", function () {
                     const navItems = document.querySelectorAll(".sidebar .nav-item");
 
                     navItems.forEach(item => {
-                        item.addEventListener("click", function() {
-                            // Hapus active dari semua nav-item
+                        item.addEventListener("click", function () {
                             navItems.forEach(i => i.classList.remove("active"));
-
-                            // Tambahkan active ke item yang diklik
                             this.classList.add("active");
                         });
                     });
@@ -973,297 +989,295 @@ if ($id_kampus) {
             </script>
         </div>
     </div>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const nim = <?= json_encode($student['nim']) ?>;
-    const API_BASE = "http://localhost:8000/api/student";
-    const form = document.getElementById("acceptedForm");
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const nim = <?= json_encode($student['nim']) ?>;
+            const API_BASE = "http://localhost:8000/api/student";
+            const form = document.getElementById("acceptedForm");
 
-    const safeSet = (selector, value) => {
-        const el = form.querySelector(selector);
-        if (el) el.value = value;
-    };
-
-    const setRadioChecked = (name, value) => {
-        const el = form.querySelector(`input[name="${name}"][value="${value}"]`);
-        if (el) el.checked = true;
-    };
-
-    const setRadioDisabled = (name, disabled) => {
-        form.querySelectorAll(`input[name="${name}"]`).forEach(i => i.disabled = disabled);
-    };
-
-    const normalizeValue = (str) => {
-        if (!str) return "";
-        const val = str.trim().toLowerCase();
-        if (val.includes("batam")) return "batam";
-        if (val.includes("tanjung pinang")) return "tanjung_pinang";
-        if (val.includes("tanjung balai")) return "tanjung_balai";
-        if (val.includes("riau")) return "riau_islands";
-        if (val.includes("indonesia")) return "indonesia";
-        if (val.includes("overseas")) return "overseas";
-        return val;
-    };
-
-    const updateHiddenMirrors = (d) => {
-        if (!d) return;
-        form.querySelector("input[name='company_name_hidden']").value = d.company_name || "";
-        form.querySelector("input[name='company_address_hidden']").value = d.company_address || "";
-        form.querySelector("input[name='city_hidden']").value = d.city || "";
-        form.querySelector("input[name='province_hidden']").value = d.province || "";
-        form.querySelector("input[name='country_hidden']").value = d.country || "";
-        form.querySelector("input[name='hrd_email_hidden']").value = d.hrd_email || "";
-        form.querySelector("input[name='hrd_name_hidden']").value = d.hrd_name || "";
-        form.querySelector("input[name='hrd_whatsapp_hidden']").value = d.hrd_whatsapp || "";
-        form.querySelector("input[name='id_company']").value = d.id_company || "";
-        form.querySelector("input[name='company_not_exist']").value = d.company_not_exist ? String(d.company_not_exist) : "0";
-    };
-
-    // Show/hide city/province "other"
-    form.querySelectorAll("input[name='city']").forEach(r => r.addEventListener("change", () => {
-        const isOther = r.value === "other";
-        const cityOther = form.querySelector("input[name='city_other']");
-        cityOther.style.display = isOther ? "block" : "none";
-        if (!isOther) cityOther.value = "";
-    }));
-
-    form.querySelectorAll("input[name='province']").forEach(r => r.addEventListener("change", () => {
-        const isOther = r.value === "other";
-        const provOther = form.querySelector("input[name='province_other']");
-        provOther.style.display = isOther ? "block" : "none";
-        if (!isOther) provOther.value = "";
-    }));
-
-    // ==== AUTOFILL ====
-    fetch(`${API_BASE}/accepted-by-company/autofill/${nim}`)
-    .then(res => res.json())
-    .then(data => {
-        if (!data.success) return console.error("Autofill failed:", data.message);
-        const d = data.data;
-
-        // Basic info
-        safeSet("input[name='nim']", d.nim);
-        safeSet("input[name='student_name']", d.name);
-        safeSet("input[name='study_program']", d.study_program_display);
-        safeSet("input[name='department']", d.department);
-        safeSet("input[name='semester']", d.semester);
-        safeSet("input[name='internship_coordinator']", d.coordinator_name);
-
-        // CLASS (radio)
-        if (d.class) {
-            setRadioChecked("class", d.class);
-            setRadioDisabled("class", true);
-        }
-
-        // Company name & address (always readonly)
-        safeSet("input[name='company_name']", d.company_name);
-        safeSet("input[name='company_address']", d.company_address);
-        ["company_name", "company_address"].forEach(name => {
-            const el = form.querySelector(`input[name='${name}']`);
-            if (el) {
-                el.readOnly = true;
-                el.style.backgroundColor = "#e9ecef";
-            }
-        });
-
-        // HRD & city/province/country logic
-        const compNotExist = Number(d.company_not_exist) === 1 ? 1 : 0;
-        const isVerified = d.company_status === "verified";
-
-        // Populate HRD & location
-        safeSet("input[name='hrd_email']", d.hrd_email);
-        safeSet("input[name='hrd_name']", d.hrd_name);
-        safeSet("input[name='hrd_whatsapp']", d.hrd_whatsapp);
-
-        const cityVal = normalizeValue(d.city);
-        const provVal = normalizeValue(d.province);
-        const countryVal = normalizeValue(d.country);
-
-        if (cityVal) setRadioChecked("city", cityVal);
-        if (provVal) setRadioChecked("province", provVal);
-        if (countryVal) setRadioChecked("country", countryVal);
-
-        const cityOther = form.querySelector("input[name='city_other']");
-        if (cityVal === "other") cityOther.style.display = "block";
-
-        const provOther = form.querySelector("input[name='province_other']");
-        if (provVal === "other") provOther.style.display = "block";
-
-        // Determine editable fields
-        const editable = compNotExist === 1 || !isVerified;
-        ["hrd_email", "hrd_name", "hrd_whatsapp"].forEach(name => {
-            const el = form.querySelector(`input[name='${name}']`);
-            if (el) el.readOnly = !editable;
-        });
-        setRadioDisabled("city", !editable);
-        setRadioDisabled("province", !editable);
-        setRadioDisabled("country", !editable);
-
-        if (editable) {
-            if (cityOther) cityOther.readOnly = false;
-            if (provOther) provOther.readOnly = false;
-        } else {
-            if (cityOther) cityOther.readOnly = true;
-            if (provOther) provOther.readOnly = true;
-        }
-
-        // Student contact & dates
-        safeSet("input[name='email']", d.email);
-        safeSet("input[name='whatsapp']", d.no_whatsapp);
-
-        const formatDate = val => {
-            if (!val) return "";
-            const date = new Date(val);
-            return date.toISOString().split("T")[0];
-        };
-
-        safeSet("input[name='start_date']", formatDate(d.start_date));
-        safeSet("input[name='end_date']", formatDate(d.end_date));
-
-        updateHiddenMirrors(d);
-
-        // Adjust start/end date limits
-        const startInput = form.querySelector("input[name='start_date']");
-        const endInput = form.querySelector("input[name='end_date']");
-        const adjustDateLimits = () => {
-            if (startInput.value) {
-                const minEnd = new Date(startInput.value);
-                minEnd.setDate(minEnd.getDate() + 1);
-                endInput.min = minEnd.toISOString().split("T")[0];
-            }
-            if (endInput.value) {
-                const maxStart = new Date(endInput.value);
-                maxStart.setDate(maxStart.getDate() - 1);
-                startInput.max = maxStart.toISOString().split("T")[0];
-            }
-        };
-        startInput.addEventListener("change", adjustDateLimits);
-        endInput.addEventListener("change", adjustDateLimits);
-        adjustDateLimits();
-    })
-    .catch(err => console.error("Autofill error:", err));
-
-    // ===== FILE UPLOAD LOGIC =====
-    const dropzone = document.getElementById("dropzone");
-    const fileInput = document.getElementById("fileInput");
-    const fileList = document.getElementById("fileList");
-
-    dropzone.addEventListener("click", () => fileInput.click());
-    fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
-    dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("dragover"); });
-    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
-    dropzone.addEventListener("drop", (e) => { 
-        e.preventDefault(); 
-        dropzone.classList.remove("dragover");
-        handleFile(e.dataTransfer.files[0]); 
-    });
-
-    function handleFile(file){
-        if(!file) return;
-        if(file.type !== "application/pdf"){ alert("Only PDF files are allowed."); return; }
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        fileInput.files = dt.files;
-        dropzone.style.display = "none";
-        fileList.style.display = "block";
-        fileList.innerHTML = `<div class="file-item">${file.name}<span class="delete-file" style="color:red; cursor:pointer; margin-left:auto; font-weight:bold;">✕</span></div><div class="progress-bar"><div class="progress-bar-fill" id="uploadProgress"></div></div>`;
-        simulateProgress();
-        document.querySelector(".delete-file").addEventListener("click", () => {
-            fileInput.value = "";
-            fileList.style.display = "none";
-            dropzone.style.display = "block";
-        });
-    }
-
-    function simulateProgress(){
-        const bar = document.getElementById("uploadProgress");
-        let width = 0;
-        const timer = setInterval(() => {
-            width += 10;
-            bar.style.width = width + "%";
-            if(width>=100){ clearInterval(timer); bar.parentElement.style.display="none"; }
-        },80);
-    }
-
-    // ==== FORM SUBMISSION ====
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const startVal = new Date(form.querySelector("input[name='start_date']").value);
-        const endVal = new Date(form.querySelector("input[name='end_date']").value);
-        if(startVal >= endVal) return Swal.fire({icon:"error",title:"Invalid Dates",text:"End date must be after start date."});
-
-        const compNotExist = Number(form.querySelector("input[name='company_not_exist']").value);
-        const isEmpty = selector => { const el=form.querySelector(selector); return !el || el.value.trim()===""; };
-        const getChecked = name => form.querySelector(`input[name='${name}']:checked`);
-        const errors=[];
-
-        if(isEmpty("input[name='placement_department']")) errors.push("Placement Department/Division is required.");
-        if(isEmpty("input[name='start_date']")) errors.push("Start date is required.");
-        if(isEmpty("input[name='end_date']")) errors.push("End date is required.");
-        if(!getChecked("info_source")) errors.push("Information source is required.");
-        if(isEmpty("input[name='email']")) errors.push("Student email is required.");
-        if(isEmpty("input[name='whatsapp']")) errors.push("Student WhatsApp number is required.");
-        const fileInputEl = form.querySelector("input[name='attachment']");
-        if(!fileInputEl.files || fileInputEl.files.length===0) errors.push("Please upload the internship response letter.");
-
-        if(compNotExist===1){
-            if(isEmpty("input[name='hrd_email']")) errors.push("HRD email is required.");
-            if(isEmpty("input[name='hrd_name']")) errors.push("HRD name is required.");
-            if(isEmpty("input[name='hrd_whatsapp']")) errors.push("HRD WhatsApp number is required.");
-            if(!getChecked("city")) errors.push("City is required.");
-            if(getChecked("city")?.value==="other" && isEmpty("input[name='city_other']")) errors.push("City (other) must be filled.");
-            if(!getChecked("province")) errors.push("Province is required.");
-            if(getChecked("province")?.value==="other" && isEmpty("input[name='province_other']")) errors.push("Province (other) must be filled.");
-            if(!getChecked("country")) errors.push("Country is required.");
-        }
-
-        if(errors.length>0) return Swal.fire({icon:"error",title:"Incomplete Form",html:`<ul style="text-align:left;">${errors.map(e=>`<li>${e}</li>`).join("")}</ul>`});
-
-        const formData = new FormData(form);
-        formData.append("nim", nim);
-
-        try{
-            const uploadRes = await fetch("upload_company_reply.php",{method:"POST",body:formData});
-            const uploadData = await uploadRes.json();
-            if(!uploadData.success) return Swal.fire({icon:"error",title:"Upload Failed",text:uploadData.message || "Unable to upload file."});
-
-            const payload = {
-                nim,
-                city: form.querySelector("[name='city']").value,
-                province: form.querySelector("[name='province']").value,
-                country: form.querySelector("[name='country']").value,
-                hrd_email: form.querySelector("[name='hrd_email']").value,
-                hrd_name: form.querySelector("[name='hrd_name']").value,
-                hrd_whatsapp: form.querySelector("[name='hrd_whatsapp']").value,
-                placement_department: form.querySelector("[name='placement_department']").value,
-                start_date: form.querySelector("[name='start_date']").value,
-                end_date: form.querySelector("[name='end_date']").value,
-                info_source: form.querySelector("[name='info_source']").value,
-                email: form.querySelector("[name='email']").value,
-                whatsapp: form.querySelector("[name='whatsapp']").value,
-                company_not_exist: form.querySelector("[name='company_not_exist']").value,
-                company_reply_letter: uploadData.path
+            const safeSet = (selector, value) => {
+                const el = form.querySelector(selector);
+                if (el) el.value = value;
             };
 
-            const res = await fetch(`${API_BASE}/accepted-by-company/submit/${form.querySelector("[name='id_letter']").value}`,{
-                method:"POST",
-                headers:{"Content-Type":"application/json"},
-                body:JSON.stringify(payload)
+            const setRadioChecked = (name, value) => {
+                const el = form.querySelector(`input[name="${name}"][value="${value}"]`);
+                if (el) el.checked = true;
+            };
+
+            const setRadioDisabled = (name, disabled) => {
+                form.querySelectorAll(`input[name="${name}"]`).forEach(i => i.disabled = disabled);
+            };
+
+            const normalizeValue = (str) => {
+                if (!str) return "";
+                const val = str.trim().toLowerCase();
+                if (val.includes("batam")) return "batam";
+                if (val.includes("tanjung pinang")) return "tanjung_pinang";
+                if (val.includes("tanjung balai")) return "tanjung_balai";
+                if (val.includes("riau")) return "riau_islands";
+                if (val.includes("indonesia")) return "indonesia";
+                if (val.includes("overseas")) return "overseas";
+                return val;
+            };
+
+            const updateHiddenMirrors = (d) => {
+                if (!d) return;
+                form.querySelector("input[name='company_name_hidden']").value = d.company_name || "";
+                form.querySelector("input[name='company_address_hidden']").value = d.company_address || "";
+                form.querySelector("input[name='city_hidden']").value = d.city || "";
+                form.querySelector("input[name='province_hidden']").value = d.province || "";
+                form.querySelector("input[name='country_hidden']").value = d.country || "";
+                form.querySelector("input[name='hrd_email_hidden']").value = d.hrd_email || "";
+                form.querySelector("input[name='hrd_name_hidden']").value = d.hrd_name || "";
+                form.querySelector("input[name='hrd_whatsapp_hidden']").value = d.hrd_whatsapp || "";
+                form.querySelector("input[name='id_company']").value = d.id_company || "";
+                form.querySelector("input[name='company_not_exist']").value = d.company_not_exist ? String(d.company_not_exist) : "0";
+            };
+
+            form.querySelectorAll("input[name='city']").forEach(r => r.addEventListener("change", () => {
+                const isOther = r.value === "other";
+                const cityOther = form.querySelector("input[name='city_other']");
+                cityOther.style.display = isOther ? "block" : "none";
+                if (!isOther) cityOther.value = "";
+            }));
+
+            form.querySelectorAll("input[name='province']").forEach(r => r.addEventListener("change", () => {
+                const isOther = r.value === "other";
+                const provOther = form.querySelector("input[name='province_other']");
+                provOther.style.display = isOther ? "block" : "none";
+                if (!isOther) provOther.value = "";
+            }));
+
+            // ==== AUTOFILL ====
+            fetch(`${API_BASE}/accepted-by-company/autofill/${nim}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) return console.error("Autofill failed:", data.message);
+                    const d = data.data;
+
+                    // Basic info
+                    safeSet("input[name='nim']", d.nim);
+                    safeSet("input[name='student_name']", d.name);
+                    safeSet("input[name='study_program']", d.study_program_display);
+                    safeSet("input[name='department']", d.department);
+                    safeSet("input[name='semester']", d.semester);
+                    safeSet("input[name='internship_coordinator']", d.coordinator_name);
+
+                    if (d.class) {
+                        setRadioChecked("class", d.class);
+                        setRadioDisabled("class", true);
+                    }
+
+                    // Company name & address
+                    safeSet("input[name='company_name']", d.company_name);
+                    safeSet("input[name='company_address']", d.company_address);
+                    ["company_name", "company_address"].forEach(name => {
+                        const el = form.querySelector(`input[name='${name}']`);
+                        if (el) {
+                            el.readOnly = true;
+                            el.style.backgroundColor = "#e9ecef";
+                        }
+                    });
+
+                    // HRD & city/province/country logic
+                    const compNotExist = Number(d.company_not_exist) === 1 ? 1 : 0;
+                    const isVerified = d.company_status === "verified";
+
+                    // Populate HRD & location
+                    safeSet("input[name='hrd_email']", d.hrd_email);
+                    safeSet("input[name='hrd_name']", d.hrd_name);
+                    safeSet("input[name='hrd_whatsapp']", d.hrd_whatsapp);
+
+                    const cityVal = normalizeValue(d.city);
+                    const provVal = normalizeValue(d.province);
+                    const countryVal = normalizeValue(d.country);
+
+                    if (cityVal) setRadioChecked("city", cityVal);
+                    if (provVal) setRadioChecked("province", provVal);
+                    if (countryVal) setRadioChecked("country", countryVal);
+
+                    const cityOther = form.querySelector("input[name='city_other']");
+                    if (cityVal === "other") cityOther.style.display = "block";
+
+                    const provOther = form.querySelector("input[name='province_other']");
+                    if (provVal === "other") provOther.style.display = "block";
+
+                    const editable = compNotExist === 1 || !isVerified;
+                    ["hrd_email", "hrd_name", "hrd_whatsapp"].forEach(name => {
+                        const el = form.querySelector(`input[name='${name}']`);
+                        if (el) el.readOnly = !editable;
+                    });
+                    setRadioDisabled("city", !editable);
+                    setRadioDisabled("province", !editable);
+                    setRadioDisabled("country", !editable);
+
+                    if (editable) {
+                        if (cityOther) cityOther.readOnly = false;
+                        if (provOther) provOther.readOnly = false;
+                    } else {
+                        if (cityOther) cityOther.readOnly = true;
+                        if (provOther) provOther.readOnly = true;
+                    }
+
+                    // Student contact & dates
+                    safeSet("input[name='email']", d.email);
+                    safeSet("input[name='whatsapp']", d.no_whatsapp);
+
+                    const formatDate = val => {
+                        if (!val) return "";
+                        const date = new Date(val);
+                        return date.toISOString().split("T")[0];
+                    };
+
+                    safeSet("input[name='start_date']", formatDate(d.start_date));
+                    safeSet("input[name='end_date']", formatDate(d.end_date));
+
+                    updateHiddenMirrors(d);
+
+                    // Adjust start/end date limits
+                    const startInput = form.querySelector("input[name='start_date']");
+                    const endInput = form.querySelector("input[name='end_date']");
+                    const adjustDateLimits = () => {
+                        if (startInput.value) {
+                            const minEnd = new Date(startInput.value);
+                            minEnd.setDate(minEnd.getDate() + 1);
+                            endInput.min = minEnd.toISOString().split("T")[0];
+                        }
+                        if (endInput.value) {
+                            const maxStart = new Date(endInput.value);
+                            maxStart.setDate(maxStart.getDate() - 1);
+                            startInput.max = maxStart.toISOString().split("T")[0];
+                        }
+                    };
+                    startInput.addEventListener("change", adjustDateLimits);
+                    endInput.addEventListener("change", adjustDateLimits);
+                    adjustDateLimits();
+                })
+                .catch(err => console.error("Autofill error:", err));
+
+            // FILE UPLOAD LOGIC
+            const dropzone = document.getElementById("dropzone");
+            const fileInput = document.getElementById("fileInput");
+            const fileList = document.getElementById("fileList");
+
+            dropzone.addEventListener("click", () => fileInput.click());
+            fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
+            dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("dragover"); });
+            dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+            dropzone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dropzone.classList.remove("dragover");
+                handleFile(e.dataTransfer.files[0]);
             });
-            const data = await res.json();
-            if(data.success){
-                Swal.fire({icon:"success",title:"Success",text:data.message || "Internship claim submitted successfully!"}).then(()=>window.location.href="approval_status.php");
-            }else{
-                Swal.fire({icon:"error",title:"Error",text:data.error || data.message || "Something went wrong"});
+
+            function handleFile(file) {
+                if (!file) return;
+                if (file.type !== "application/pdf") { alert("Only PDF files are allowed."); return; }
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                fileInput.files = dt.files;
+                dropzone.style.display = "none";
+                fileList.style.display = "block";
+                fileList.innerHTML = `<div class="file-item">${file.name}<span class="delete-file" style="color:red; cursor:pointer; margin-left:auto; font-weight:bold;">✕</span></div><div class="progress-bar"><div class="progress-bar-fill" id="uploadProgress"></div></div>`;
+                simulateProgress();
+                document.querySelector(".delete-file").addEventListener("click", () => {
+                    fileInput.value = "";
+                    fileList.style.display = "none";
+                    dropzone.style.display = "block";
+                });
             }
-        }catch(err){
-            console.error("Submission error:",err);
-            Swal.fire({icon:"error",title:"Upload Failed",text:"Unable to send data to the server."});
-        }
-    });
-});
-</script>
+
+            function simulateProgress() {
+                const bar = document.getElementById("uploadProgress");
+                let width = 0;
+                const timer = setInterval(() => {
+                    width += 10;
+                    bar.style.width = width + "%";
+                    if (width >= 100) { clearInterval(timer); bar.parentElement.style.display = "none"; }
+                }, 80);
+            }
+
+            // FORM SUBMISSION
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const startVal = new Date(form.querySelector("input[name='start_date']").value);
+                const endVal = new Date(form.querySelector("input[name='end_date']").value);
+                if (startVal >= endVal) return Swal.fire({ icon: "error", title: "Invalid Dates", text: "End date must be after start date." });
+
+                const compNotExist = Number(form.querySelector("input[name='company_not_exist']").value);
+                const isEmpty = selector => { const el = form.querySelector(selector); return !el || el.value.trim() === ""; };
+                const getChecked = name => form.querySelector(`input[name='${name}']:checked`);
+                const errors = [];
+
+                if (isEmpty("input[name='placement_department']")) errors.push("Placement Department/Division is required.");
+                if (isEmpty("input[name='start_date']")) errors.push("Start date is required.");
+                if (isEmpty("input[name='end_date']")) errors.push("End date is required.");
+                if (!getChecked("info_source")) errors.push("Information source is required.");
+                if (isEmpty("input[name='email']")) errors.push("Student email is required.");
+                if (isEmpty("input[name='whatsapp']")) errors.push("Student WhatsApp number is required.");
+                const fileInputEl = form.querySelector("input[name='attachment']");
+                if (!fileInputEl.files || fileInputEl.files.length === 0) errors.push("Please upload the internship response letter.");
+
+                if (compNotExist === 1) {
+                    if (isEmpty("input[name='hrd_email']")) errors.push("HRD email is required.");
+                    if (isEmpty("input[name='hrd_name']")) errors.push("HRD name is required.");
+                    if (isEmpty("input[name='hrd_whatsapp']")) errors.push("HRD WhatsApp number is required.");
+                    if (!getChecked("city")) errors.push("City is required.");
+                    if (getChecked("city")?.value === "other" && isEmpty("input[name='city_other']")) errors.push("City (other) must be filled.");
+                    if (!getChecked("province")) errors.push("Province is required.");
+                    if (getChecked("province")?.value === "other" && isEmpty("input[name='province_other']")) errors.push("Province (other) must be filled.");
+                    if (!getChecked("country")) errors.push("Country is required.");
+                }
+
+                if (errors.length > 0) return Swal.fire({ icon: "error", title: "Incomplete Form", html: `<ul style="text-align:left;">${errors.map(e => `<li>${e}</li>`).join("")}</ul>` });
+
+                const formData = new FormData(form);
+                formData.append("nim", nim);
+
+                try {
+                    const uploadRes = await fetch("upload_company_reply.php", { method: "POST", body: formData });
+                    const uploadData = await uploadRes.json();
+                    if (!uploadData.success) return Swal.fire({ icon: "error", title: "Upload Failed", text: uploadData.message || "Unable to upload file." });
+
+                    const payload = {
+                        nim,
+                        city: form.querySelector("[name='city']").value,
+                        province: form.querySelector("[name='province']").value,
+                        country: form.querySelector("[name='country']").value,
+                        hrd_email: form.querySelector("[name='hrd_email']").value,
+                        hrd_name: form.querySelector("[name='hrd_name']").value,
+                        hrd_whatsapp: form.querySelector("[name='hrd_whatsapp']").value,
+                        placement_department: form.querySelector("[name='placement_department']").value,
+                        start_date: form.querySelector("[name='start_date']").value,
+                        end_date: form.querySelector("[name='end_date']").value,
+                        info_source: form.querySelector("[name='info_source']").value,
+                        email: form.querySelector("[name='email']").value,
+                        whatsapp: form.querySelector("[name='whatsapp']").value,
+                        company_not_exist: form.querySelector("[name='company_not_exist']").value,
+                        company_reply_letter: uploadData.path
+                    };
+
+                    const res = await fetch(`${API_BASE}/accepted-by-company/submit/${form.querySelector("[name='id_letter']").value}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        Swal.fire({ icon: "success", title: "Success", text: data.message || "Internship claim submitted successfully!" }).then(() => window.location.href = "approval_status.php");
+                    } else {
+                        Swal.fire({ icon: "error", title: "Error", text: data.error || data.message || "Something went wrong" });
+                    }
+                } catch (err) {
+                    console.error("Submission error:", err);
+                    Swal.fire({ icon: "error", title: "Upload Failed", text: "Unable to send data to the server." });
+                }
+            });
+        });
+    </script>
 
 </body>
+
 </html>

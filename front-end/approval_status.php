@@ -40,24 +40,19 @@ if ($id_kampus) {
 <html lang="en">
 
 <head>
-    <!-- Meta for Compatibility -->
     <meta charset="utf-8">
     <title>Approval Status</title>
     <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
     <!-- Icon -->
     <link rel="icon" href="./assets/img/iconM.png" type="image/x-icon" />
     <link href="./assets/img/iconM.png" rel="apple-touch-icon" type="image/x-icon">
-
     <link rel='stylesheet' href='./core/component/sweetalert2.min.css'>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    <!-- Tambahkan di <head> -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
-    <!-- DataTables Bootstrap Integration (optional, biar rapih) -->
+    <!-- DataTables Bootstrap Integration -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
 
     <!-- CSS Files -->
@@ -75,7 +70,7 @@ if ($id_kampus) {
                 "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
                 urls: ['./assets/css/fonts.min.css']
             },
-            active: function() {
+            active: function () {
                 sessionStorage.fonts = true;
             }
         });
@@ -86,41 +81,31 @@ if ($id_kampus) {
 
     <script src='./core/component/jquery.min.js'></script>
     <script>
-        $(function() {});
+        $(function () { });
     </script>
     <script defer src='./core/component/sweetalert2.min.js'></script>
     <script defer src='./core/component/soloalert.js'></script>
 
     <style type="text/css">
-        /* Posisi relatif untuk ikon agar badge bisa ditempatkan relatif terhadapnya */
         .notification-icon {
             position: relative;
-            /* Sesuaikan ukuran ikon jika diperlukan */
         }
 
-        /* Badge notifikasi kecil hijau */
         .custom-notification-badge {
             position: absolute;
             top: -8px;
-            /* Sesuaikan posisi badge secara vertikal */
             right: -8px;
-            /* Sesuaikan posisi badge secara horizontal */
             color: white;
             border-radius: 50%;
             padding: 2px 6px;
-            /* Ukuran badge */
             font-size: 10px;
-            /* Ukuran angka */
             line-height: 1;
             min-width: 16px;
-            /* Pastikan ukuran minimal badge */
             text-align: center;
-            /* Pusatkan angka di dalam badge */
         }
 
         .fc-sun {
             color: red;
-            /* Mengubah warna font menjadi merah pada hari Minggu */
         }
 
         .disabled2 {
@@ -152,7 +137,6 @@ if ($id_kampus) {
             word-wrap: break-word;
             min-width: 140px;
             max-width: 140px;
-            /* max-width:150px; */
         }
 
         .wrap2 {
@@ -160,7 +144,6 @@ if ($id_kampus) {
             word-wrap: break-word;
             min-width: 170px;
             max-width: 170px;
-            /* max-width:150px; */
         }
 
         .main-panel {
@@ -169,7 +152,6 @@ if ($id_kampus) {
 
         .sidebar a.active {
             background-color: #007bff;
-            /* warna biru */
             color: white;
             border-radius: 10px;
         }
@@ -215,9 +197,11 @@ if ($id_kampus) {
             <!-- Logo Header -->
             <div class="logo-header" data-background-color="blue2">
                 <a href="landing_page.php" class="logo">
-                    <img src="assets/img/logo_header.png" alt="navbar brand" class="navbar-brand" style="width: 180px; height: auto;">
+                    <img src="assets/img/logo_header.png" alt="navbar brand" class="navbar-brand"
+                        style="width: 180px; height: auto;">
                 </a>
-                <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse" data-target="collapse" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse"
+                    data-target="collapse" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon">
                         <i class="icon-menu"></i>
                     </span>
@@ -237,9 +221,10 @@ if ($id_kampus) {
                     <div class="collapse" id="search-nav">
                         <ul class="navbar-nav navbar-left topbar-nav nav-search mr-md-3 align-items-center">
 
-                            <!-- Tanggal -->
+                            <!-- Date -->
                             <li class="nav-item dropdown hidden-caret">
-                                <a aria-label="Current Date and Calendar" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+                                <a aria-label="Current Date and Calendar" class="nav-link dropdown-toggle"
+                                    data-toggle="dropdown" href="#" aria-expanded="false">
                                     <span id="date">Wed, 08 Oct 2025</span>
                                 </a>
                                 <ul class="float-right dropdown-menu dropdown-calendar dropdown-user animated fadeIn">
@@ -251,9 +236,10 @@ if ($id_kampus) {
                                 </ul>
                             </li>
 
-                            <!-- Jam -->
+                            <!-- Time -->
                             <li class="nav-item dropdown hidden-caret">
-                                <a aria-label="Current Time" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+                                <a aria-label="Current Time" class="nav-link dropdown-toggle" data-toggle="dropdown"
+                                    href="#" aria-expanded="false">
                                     <span id="clock">22 : 12 : 24</span>
                                 </a>
                                 <ul class="float-right dropdown-menu dropdown-calendar dropdown-user animated fadeIn">
@@ -271,23 +257,27 @@ if ($id_kampus) {
                     </div>
                     <ul class="navbar-nav topbar-nav ml-md-auto align-items-center">
                         <li class="nav-item toggle-nav-search hidden-caret">
-                            <a class="nav-link" data-toggle="collapse" href="#search-nav" role="button" aria-expanded="false" aria-controls="search-nav">
+                            <a class="nav-link" data-toggle="collapse" href="#search-nav" role="button"
+                                aria-expanded="false" aria-controls="search-nav">
                                 <i class="fa fa-clock"></i>
                             </a>
                         </li>
                         <li class="nav-item dropdown hidden-caret">
-                            <a class="nav-link" href="#" role="button" data-toggle="modal" data-target="#Modalkalender" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link" href="#" role="button" data-toggle="modal" data-target="#Modalkalender"
+                                aria-haspopup="true" aria-expanded="false">
                                 <i class="fa fa-calendar"></i>
                             </a>
                         </li>
 
                         <!-- Notification -->
                         <li class="nav-item dropdown hidden-caret" id="notification">
-                            <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fa fa-bell"></i>
                                 <span id="count_notification"></span>
                             </a>
-                            <ul class='dropdown-menu messages-notif-box animated fadeIn' aria-labelledby='notifDropdown' id=''>
+                            <ul class='dropdown-menu messages-notif-box animated fadeIn' aria-labelledby='notifDropdown'
+                                id=''>
                                 <li>
                                     <div class='dropdown-title'>New Notification</div>
                                 </li>
@@ -299,7 +289,8 @@ if ($id_kampus) {
 
                         <!-- Profil -->
                         <li class="nav-item dropdown hidden-caret">
-                            <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#" aria-expanded="false">
+                            <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#"
+                                aria-expanded="false">
                                 <div class="avatar-sm">
                                     <img src="assets/img/profile.png" alt="..." class="avatar-img rounded-circle">
                                 </div>
@@ -308,11 +299,13 @@ if ($id_kampus) {
                                 <div class="dropdown-user-scroll scrollbar-outer">
                                     <li>
                                         <div class="user-box">
-                                            <div class="avatar-lg"><img src="assets/img/profile.png" alt="image profile" class="avatar-img rounded"></div>
+                                            <div class="avatar-lg"><img src="assets/img/profile.png" alt="image profile"
+                                                    class="avatar-img rounded"></div>
                                             <div class="u-text">
                                                 <h5><?= htmlspecialchars($user['name']) ?></h5>
                                                 <p class="text-muted">Mahasiswa</p>
-                                                <a href="index.php?page=industry_profile" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
+                                                <a href="index.php?page=industry_profile"
+                                                    class="btn btn-xs btn-secondary btn-sm">View Profile</a>
                                             </div>
                                         </div>
                                     </li>
@@ -320,7 +313,6 @@ if ($id_kampus) {
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="index.php?page=industry_profile">My Profile</a>
                                         <a class="dropdown-item" href="index.php?page=my_company">My Internship</a>
-                                        <!-- <a class="dropdown-item" href="#">Inbox</a> -->
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="#" onclick="logout_confirm()">Logout</a>
                                     </li>
@@ -377,7 +369,6 @@ if ($id_kampus) {
                             </a>
                         </li>
 
-                        <!-- Student Section -->
                         <li class="nav-section">
                             <span class="sidebar-mini-icon">
                                 <i class="fa fa-ellipsis-h"></i>
@@ -392,7 +383,6 @@ if ($id_kampus) {
                             </a>
                         </li>
 
-                        <!-- Internship Approval Section -->
                         <li class="nav-section">
                             <span class="sidebar-mini-icon">
                                 <i class="fa fa-ellipsis-h"></i>
@@ -414,13 +404,13 @@ if ($id_kampus) {
                             </a>
                         </li>
 
-                        <!-- Account Section -->
                         <li class="nav-section">
                             <span class="sidebar-mini-icon">
                                 <i class="fa fa-ellipsis-h"></i>
                             </span>
                             <h4 class="text-section">Account</h4>
                         </li>
+
                         <li class="nav-item ">
                             <a href="#" class="collapsed" aria-expanded="false">
                                 <i class="fas fa-user"></i>
@@ -453,11 +443,13 @@ if ($id_kampus) {
 
             <!-- Content -->
             <div class="page-inner mt--5">
-                <div style="background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); overflow: hidden;">
+                <div
+                    style="background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); overflow: hidden;">
 
                     <!-- Table -->
                     <div class="table-responsive" style="padding: 25px;">
-                        <table class="table table-bordered table-hover" style="width: 100%; text-align: center;" id="approvalTable">
+                        <table class="table table-bordered table-hover" style="width: 100%; text-align: center;"
+                            id="approvalTable">
                             <thead>
                                 <tr>
                                     <th style="width: 50px;">No</th>
@@ -497,7 +489,8 @@ if ($id_kampus) {
                 </div>
             </div>
 
-            <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+            <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+                integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
 
             <!-- Tambahkan di sebelum </body> -->
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -535,17 +528,12 @@ if ($id_kampus) {
             <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 
             <script>
-                // ========================================
-                // INISIALISASI SAAT HALAMAN DIMUAT
-                // ========================================
-                $(document).ready(function() {
-                    clock_run(); // Jalankan fungsi jam real-time
-                    show_calendar(); // Inisialisasi kalender
+                $(document).ready(function () {
+                    clock_run();
+                    show_calendar();
                 });
 
-                // ========================================
                 // FUNGSI KALENDER
-                // ========================================
                 function show_calendar() {
                     var date = new Date();
                     var d = date.getDate();
@@ -555,13 +543,11 @@ if ($id_kampus) {
 
                     $calendar = $('#calendar');
                     $calendar.fullCalendar({
-                        fixedWeekCount: false, // Set false agar jumlah minggu yang ditampilkan menyesuaikan dengan bulan aktif
+                        fixedWeekCount: false,
                     });
                 }
 
-                // ========================================
                 // FUNGSI JAM REAL-TIME
-                // ========================================
                 function clock_run() {
                     'use strict';
 
@@ -586,7 +572,7 @@ if ($id_kampus) {
                     }
 
                     // Update jam setiap detik
-                    setInterval(function() {
+                    setInterval(function () {
                         let d = new Date();
                         let day = en_day[d.getDay()];
                         let date = d.getDate();
@@ -612,11 +598,7 @@ if ($id_kampus) {
                 }
             </script>
 
-            <!-- Javascript Function -->
             <script type="text/javascript">
-                // ========================================
-                // FUNGSI COPY TEXT KE CLIPBOARD
-                // ========================================
                 function copyToClipboard(text) {
                     var tempInput = document.createElement("input");
                     document.body.appendChild(tempInput);
@@ -630,29 +612,25 @@ if ($id_kampus) {
                     alert("Text copied to clipboard: " + text);
                 }
 
-                // ========================================
                 // FUNGSI GET NOTIFIKASI FORM
-                // ========================================
                 function getNotificationForm(formSelector) {
                     $.ajax({
                         url: 'index.php?request=validation_get',
                         type: 'GET',
 
-                        success: function(response, xhr, status, error) {
+                        success: function (response, xhr, status, error) {
                             console.log('Getting form notification');
                             $('body').append(response);
                         },
 
-                        error: function(xhr, status, error) {
+                        error: function (xhr, status, error) {
                             console.log('Failed Getting form notification');
                         }
                     });
                     return true;
                 }
 
-                // ========================================
                 // FUNGSI LOGOUT DENGAN KONFIRMASI
-                // ========================================
                 function logout_confirm() {
                     let _token = $('meta[name="csrf-token"]').attr('content');
 
@@ -667,24 +645,21 @@ if ($id_kampus) {
                         cancelButtonText: "Cancel"
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // AJAX logout ke PHP
                             $.ajax({
                                 url: "session_logout.php",
                                 type: "POST",
                                 data: {
                                     'token': _token
                                 },
-                                success: function() {
-                                    setTimeout(function() {
-                                        // Hapus data localStorage
+                                success: function () {
+                                    setTimeout(function () {
                                         localStorage.removeItem('first');
                                         localStorage.removeItem('first_chime');
                                         localStorage.removeItem('next_chime');
-                                        // Redirect ke halaman login
                                         window.location.href = 'role_login.php';
                                     }, 200);
                                 },
-                                error: function() {
+                                error: function () {
                                     Swal.fire('Error', 'Logout failed, please try again.', 'error');
                                 }
                             });
@@ -692,9 +667,7 @@ if ($id_kampus) {
                     });
                 }
 
-                // ========================================
                 // FUNGSI KONFIRMASI SEDERHANA
-                // ========================================
                 function konfirmasi(notif, lokasi) {
                     var x = confirm(notif);
                     if (x === true) {
@@ -702,9 +675,7 @@ if ($id_kampus) {
                     }
                 }
 
-                // ========================================
                 // FUNGSI SPINNER LOADING PADA BUTTON
-                // ========================================
                 function spinner() {
                     var icon_spinner = event.target.querySelector('i');
                     var icon_old = icon_spinner.className;
@@ -715,16 +686,14 @@ if ($id_kampus) {
                     icon_spinner.className = spinner;
 
                     // Kembalikan icon setelah 2 detik
-                    setTimeout(function() {
+                    setTimeout(function () {
                         icon_spinner.className = '';
                         icon_spinner.className = icon_old;
                     }, 2000);
                 }
 
-                // ========================================
                 // INISIALISASI SELECT2 UNTUK DROPDOWN
-                // ========================================
-                $(document).ready(function() {
+                $(document).ready(function () {
                     $('#companySelect').select2({
                         placeholder: "Choose Company",
                         allowClear: true,
@@ -732,19 +701,14 @@ if ($id_kampus) {
                     });
                 });
 
-                // ========================================
                 // HIGHLIGHT MENU SIDEBAR AKTIF
-                // ========================================
-                document.addEventListener("DOMContentLoaded", function() {
+                document.addEventListener("DOMContentLoaded", function () {
                     const navItems = document.querySelectorAll(".sidebar .nav-item");
 
                     // Event listener untuk klik menu
                     navItems.forEach(item => {
-                        item.addEventListener("click", function() {
-                            // Hapus active dari semua nav-item
+                        item.addEventListener("click", function () {
                             navItems.forEach(i => i.classList.remove("active"));
-
-                            // Tambahkan active ke item yang diklik
                             this.classList.add("active");
                         });
                     });
@@ -760,9 +724,7 @@ if ($id_kampus) {
                     });
                 });
 
-                // ========================================
                 // SCRIPT DROPDOWN ACTION BUTTON
-                // ========================================
                 const actionBtn = document.getElementById('actionBtn');
                 const actionMenu = document.getElementById('actionMenu');
 
@@ -799,10 +761,8 @@ if ($id_kampus) {
     </footer>
 
     <script>
-        // ========================================
         // MAIN SCRIPT: LOAD DATA APPROVAL STATUS
-        // ========================================
-        (async function() {
+        (async function () {
             // Ambil NIM dari session PHP
             const nim = <?= json_encode($student['nim']) ?>;
 
@@ -815,9 +775,7 @@ if ($id_kampus) {
                 return;
             }
 
-            // ========================================
             // FUNGSI FORMAT TANGGAL (DD/MM/YYYY)
-            // ========================================
             function formatDate(dtStr) {
                 if (!dtStr) return '-';
                 const d = new Date(dtStr);
@@ -825,9 +783,7 @@ if ($id_kampus) {
                 return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
             }
 
-            // ========================================
             // FUNGSI LOAD DATA APPROVAL DARI API
-            // ========================================
             async function loadApproval() {
                 try {
                     // Fetch data dari backend
@@ -843,15 +799,12 @@ if ($id_kampus) {
                     const rows = json.data || [];
                     tableBody.innerHTML = '';
 
-                    // Tampilkan pesan jika tidak ada data
                     if (!rows.length) {
                         tableBody.innerHTML = `<tr><td colspan="7" class="text-center py-3">You haven't submitted any internship letter yet.</td></tr>`;
                         return;
                     }
 
-                    // ========================================
                     // RENDER SETIAP ROW DATA
-                    // ========================================
                     rows.forEach((r, idx) => {
                         const id = r.id_letter;
                         const dateCell = `<td class="align-middle text-center">${formatDate(r.created_at)}</td>`;
@@ -875,7 +828,7 @@ if ($id_kampus) {
                             koorBadge = '-';
                         }
 
-                        // === BADGE APPROVAL CDC ADMINISTRATOR ===
+                        // BADGE APPROVAL CDC ADMINISTRATOR
                         let cdcBadge = '';
                         if (r.koor_approval === 'REJECTED') {
                             // Jika koor rejected, CDC otomatis rejected tanpa tombol reason
@@ -899,7 +852,7 @@ if ($id_kampus) {
                             cdcBadge = '-';
                         }
 
-                        // === BADGE STATUS AKHIR ===
+                        // BADGE STATUS AKHIR
                         let statusBadge = '';
                         if (r.status === 'WAITING') {
                             statusBadge = `<span class="badge badge-warning px-3 py-2">Waiting</span>`;
@@ -911,10 +864,10 @@ if ($id_kampus) {
                             statusBadge = '-';
                         }
 
-                        // === LOCK KETIKA SURAT SUDAH ACCEPTED/REJECTED ===
+                        // LOCK KETIKA SURAT SUDAH ACCEPTED/REJECTED
                         const isLocked = (r.acceptance_status === 'ACCEPTED' || r.acceptance_status === 'REJECTED');
 
-                        // === TOMBOL DOWNLOAD ===
+                        // TOMBOL DOWNLOAD
                         const downloadDisabled = (r.status !== 'ACCEPTED' || isLocked) ? 'disabled' : '';
                         const downloadBtn = `
                         <button class="btn btn-sm btn-download"
@@ -928,7 +881,6 @@ if ($id_kampus) {
                         // === ACTION BUTTON ===
                         let actionDropdown = '';
                         if (isLocked) {
-                            // Jika sudah ACCEPTED/REJECTED → tombol action disable total
                             actionDropdown = `
                             <button class="btn btn-secondary btn-sm" disabled style="opacity:0.6;">
                                 Action
@@ -953,7 +905,7 @@ if ($id_kampus) {
                             <button class="btn btn-secondary btn-sm" disabled>Action</button>`;
                         }
 
-                        // === RENDER ROW ===
+                        // RENDER ROW
                         const tr = document.createElement('tr');
                         tr.setAttribute('data-id', id);
                         tr.innerHTML = `
@@ -968,7 +920,6 @@ if ($id_kampus) {
                         tableBody.appendChild(tr);
                     });
 
-                    // Attach event listeners setelah render
                     attachListeners();
                 } catch (err) {
                     console.error('Error loading data:', err);
@@ -976,48 +927,41 @@ if ($id_kampus) {
                 }
             }
 
-            // ========================================
             // FUNGSI ATTACH EVENT LISTENERS
-            // ========================================
             function attachListeners() {
-                // Event listener untuk tombol Download
                 document.querySelectorAll('.btn-download').forEach(btn => {
                     btn.addEventListener('click', () => {
                         if (btn.disabled) return;
                         const id = btn.dataset.id;
                         const lang = btn.dataset.lang || 'ID';
-                        // Redirect ke endpoint download
                         window.location.href = `${API_BASE}/letter/${id}/download?lang=${lang}`;
                     });
                 });
             }
 
-            // ========================================
             // FUNGSI SORT TABLE BERDASARKAN TANGGAL
-            // ========================================
-            let sortOrder = 'desc'; // Default: terbaru di atas
+            let sortOrder = 'desc';
 
-            window.sortTable = function() {
+            window.sortTable = function () {
                 const tbody = document.getElementById('tableBody');
                 const rows = Array.from(tbody.querySelectorAll('tr'));
 
-                // Skip jika tidak ada data atau hanya ada pesan error/kosong
                 if (rows.length <= 1 || rows[0].children.length < 2) {
                     return;
                 }
 
-                // Toggle sort order (asc <-> desc)
+                // Toggle sort order
                 sortOrder = (sortOrder === 'asc') ? 'desc' : 'asc';
 
                 // Update icon sort di header
                 const icon = document.getElementById('sortIcon');
                 if (sortOrder === 'asc') {
-                    icon.className = 'fas fa-sort-up'; // Icon panah atas
+                    icon.className = 'fas fa-sort-up';
                 } else {
-                    icon.className = 'fas fa-sort-down'; // Icon panah bawah
+                    icon.className = 'fas fa-sort-down';
                 }
 
-                // Sort rows berdasarkan kolom Date (index 1)
+                // Sort rows berdasarkan kolom Date
                 rows.sort((a, b) => {
                     const dateA = a.children[1].textContent.trim();
                     const dateB = b.children[1].textContent.trim();
@@ -1027,37 +971,29 @@ if ($id_kampus) {
                         if (dateStr === '-' || !dateStr) return 0;
                         const parts = dateStr.split('/');
                         if (parts.length !== 3) return 0;
-                        // parts[2] = year, parts[1] = month, parts[0] = day
                         return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
                     };
 
                     const timeA = parseDate(dateA);
                     const timeB = parseDate(dateB);
 
-                    // Sort ascending atau descending
                     if (sortOrder === 'asc') {
-                        return timeA - timeB; // Lama ke baru
+                        return timeA - timeB;
                     } else {
-                        return timeB - timeA; // Baru ke lama
+                        return timeB - timeA;
                     }
                 });
 
-                // Re-render table dengan urutan baru
                 tbody.innerHTML = '';
                 rows.forEach((row, idx) => {
-                    // Update nomor urut
                     row.children[0].textContent = idx + 1;
                     tbody.appendChild(row);
                 });
-
-                // Re-attach event listeners setelah sorting
                 attachListeners();
             };
 
-            // ========================================
             // FUNGSI SHOW REASON PENOLAKAN (SWEETALERT)
-            // ========================================
-            window.showReason = function(reason) {
+            window.showReason = function (reason) {
                 Swal.fire({
                     title: "Rejection Reason",
                     text: reason,
@@ -1065,10 +1001,6 @@ if ($id_kampus) {
                     confirmButtonText: "OK"
                 });
             };
-
-            // ========================================
-            // INITIAL LOAD DATA SAAT HALAMAN DIBUKA
-            // ========================================
             await loadApproval();
 
         })();

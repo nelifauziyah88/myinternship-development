@@ -21,10 +21,12 @@ if (isset($_SESSION['username'])) {
     <link href="./assets/img/iconM.png" rel="apple-touch-icon" type="image/x-icon">
 
     <!-- Bootstrap 5 -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=<?php echo time(); ?>" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=<?php echo time(); ?>"
+        rel="stylesheet">
 
     <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=<?php echo time(); ?>">
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -105,7 +107,6 @@ if (isset($_SESSION['username'])) {
             gap: 10px;
         }
 
-        /* Student Button */
         .btn-student {
             background: white;
             color: #3b82f6;
@@ -118,7 +119,6 @@ if (isset($_SESSION['username'])) {
             border-color: #2563eb;
         }
 
-        /* Lecturer Button */
         .btn-lecturer {
             background: white;
             color: #22c55e;
@@ -131,7 +131,6 @@ if (isset($_SESSION['username'])) {
             border-color: #16a34a;
         }
 
-        /* Industry Partner Button */
         .btn-industry {
             background: white;
             color: #60a5fa;
@@ -144,7 +143,6 @@ if (isset($_SESSION['username'])) {
             border-color: #5aa9ff;
         }
 
-        /* Admin Button */
         .btn-admin {
             background: white;
             color: #374151;
@@ -157,7 +155,6 @@ if (isset($_SESSION['username'])) {
             border-color: #111827;
         }
 
-        /* Home Button */
         .btn-home {
             background: white;
             color: #6b7280;
@@ -238,7 +235,8 @@ if (isset($_SESSION['username'])) {
     </div>
 
     <!-- Bootstrap JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js?v=<?php echo time(); ?>"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js?v=<?php echo time(); ?>"></script>
 </body>
 
 </html>

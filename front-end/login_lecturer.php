@@ -266,7 +266,8 @@
 
             <div class="mb-3 password-wrapper">
               <label for="password">Password <span class="text-danger">*</span></label>
-              <input type="password" class="form-control" id="password" name="password" placeholder="Enter Your Password" required>
+              <input type="password" class="form-control" id="password" name="password"
+                placeholder="Enter Your Password" required>
               <i class="fas fa-eye toggle-password" id="togglePassword"></i>
             </div>
 
@@ -310,7 +311,7 @@
     // Show/Hide Password
     const togglePassword = document.querySelector("#togglePassword");
     const password = document.querySelector("#password");
-    togglePassword.addEventListener("click", function() {
+    togglePassword.addEventListener("click", function () {
       const type = password.getAttribute("type") === "password" ? "text" : "password";
       password.setAttribute("type", type);
       this.classList.toggle("fa-eye-slash");
@@ -335,7 +336,6 @@
       }
 
       try {
-        // 🔹 Step 1: Login ke backend Express
         const response = await fetch("http://localhost:8000/api/login_lecturer", {
           method: "POST",
           headers: {
@@ -350,7 +350,7 @@
         const data = await response.json();
 
         if (data.success) {
-          // 🔹 Step 2: Buat session di PHP
+
           const rememberChecked = document.getElementById('remember').checked;
 
           const sessionResp = await fetch('session_login.php', {
@@ -372,11 +372,11 @@
             window.location.href = 'dashboard_lecturer.php';
           } else {
             Toast.fire({
-                icon: 'error',
-                title: 'Session Error',
-                html: `Failed to create session: ${sessionData.message || 'Unknown'}`,
-                timer: 3000
-              });
+              icon: 'error',
+              title: 'Session Error',
+              html: `Failed to create session: ${sessionData.message || 'Unknown'}`,
+              timer: 3000
+            });
           }
         } else {
           Toast.fire({

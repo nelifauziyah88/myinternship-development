@@ -271,7 +271,8 @@
 
             <div class="mb-3 password-wrapper">
               <label for="password">Password <span class="text-danger">*</span></label>
-              <input type="password" class="form-control" id="password" name="password" placeholder="Enter Your Password" required>
+              <input type="password" class="form-control" id="password" name="password"
+                placeholder="Enter Your Password" required>
               <i class="fas fa-eye toggle-password" id="togglePassword"></i>
             </div>
 
@@ -299,7 +300,7 @@
   <!-- SweetAlert2 Library -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
-    // Toast Configuration
+
     const Toast = Swal.mixin({
       toast: true,
       position: 'top',
@@ -315,7 +316,7 @@
     // Toggle password visibility
     const togglePassword = document.querySelector("#togglePassword");
     const password = document.querySelector("#password");
-    togglePassword.addEventListener("click", function() {
+    togglePassword.addEventListener("click", function () {
       const type = password.getAttribute("type") === "password" ? "text" : "password";
       password.setAttribute("type", type);
       this.classList.toggle("fa-eye-slash");
@@ -355,7 +356,6 @@
         const data = await response.json();
 
         if (data.success) {
-          // Setelah API Express mengkonfirmasi credential, panggil PHP untuk buat session
           try {
             const rememberChecked = document.getElementById('remember').checked;
 

@@ -2,7 +2,6 @@
 
 header('Content-Type: application/json');
 
-// Baca body JSON
 $input = json_decode(file_get_contents('php://input'), true);
 if (!$input || !isset($input['user']) || !isset($input['role'])) {
     http_response_code(400);

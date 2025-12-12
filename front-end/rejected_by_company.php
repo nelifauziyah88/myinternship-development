@@ -13,16 +13,13 @@ $id_kampus = $user['id_kampus'] ?? null;
 $nama_kampus = "Unknown";
 
 if ($id_kampus) {
-  // URL ke backend Express
   $api_url = "http://localhost:8000/api/kampus/" . urlencode($id_kampus);
 
-  // Ambil data dari backend
   $response = @file_get_contents($api_url);
 
   if ($response !== false) {
     $data = json_decode($response, true);
 
-    // Periksa apakah format API sesuai
     if (json_last_error() === JSON_ERROR_NONE && isset($data['nama_kampus'])) {
       $nama_kampus = $data['nama_kampus'];
     } else {
@@ -90,7 +87,6 @@ if ($id_kampus) {
       color: white;
     }
 
-    /* Form Styles */
     .sidebar {
       position: fixed;
       z-index: 1000;
@@ -256,7 +252,7 @@ if ($id_kampus) {
       </div>
     </div>
 
-    <!-- Header - DIAMBIL PERSIS DARI KODE KEDUA -->
+    <!-- Header -->
     <div class="main-header">
       <div class="logo-header" data-background-color="blue2">
         <a href="landing_page.php" class="logo">
@@ -330,7 +326,7 @@ if ($id_kampus) {
       </nav>
     </div>
 
-    <!-- Sidebar - DIAMBIL PERSIS DARI KODE KEDUA -->
+    <!-- Sidebar -->
     <div class="sidebar sidebar-style-2">
       <div class="sidebar-wrapper scrollbar scrollbar-inner">
         <div class="sidebar-content">
@@ -407,12 +403,12 @@ if ($id_kampus) {
         </div>
       </div>
 
+      <!-- Content -->
       <div class="page-inner mt--5">
         <div class="row mt--2">
           <div class="col-md-12">
             <div class="form-container">
               <form id="internshipForm">
-                <!-- Step 1 -->
                 <div class="form-group">
                   <label>Have you received an internship response letter?</label>
                   <select id="responseReceived">
@@ -422,7 +418,6 @@ if ($id_kampus) {
                   </select>
                 </div>
 
-                <!-- Step 2 (hidden by default) -->
                 <div class="form-group" id="within14Section" style="display:none;">
                   <label>Have 14 days or more passed since you submitted your internship application letter?</label>
                   <select id="responseWithin14Days">
@@ -451,7 +446,6 @@ if ($id_kampus) {
                   </div>
                 </div>
 
-                <!-- Tombol -->
                 <div style="display:flex; justify-content: space-between; margin-top: 30px;">
                   <button type="button" class="btn-back" onclick="window.history.back()">
                     <i class="fas fa-arrow-left" style="margin-right:6px;"></i> Back
@@ -508,7 +502,6 @@ if ($id_kampus) {
         $(document).ready(function () {
           clock_run();
 
-          // === Highlight active menu ===
           const navItems = document.querySelectorAll(".sidebar .nav-item");
           const currentPage = window.location.href;
           navItems.forEach(item => {
@@ -520,7 +513,7 @@ if ($id_kampus) {
           });
         });
 
-        // === CLOCK FUNCTION ===
+        // CLOCK FUNCTION 
         function clock_run() {
           let d = new Date();
           let en_day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -546,7 +539,7 @@ if ($id_kampus) {
           }, 1000);
         }
 
-        // === LOGOUT CONFIRM ===
+        // LOGOUT CONFIRM 
         function logout_confirm() {
           if (confirm('Are you sure you want to logout?')) {
             window.location.href = 'landing_page.php';
@@ -575,37 +568,36 @@ if ($id_kampus) {
     document.querySelector("#within14Section label").textContent =
       "Have 14 days or more passed since you submitted your internship application letter?";
 
- // === Handle dropdown utama ===
-submitBtn.disabled = true;
-submitBtn.classList.add("disabled-btn");
-
-responseReceived.addEventListener("change", () => {
-  if (responseReceived.value === "yes") {
-    uploadSection.style.display = "block";
-    within14Section.style.display = "none";
-
-    submitBtn.disabled = false;
-    submitBtn.classList.remove("disabled-btn");
-
-  } else if (responseReceived.value === "no") {
-    uploadSection.style.display = "none";
-    within14Section.style.display = "block";
-    fileInput.value = "";
-
     submitBtn.disabled = true;
     submitBtn.classList.add("disabled-btn");
 
-  } else {
-    uploadSection.style.display = "none";
-    within14Section.style.display = "none";
+    responseReceived.addEventListener("change", () => {
+      if (responseReceived.value === "yes") {
+        uploadSection.style.display = "block";
+        within14Section.style.display = "none";
 
-    submitBtn.disabled = true;
-    submitBtn.classList.add("disabled-btn");
-  }
-});
+        submitBtn.disabled = false;
+        submitBtn.classList.remove("disabled-btn");
+
+      } else if (responseReceived.value === "no") {
+        uploadSection.style.display = "none";
+        within14Section.style.display = "block";
+        fileInput.value = "";
+
+        submitBtn.disabled = true;
+        submitBtn.classList.add("disabled-btn");
+
+      } else {
+        uploadSection.style.display = "none";
+        within14Section.style.display = "none";
+
+        submitBtn.disabled = true;
+        submitBtn.classList.add("disabled-btn");
+      }
+    });
 
 
-    // === Handle dropdown pertanyaan 14 hari ===
+    // Handle dropdown pertanyaan 14 hari
     responseWithin14Days.addEventListener("change", () => {
       const value = responseWithin14Days.value;
 
@@ -643,7 +635,7 @@ responseReceived.addEventListener("change", () => {
       }
     });
 
-    // === Remove file ===
+    // Remove file 
     removeFileBtn.addEventListener("click", (e) => {
       e.stopPropagation();
 
@@ -660,85 +652,81 @@ responseReceived.addEventListener("change", () => {
       removeFileBtn.style.display = "none";
     });
 
-
-
     // Submit form
-internshipForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  if (submitBtn.disabled) return;
+    internshipForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (submitBtn.disabled) return;
 
-  // === CEK: Jika pilih YES tapi tidak ada file ===
-  if (responseReceived.value === "yes" && fileInput.files.length === 0) {
-    return Swal.fire({
-      icon: "warning",
-      title: "File Required",
-      text: "You must provide proof of rejection of the internship by the company."
-    });
-  }
-
-  const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
-  let filePath = "-";
-
-  try {
-    // Upload file ke PHP
-    if (file) {
-      const fd = new FormData();
-      fd.append("attachment", file);
-
-      const uploadRes = await fetch("upload_company_reply.php", {
-        method: "POST",
-        body: fd,
-      });
-
-      const uploadJson = await uploadRes.json();
-
-      if (!uploadJson.success) {
+      // CEK: Jika pilih YES tapi tidak ada file 
+      if (responseReceived.value === "yes" && fileInput.files.length === 0) {
         return Swal.fire({
-          icon: "error",
-          title: "Upload Failed",
-          text: uploadJson.message,
+          icon: "warning",
+          title: "File Required",
+          text: "You must provide proof of rejection of the internship by the company."
         });
       }
 
-      filePath = uploadJson.path; // path hasil upload dari PHP
-    }
+      const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
+      let filePath = "-";
 
-    // Kirim update ke backend Express
-    const res = await fetch(`${apiBase}/student/rejected-by-company/${id}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        acceptance_status: "REJECTED",
-        company_reply_letter: filePath,
-      }),
+      try {
+        if (file) {
+          const fd = new FormData();
+          fd.append("attachment", file);
+
+          const uploadRes = await fetch("upload_company_reply.php", {
+            method: "POST",
+            body: fd,
+          });
+
+          const uploadJson = await uploadRes.json();
+
+          if (!uploadJson.success) {
+            return Swal.fire({
+              icon: "error",
+              title: "Upload Failed",
+              text: uploadJson.message,
+            });
+          }
+
+          filePath = uploadJson.path;
+        }
+
+        const res = await fetch(`${apiBase}/student/rejected-by-company/${id}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            acceptance_status: "REJECTED",
+            company_reply_letter: filePath,
+          }),
+        });
+
+        const json = await res.json();
+
+        if (json.success) {
+          Swal.fire({
+            icon: "success",
+            title: "Submitted",
+            text: "Company rejection recorded.",
+          }).then(() => window.location.href = "approval_status.php");
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Failed",
+            text: json.message || "Unknown error",
+          });
+        }
+
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Server Error",
+          text: "Server unreachable.",
+        });
+      }
     });
-
-    const json = await res.json();
-
-    if (json.success) {
-      Swal.fire({
-        icon: "success",
-        title: "Submitted",
-        text: "Company rejection recorded.",
-      }).then(() => window.location.href = "approval_status.php");
-    } else {
-      Swal.fire({
-        icon: "error",
-        title: "Failed",
-        text: json.message || "Unknown error",
-      });
-    }
-
-  } catch (error) {
-    Swal.fire({
-      icon: "error",
-      title: "Server Error",
-      text: "Server unreachable.",
-    });
-  }
-});
 
 
 

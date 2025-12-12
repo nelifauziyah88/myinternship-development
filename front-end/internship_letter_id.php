@@ -1,14 +1,17 @@
 <?php
 $id_letter = $_GET['id_letter'] ?? null;
-if (!$id_letter) die("ID Letter not found !");
+if (!$id_letter)
+    die("ID Letter not found !");
 
 $lang = $_GET['lang'] ?? 'ID';
 $apiUrl = "http://localhost:8000/api/student/internship_letter/$id_letter?lang=$lang";
 
 $response = file_get_contents($apiUrl);
-if ($response === FALSE) die("Failed to retrieve data from API.");
+if ($response === FALSE)
+    die("Failed to retrieve data from API.");
 $data = json_decode($response, true);
-if (!$data) die("Letter data not found.");
+if (!$data)
+    die("Letter data not found.");
 
 $letter = $data;
 $student = $data['student'] ?? [];
@@ -17,19 +20,18 @@ $company = $data['company'] ?? [];
 $fmt = new IntlDateFormatter('id_ID', IntlDateFormatter::LONG, IntlDateFormatter::NONE, 'Asia/Jakarta', IntlDateFormatter::GREGORIAN, 'd MMMM yyyy');
 
 $start_date = $fmt->format(new DateTime($letter['start_date']));
-$end_date   = $fmt->format(new DateTime($letter['end_date']));
-$dateStr    = $fmt->format(new DateTime()); // tanggal hari ini
-$periode    = $start_date . ' - ' . $end_date;
+$end_date = $fmt->format(new DateTime($letter['end_date']));
+$dateStr = $fmt->format(new DateTime()); // tanggal hari ini
+$periode = $start_date . ' - ' . $end_date;
 
 $letterNumber = $letter['letter_number'] ?? '___';
 
 $company_name = $letter['company_name'] ?? ($company['name'] ?? '');
 $company_addr = $letter['company_address'] ?? ($company['address'] ?? '');
 $student_name = $student['name'] ?? '';
-$student_nim  = $letter['nim'] ?? '';
+$student_nim = $letter['nim'] ?? '';
 $program_study = ($student['jenjang'] ?? '') . ' ' . ($student['prodi'] ?? ($student['program_study'] ?? ''));
 
-// Logo path (pastikan sesuai struktur folder)
 $logoPolibatam = "assets/img/polibatam.png";
 $logoUKAS = "assets/img/ukas.png";
 $stempel = "assets/img/ttd.png";
@@ -63,7 +65,6 @@ $stempel = "assets/img/ttd.png";
             padding: 10px;
         }
 
-        /* SURAT PERMOHONAN STYLES */
         .container-permohonan {
             width: 210mm;
             min-height: 297mm;
@@ -280,7 +281,6 @@ $stempel = "assets/img/ttd.png";
             text-decoration: underline;
         }
 
-        /* SURAT BALASAN STYLES */
         .container-balasan {
             width: 210mm;
             height: 297mm;
@@ -521,7 +521,7 @@ $stempel = "assets/img/ttd.png";
 </head>
 
 <body>
-    <!-- SURAT PERMOHONAN MAGANG -->
+    <!-- Internship Cover Letter -->
     <div class="container-permohonan" id="content-permohonan">
         <div class="header-permohonan">
             <div class="logo-left">
@@ -572,10 +572,12 @@ $stempel = "assets/img/ttd.png";
         </div>
 
         <div class="content-permohonan">
-            <p>Dengan hormat kami sampaikan apresiasi yang sebesar-besarnya kepada <em><?= htmlspecialchars($company_name) ?></em>
+            <p>Dengan hormat kami sampaikan apresiasi yang sebesar-besarnya kepada
+                <em><?= htmlspecialchars($company_name) ?></em>
                 atas kerja samanya selama ini dalam hal kegiatan magang industri mahasiswa. Pelaksanaan magang
                 memberikan kontribusi yang sangat penting untuk meningkatkan keterampilan kerja, menumbuhkan
-                pengetahuan tentang lingkungan, proses dan budaya kerja di perusahaan/instansi. Pada akhirnya pelaksanaan
+                pengetahuan tentang lingkungan, proses dan budaya kerja di perusahaan/instansi. Pada akhirnya
+                pelaksanaan
                 magang akan membentuk kedisiplinan dan perilaku baik bagi mahasiswa yang krusial dalam penyiapan
                 generasi muda yang kompeten dan siap kerja.</p>
 
@@ -603,20 +605,25 @@ $stempel = "assets/img/ttd.png";
                 </tbody>
             </table>
 
-            <p>Kami juga lampirkan Kompetensi dan Posisi yang dapat diisi oleh mahasiswa tersebut di atas pada link berikut
-                <a href="https://polibatam.id/KompetensiMagangPolibatam" class="link">https://polibatam.id/KompetensiMagangPolibatam</a>
-                serta Format Balasan Surat Permohonan Magang apabila mahasiswa tersebut diterima di perusahaan Bapak/Ibu.
+            <p>Kami juga lampirkan Kompetensi dan Posisi yang dapat diisi oleh mahasiswa tersebut di atas pada link
+                berikut
+                <a href="https://polibatam.id/KompetensiMagangPolibatam"
+                    class="link">https://polibatam.id/KompetensiMagangPolibatam</a>
+                serta Format Balasan Surat Permohonan Magang apabila mahasiswa tersebut diterima di perusahaan
+                Bapak/Ibu.
             </p>
 
             <p>Konfirmasi penerimaan magang melalui surat balasan mohon dapat dikirim kembali melalui email
                 <a href="mailto:cdc@polibatam.ac.id" class="link">cdc@polibatam.ac.id</a>
                 paling lambat 10 hari kerja Politeknik Negeri Batam. Apabila tidak ada konfirmasi terkait hal tersebut
-                hingga batas waktu, kami menganggap Perusahaan Bapak/Ibu belum bisa menerima mahasiswa magang tersebut saat ini.
+                hingga batas waktu, kami menganggap Perusahaan Bapak/Ibu belum bisa menerima mahasiswa magang tersebut
+                saat ini.
             </p>
 
             <p>Jika perusahaan Bapak/Ibu memerlukan posisi magang selain yang kami usulkan, Bapak/Ibu mohon dapat
                 mengisi formulir yang dapat diakses pada link berikut:
-                <a href="https://polibatam.id/FormKebutuhanMagang" class="link">https://polibatam.id/FormKebutuhanMagang</a>.
+                <a href="https://polibatam.id/FormKebutuhanMagang"
+                    class="link">https://polibatam.id/FormKebutuhanMagang</a>.
             </p>
         </div>
 
@@ -641,7 +648,7 @@ $stempel = "assets/img/ttd.png";
         </div>
     </div>
 
-    <!-- SURAT BALASAN MAGANG -->
+    <!-- Internship Reply Letter -->
     <div class="container-balasan" id="content-balasan">
         <div class="header-balasan">
             <div class="logo-balasan">

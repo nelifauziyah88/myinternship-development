@@ -1,36 +1,37 @@
 <?php
 $id_letter = $_GET['id_letter'] ?? null;
-if (!$id_letter) die("ID Letter not found !");
+if (!$id_letter)
+    die("ID Letter not found !");
 
 $lang = $_GET['lang'] ?? 'ENG';
 $apiUrl = "http://localhost:8000/api/student/internship_letter/$id_letter?lang=$lang";
 
 $response = file_get_contents($apiUrl);
-if ($response === FALSE) die("Failed to retrieve data from API.");
+if ($response === FALSE)
+    die("Failed to retrieve data from API.");
 $data = json_decode($response, true);
-if (!$data) die("Letter data not found.");
+if (!$data)
+    die("Letter data not found.");
 
 $letter = $data;
 $student = $data['student'] ?? [];
 $company = $data['company'] ?? [];
 
-// Use IntlDateFormatter for English
 $fmtEng = new IntlDateFormatter('en_US', IntlDateFormatter::LONG, IntlDateFormatter::NONE, 'Asia/Jakarta', IntlDateFormatter::GREGORIAN, 'MMMM d, yyyy');
 
 $start_date = $fmtEng->format(new DateTime($letter['start_date']));
-$end_date   = $fmtEng->format(new DateTime($letter['end_date']));
-$dateStr    = $fmtEng->format(new DateTime());
-$periode    = $start_date . ' - ' . $end_date;
+$end_date = $fmtEng->format(new DateTime($letter['end_date']));
+$dateStr = $fmtEng->format(new DateTime());
+$periode = $start_date . ' - ' . $end_date;
 
 $letterNumber = $letter['letter_number'] ?? '___';
 
 $company_name = $letter['company_name'] ?? ($company['name'] ?? '');
 $company_addr = $letter['company_address'] ?? ($company['address'] ?? '');
 $student_name = $student['name'] ?? '';
-$student_nim  = $letter['nim'] ?? '';
+$student_nim = $letter['nim'] ?? '';
 $program_study = ($student['jenjang'] ?? '') . ' ' . ($student['study_program'] ?? ($student['prodi'] ?? ''));
 
-// Logo path
 $logoPolibatam = "assets/img/polibatam.png";
 $logoUKAS = "assets/img/ukas.png";
 $stempel = "assets/img/ttd.png";
@@ -64,7 +65,6 @@ $stempel = "assets/img/ttd.png";
             padding: 10px;
         }
 
-        /* SURAT PERMOHONAN STYLES */
         .container-permohonan {
             width: 210mm;
             min-height: 297mm;
@@ -281,7 +281,6 @@ $stempel = "assets/img/ttd.png";
             text-decoration: underline;
         }
 
-        /* SURAT BALASAN STYLES */
         .container-balasan {
             width: 210mm;
             height: 297mm;
@@ -522,7 +521,7 @@ $stempel = "assets/img/ttd.png";
 </head>
 
 <body>
-    <!-- SURAT PERMOHONAN MAGANG -->
+    <!-- internship cover letter -->
     <div class="container-permohonan" id="content-permohonan">
         <div class="header-permohonan">
             <div class="logo-left">
@@ -574,9 +573,11 @@ $stempel = "assets/img/ttd.png";
 
         <div class="content-permohonan">
             <p>We would like to express our deepest appreciation to <em><?= htmlspecialchars($company_name) ?></em>
-                for its cooperation in the student industrial internship program. The internship program has made a significant contribution to
+                for its cooperation in the student industrial internship program. The internship program has made a
+                significant contribution to
                 improving work skills and fostering knowledge about the environment, processes, and work culture in
-                companies/institutions. Ultimately, the implementation of internships will foster discipline and good behavior among
+                companies/institutions. Ultimately, the implementation of internships will foster discipline and good
+                behavior among
                 students, which is crucial in preparing a competent and job-ready younger generation.</p>
 
             <p>This letter is our request for the following students to be accepted for industrial internships
@@ -603,8 +604,10 @@ $stempel = "assets/img/ttd.png";
                 </tbody>
             </table>
 
-            <p>We have also attached the competencies and positions that can be filled by the above students at the following link
-                <a href="https://polibatam.id/KompetensiMagangPolibatam" class="link">https://polibatam.id/KompetensiMagangPolibatam</a>
+            <p>We have also attached the competencies and positions that can be filled by the above students at the
+                following link
+                <a href="https://polibatam.id/KompetensiMagangPolibatam"
+                    class="link">https://polibatam.id/KompetensiMagangPolibatam</a>
                 as well as the Internship Application Response Letter Format if the student is accepted at your company.
             </p>
 
@@ -616,7 +619,8 @@ $stempel = "assets/img/ttd.png";
 
             <p>If your company requires an internship position other than the ones we have proposed, please
                 fill out the form accessible at the following link:
-                <a href="https://polibatam.id/FormKebutuhanMagang" class="link">https://polibatam.id/FormKebutuhanMagang</a>.
+                <a href="https://polibatam.id/FormKebutuhanMagang"
+                    class="link">https://polibatam.id/FormKebutuhanMagang</a>.
             </p>
         </div>
 
@@ -641,7 +645,7 @@ $stempel = "assets/img/ttd.png";
         </div>
     </div>
 
-    <!-- SURAT BALASAN MAGANG -->
+    <!-- Internship Reply letter -->
     <div class="container-balasan" id="content-balasan">
         <div class="header-balasan">
             <div class="logo-balasan">
@@ -687,7 +691,8 @@ $stempel = "assets/img/ttd.png";
         </div>
 
         <div class="content-balasan">
-            Based on the Industrial Internship Application Letter Number ................... that has been submitted to us,
+            Based on the Industrial Internship Application Letter Number ................... that has been submitted to
+            us,
             We hereby announce that the following students :
         </div>
 

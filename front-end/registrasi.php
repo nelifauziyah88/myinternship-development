@@ -297,7 +297,8 @@
     <h3>Student Registration</h3>
 
     <div class="alert-info">
-      Before you start using MyInternship to manage your internship data, please register an account by filling out the form below.
+      Before you start using MyInternship to manage your internship data, please register an account by filling out the
+      form below.
     </div>
 
     <form id="registerForm">
@@ -311,7 +312,8 @@
       <div class="form-row">
         <div class="form-group">
           <label for="nim">NIM <span class="text-danger">*</span></label>
-          <input id="nim" name="nim" class="form-control" type="text" placeholder="Enter Your Student Number (NIM)" required />
+          <input id="nim" name="nim" class="form-control" type="text" placeholder="Enter Your Student Number (NIM)"
+            required />
         </div>
         <div class="form-group">
           <label for="email">E-Mail <span class="text-danger">*</span></label>
@@ -344,11 +346,13 @@
       <div class="form-row">
         <div class="form-group">
           <label for="username">Username <span class="text-danger">*</span></label>
-          <input id="username" name="username" class="form-control" type="text" placeholder="Your Username will be the same as NIM" readonly />
+          <input id="username" name="username" class="form-control" type="text"
+            placeholder="Your Username will be the same as NIM" readonly />
         </div>
         <div class="form-group">
           <label for="wa">Whatsapp Number <span class="text-danger">*</span></label>
-          <input id="wa" name="wa" class="form-control" type="tel" placeholder="Insert WhatsApp Number, e.g., 6281234568xxxx" required />
+          <input id="wa" name="wa" class="form-control" type="tel"
+            placeholder="Insert WhatsApp Number, e.g., 6281234568xxxx" required />
         </div>
       </div>
 
@@ -356,14 +360,16 @@
         <div class="form-group">
           <label for="password">Password <span class="text-danger">*</span></label>
           <div class="password-field">
-            <input id="password" name="password" class="form-control" type="password" placeholder="Enter Your Password" required />
+            <input id="password" name="password" class="form-control" type="password" placeholder="Enter Your Password"
+              required />
             <i class="fas fa-eye password-toggle" onclick="togglePassword('password', this)"></i>
           </div>
         </div>
         <div class="form-group">
           <label for="confirm_password">Confirm Password <span class="text-danger">*</span></label>
           <div class="password-field">
-            <input id="confirm_password" name="confirm_password" class="form-control" type="password" placeholder="Confirm Your Password" required />
+            <input id="confirm_password" name="confirm_password" class="form-control" type="password"
+              placeholder="Confirm Your Password" required />
             <i class="fas fa-eye password-toggle" onclick="togglePassword('confirm_password', this)"></i>
           </div>
         </div>
@@ -411,7 +417,7 @@
     });
 
     // Auto-fill username dari NIM
-    document.getElementById('nim').addEventListener('input', function(e) {
+    document.getElementById('nim').addEventListener('input', function (e) {
       document.getElementById('username').value = e.target.value;
     });
 
@@ -429,7 +435,6 @@
       }
     }
 
-    // --- FETCH DROPDOWN DATA DARI BACKEND ---
     async function loadKampus() {
       try {
         const kampusResponse = await fetch("http://localhost:8000/api/kampus");
@@ -476,17 +481,14 @@
       }
     }
 
-    // Ketika halaman pertama kali dibuka, muat kampus
     window.addEventListener("DOMContentLoaded", loadKampus);
 
-    // Ketika kampus diubah, muat prodi berdasarkan kampus itu
-    document.getElementById("university").addEventListener("change", function() {
+    document.getElementById("university").addEventListener("change", function () {
       const idKampus = this.value;
       if (idKampus) loadProgramStudy(idKampus);
     });
 
-    // --- KONEKSI KE BACKEND ---
-    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    document.getElementById('registerForm').addEventListener('submit', async function (e) {
       e.preventDefault();
 
       const name = document.getElementById('name').value.trim();
@@ -501,11 +503,9 @@
       // Validasi client-side
       const errors = [];
 
-      // Wajib
       if (!name) errors.push('Name is required !');
       if (!nim) errors.push('NIM is required !');
       if (!email) errors.push('E-mail is required !');
-      // Cek study: pastikan student memilih opsi selain placeholder
       if (!programStudy || programStudy.toLowerCase().includes('select')) {
         errors.push('Study Program is required !');
       }
@@ -521,7 +521,6 @@
         if (!(/[a-z]/.test(pw) && /[A-Z]/.test(pw))) return 'Passwords must contain both uppercase and lowercase letters !';
         if (!/\d/.test(pw)) return 'Passwords must contain at least 1 number !';
         if (!/[!@#$%^&*(),.?":{}|<>_\-\[\]\\\/;'+=]/.test(pw)) return 'Passwords must contain at least 1 special character !';
-        // Jangan berisi username atau email (case-insensitive)
         const lower = pw.toLowerCase();
         if (username && lower.includes(username.toLowerCase())) return 'Passwords must not contain usernames !';
         if (email && lower.includes(email.toLowerCase())) return 'Passwords must not contain email addresses !';
@@ -552,11 +551,11 @@
         programStudy,
         email,
         otherEmail: "",
-        phone: "", // sementara kosong
+        phone: "",
         noWhatsapp,
         username,
         password,
-        nikDospem: "", // default kosong
+        nikDospem: "",
         idKampus: document.getElementById('university').value
       };
 
@@ -577,7 +576,6 @@
             title: result.message || 'Registration successful!',
             timer: 2000
           }).then(() => {
-            // Redirect setelah toast hilang
             window.location.href = 'role_login.php';
           });
         } else {
@@ -588,7 +586,6 @@
             timer: 3000
           });
 
-          // Re-enable button
           submitBtn.disabled = false;
           submitBtn.innerHTML = originalText;
         }
@@ -601,7 +598,6 @@
           timer: 3000
         });
 
-        // Re-enable button
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
       }
