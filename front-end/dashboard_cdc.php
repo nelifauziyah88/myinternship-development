@@ -739,7 +739,7 @@ if ($id_kampus) {
                         <li class="nav-item">
                             <a href="approval_of_letter_cdc.php" class="collapsed" aria-expanded="false">
                                 <i class="fas fa-briefcase"></i>
-                                <p>Approval Of Letter</p>
+                                <p>Approval Letter</p>
                             </a>
                         </li>
                         <li class="nav-section">
