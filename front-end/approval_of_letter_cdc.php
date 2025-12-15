@@ -509,8 +509,7 @@ if ($id_kampus) {
                                     <div class="row">
                                         <!-- Filter By Result Company -->
                                         <div class="col-md-3 mb-3 same-width">
-                                            <label for="filter_company" class="form-label">Filter by Result
-                                                Company</label>
+                                            <label for="filter_company" class="form-label">Filter by Company Decision</label>
                                             <select class="form-control" id="filter_company" name="company"
                                                 onchange="applyFilter()">
                                                 <option value="">ALL</option>
