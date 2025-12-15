@@ -749,6 +749,7 @@ router.get("/accepted-by-company/autofill/:nim", async (req, res) => {
         l.semester,
         c.name AS company_name,
         c.address AS company_address,
+        c.status AS status,
         LOWER(c.city) AS city,
         LOWER(c.province) AS province,
         LOWER(c.country) AS country,

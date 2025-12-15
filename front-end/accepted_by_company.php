@@ -1080,45 +1080,58 @@ if ($id_kampus) {
                         }
                     });
 
-                    // HRD & city/province/country logic
-                    const compNotExist = Number(d.company_not_exist) === 1 ? 1 : 0;
-                    const isVerified = d.company_status === "verified";
+                  // HRD & city/province/country logic
+const compNotExist = Number(d.company_not_exist) === 1 ? 1 : 0;
+const isVerified = d.status === "verified"; // tapi d.status undefined
 
-                    // Populate HRD & location
-                    safeSet("input[name='hrd_email']", d.hrd_email);
-                    safeSet("input[name='hrd_name']", d.hrd_name);
-                    safeSet("input[name='hrd_whatsapp']", d.hrd_whatsapp);
 
-                    const cityVal = normalizeValue(d.city);
-                    const provVal = normalizeValue(d.province);
-                    const countryVal = normalizeValue(d.country);
+// Populate HRD & location
+safeSet("input[name='hrd_email']", d.hrd_email);
+safeSet("input[name='hrd_name']", d.hrd_name);
+safeSet("input[name='hrd_whatsapp']", d.hrd_whatsapp);
 
-                    if (cityVal) setRadioChecked("city", cityVal);
-                    if (provVal) setRadioChecked("province", provVal);
-                    if (countryVal) setRadioChecked("country", countryVal);
+const cityVal = normalizeValue(d.city);
+const provVal = normalizeValue(d.province);
+const countryVal = normalizeValue(d.country);
 
-                    const cityOther = form.querySelector("input[name='city_other']");
-                    if (cityVal === "other") cityOther.style.display = "block";
+if (cityVal) setRadioChecked("city", cityVal);
+if (provVal) setRadioChecked("province", provVal);
+if (countryVal) setRadioChecked("country", countryVal);
 
-                    const provOther = form.querySelector("input[name='province_other']");
-                    if (provVal === "other") provOther.style.display = "block";
+const cityOther = form.querySelector("input[name='city_other']");
+const provOther = form.querySelector("input[name='province_other']");
 
-                    const editable = compNotExist === 1 || !isVerified;
-                    ["hrd_email", "hrd_name", "hrd_whatsapp"].forEach(name => {
-                        const el = form.querySelector(`input[name='${name}']`);
-                        if (el) el.readOnly = !editable;
-                    });
-                    setRadioDisabled("city", !editable);
-                    setRadioDisabled("province", !editable);
-                    setRadioDisabled("country", !editable);
+const editable = compNotExist === 1 || !isVerified;
 
-                    if (editable) {
-                        if (cityOther) cityOther.readOnly = false;
-                        if (provOther) provOther.readOnly = false;
-                    } else {
-                        if (cityOther) cityOther.readOnly = true;
-                        if (provOther) provOther.readOnly = true;
-                    }
+// ===== HRD =====
+["hrd_email", "hrd_name", "hrd_whatsapp"].forEach(name => {
+    const el = form.querySelector(`input[name='${name}']`);
+    if (el) {
+        el.readOnly = !editable;
+        el.style.backgroundColor = editable ? "" : "#e9ecef";
+    }
+});
+
+// ===== RADIO CITY / PROVINCE / COUNTRY =====
+["city", "province", "country"].forEach(name => {
+    form.querySelectorAll(`input[name='${name}']`).forEach(radio => {
+        radio.disabled = !editable;
+    });
+});
+
+// ===== OTHER INPUT =====
+if (cityOther) {
+    cityOther.style.display = cityVal === "other" ? "block" : "none";
+    cityOther.readOnly = !editable;
+    cityOther.style.backgroundColor = editable ? "" : "#e9ecef";
+}
+
+if (provOther) {
+    provOther.style.display = provVal === "other" ? "block" : "none";
+    provOther.readOnly = !editable;
+    provOther.style.backgroundColor = editable ? "" : "#e9ecef";
+}
+
 
                     // Student contact & dates
                     safeSet("input[name='email']", d.email);
