@@ -1625,7 +1625,7 @@ if ($id_kampus) {
             // Export Excel (Koor)
             async function exportToExcel() {
                 const { value: formValues } = await Swal.fire({
-                    title: 'Select Date Range',
+                    title: 'Select Internship Period',
                     html:
                         '<label for="swal-start" style="display:block;text-align:left;margin-bottom:6px">Start date</label>' +
                         '<input id="swal-start" type="date" class="swal2-input" style="margin:0 auto;">' +
