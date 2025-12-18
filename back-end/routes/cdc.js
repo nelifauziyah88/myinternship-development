@@ -165,6 +165,7 @@ router.post("/cdc/approval", async (req, res) => {
          SET cdc_approval = 'ACCEPTED',
              status = 'ACCEPTED',
              letter_number = ?,
+             published_date = NOW(),
              updated_at = NOW()
          WHERE id_letter = ?`,
         [letter_number, id_letter]

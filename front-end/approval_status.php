@@ -13,7 +13,7 @@ $id_kampus = $user['id_kampus'] ?? null;
 $nama_kampus = "Unknown";
 
 if ($id_kampus) {
-    
+
     $api_url = "http://localhost:8000/api/kampus/" . urlencode($id_kampus);
 
     // Ambil data dari backend
@@ -70,7 +70,7 @@ if ($id_kampus) {
                 "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
                 urls: ['./assets/css/fonts.min.css']
             },
-            active: function () {
+            active: function() {
                 sessionStorage.fonts = true;
             }
         });
@@ -81,7 +81,7 @@ if ($id_kampus) {
 
     <script src='./core/component/jquery.min.js'></script>
     <script>
-        $(function () { });
+        $(function() {});
     </script>
     <script defer src='./core/component/sweetalert2.min.js'></script>
     <script defer src='./core/component/soloalert.js'></script>
@@ -528,7 +528,7 @@ if ($id_kampus) {
             <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 
             <script>
-                $(document).ready(function () {
+                $(document).ready(function() {
                     clock_run();
                     show_calendar();
                 });
@@ -572,7 +572,7 @@ if ($id_kampus) {
                     }
 
                     // Update jam setiap detik
-                    setInterval(function () {
+                    setInterval(function() {
                         let d = new Date();
                         let day = en_day[d.getDay()];
                         let date = d.getDate();
@@ -618,12 +618,12 @@ if ($id_kampus) {
                         url: 'index.php?request=validation_get',
                         type: 'GET',
 
-                        success: function (response, xhr, status, error) {
+                        success: function(response, xhr, status, error) {
                             console.log('Getting form notification');
                             $('body').append(response);
                         },
 
-                        error: function (xhr, status, error) {
+                        error: function(xhr, status, error) {
                             console.log('Failed Getting form notification');
                         }
                     });
@@ -651,15 +651,15 @@ if ($id_kampus) {
                                 data: {
                                     'token': _token
                                 },
-                                success: function () {
-                                    setTimeout(function () {
+                                success: function() {
+                                    setTimeout(function() {
                                         localStorage.removeItem('first');
                                         localStorage.removeItem('first_chime');
                                         localStorage.removeItem('next_chime');
                                         window.location.href = 'role_login.php';
                                     }, 200);
                                 },
-                                error: function () {
+                                error: function() {
                                     Swal.fire('Error', 'Logout failed, please try again.', 'error');
                                 }
                             });
@@ -686,14 +686,14 @@ if ($id_kampus) {
                     icon_spinner.className = spinner;
 
                     // Kembalikan icon setelah 2 detik
-                    setTimeout(function () {
+                    setTimeout(function() {
                         icon_spinner.className = '';
                         icon_spinner.className = icon_old;
                     }, 2000);
                 }
 
                 // INISIALISASI SELECT2 UNTUK DROPDOWN
-                $(document).ready(function () {
+                $(document).ready(function() {
                     $('#companySelect').select2({
                         placeholder: "Choose Company",
                         allowClear: true,
@@ -702,12 +702,12 @@ if ($id_kampus) {
                 });
 
                 // HIGHLIGHT MENU SIDEBAR AKTIF
-                document.addEventListener("DOMContentLoaded", function () {
+                document.addEventListener("DOMContentLoaded", function() {
                     const navItems = document.querySelectorAll(".sidebar .nav-item");
 
                     // Event listener untuk klik menu
                     navItems.forEach(item => {
-                        item.addEventListener("click", function () {
+                        item.addEventListener("click", function() {
                             navItems.forEach(i => i.classList.remove("active"));
                             this.classList.add("active");
                         });
@@ -761,8 +761,7 @@ if ($id_kampus) {
     </footer>
 
     <script>
-        // MAIN SCRIPT: LOAD DATA APPROVAL STATUS
-        (async function () {
+        (async function() {
             // Ambil NIM dari session PHP
             const nim = <?= json_encode($student['nim']) ?>;
 
@@ -898,6 +897,10 @@ if ($id_kampus) {
                                     <a class="dropdown-item" href="rejected_by_company.php?id=${id}">
                                         <i class="fa fa-times text-danger mr-2"></i>Rejected by Company
                                     </a>
+                                    <a class="dropdown-item" href="javascript:void(0)"
+                                        onclick="openChangePeriodModal(${id}, '${r.start_date}', '${r.end_date}')">
+                                        <i class="fa fa-calendar text-warning mr-2"></i>Change Internship Period
+                                    </a>
                                 </div>
                             </div>`;
                         } else {
@@ -942,7 +945,7 @@ if ($id_kampus) {
             // FUNGSI SORT TABLE BERDASARKAN TANGGAL
             let sortOrder = 'desc';
 
-            window.sortTable = function () {
+            window.sortTable = function() {
                 const tbody = document.getElementById('tableBody');
                 const rows = Array.from(tbody.querySelectorAll('tr'));
 
@@ -992,8 +995,8 @@ if ($id_kampus) {
                 attachListeners();
             };
 
-            // FUNGSI SHOW REASON PENOLAKAN (SWEETALERT)
-            window.showReason = function (reason) {
+            // FUNGSI SHOW REASON PENOLAKAN
+            window.showReason = function(reason) {
                 Swal.fire({
                     title: "Rejection Reason",
                     text: reason,
@@ -1002,6 +1005,101 @@ if ($id_kampus) {
                 });
             };
             await loadApproval();
+
+            window.openChangePeriodModal = function(id, startDate, endDate) {
+
+                const formatDate = (date) => {
+                    if (!date) return '';
+                    return date.toString().split('T')[0];
+                };
+
+                Swal.fire({
+                    title: 'Change Internship Period',
+                    html: `
+            <div style="text-align:left">
+                <label style="font-weight:600">Start Date</label>
+                <input type="date" id="swal_start_date"
+                    class="swal2-input"
+                    style="width:100%"
+                    value="${formatDate(startDate)}">
+
+                <label style="font-weight:600;margin-top:10px">End Date</label>
+                <input type="date" id="swal_end_date"
+                    class="swal2-input"
+                    style="width:100%"
+                    value="${formatDate(endDate)}">
+            </div>
+        `,
+                    showCancelButton: true,
+                    reverseButtons: true,
+                    confirmButtonText: 'Submit',
+                    cancelButtonText: 'Cancel',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const start = document.getElementById('swal_start_date').value;
+                        const end = document.getElementById('swal_end_date').value;
+
+                        if (!start || !end) {
+                            Swal.showValidationMessage('Start date and end date are required');
+                            return false;
+                        }
+
+                        const startDate = new Date(start);
+                        const endDate = new Date(end);
+
+                        if (endDate <= startDate) {
+                            Swal.showValidationMessage(
+                                'End date must be at least 1 day after start date'
+                            );
+                            return false;
+                        }
+
+                        return {
+                            id,
+                            start,
+                            end
+                        };
+                    }
+
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        submitChangePeriod(result.value);
+                    }
+                });
+            };
+
+            window.submitChangePeriod = function(data) {
+                fetch(`${API_BASE}/change-internship-period/${data.id}`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            start_date: data.start,
+                            end_date: data.end
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: 'Internship period updated. Waiting for CDC approval.'
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Failed',
+                                text: res.message || 'Failed'
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire('Error', 'Server error', 'error');
+                    });
+            };
 
         })();
     </script>

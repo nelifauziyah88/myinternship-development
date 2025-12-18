@@ -398,7 +398,7 @@ if ($id_kampus) {
                             <h4 class="text-section">Lecturer Menu</h4>
                         </li>
                         <li class="nav-item active">
-                            <a href="approval_of_letter.php" class="collapsed" aria-expanded="false">
+                            <a href="approval_of_letter_cdc.php" class="collapsed" aria-expanded="false">
                                 <i class="fas fa-briefcase"></i>
                                 <p>Approval Letter</p>
                             </a>

@@ -60,7 +60,7 @@ if ($id_kampus) {
                 "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
                 urls: ['./assets/css/fonts.min.css']
             },
-            active: function () {
+            active: function() {
                 sessionStorage.fonts = true;
             }
         });
@@ -71,7 +71,7 @@ if ($id_kampus) {
 
     <script src='./core/component/jquery.min.js'></script>
     <script>
-        $(function () { });
+        $(function() {});
     </script>
     <script defer src='./core/component/sweetalert2.min.js'></script>
     <script defer src='./core/component/soloalert.js'></script>
@@ -814,7 +814,7 @@ if ($id_kampus) {
             <script src="./assets/js/plugin/chart.js/chart.min.js"></script>
 
             <script>
-                $(document).ready(function () {
+                $(document).ready(function() {
 
                     clock_run();
 
@@ -853,7 +853,7 @@ if ($id_kampus) {
                         $("#date").text(curr_date);
                     }
 
-                    setInterval(function () {
+                    setInterval(function() {
                         let d = new Date();
                         let day = en_day[d.getDay()];
                         let date = d.getDate();
@@ -898,13 +898,13 @@ if ($id_kampus) {
                         url: 'index.php?request=validation_get',
                         type: 'GET',
 
-                        success: function (response, xhr, status, error) {
+                        success: function(response, xhr, status, error) {
                             console.log('Getting form notification');
 
                             $('body').append(response);
                         },
 
-                        error: function (xhr, status, error) {
+                        error: function(xhr, status, error) {
                             console.log('Failed Getting form notification');
                         }
                     });
@@ -931,8 +931,8 @@ if ($id_kampus) {
                                     'token': _token
                                 },
 
-                                success: function () {
-                                    setTimeout(function () {
+                                success: function() {
+                                    setTimeout(function() {
                                         localStorage.setItem('first', null);
                                         localStorage.setItem('first_chime', null);
                                         localStorage.setItem('next_chime', null);
@@ -960,18 +960,18 @@ if ($id_kampus) {
                     icon_spinner.className = '';
                     icon_spinner.className = spinner;
 
-                    setTimeout(function () {
+                    setTimeout(function() {
                         icon_spinner.className = '';
                         icon_spinner.className = icon_old;
                     }, 2000);
                 }
 
                 // Highlight menu
-                document.addEventListener("DOMContentLoaded", function () {
+                document.addEventListener("DOMContentLoaded", function() {
                     const navItems = document.querySelectorAll(".sidebar .nav-item");
 
                     navItems.forEach(item => {
-                        item.addEventListener("click", function () {
+                        item.addEventListener("click", function() {
                             navItems.forEach(i => i.classList.remove("active"));
                             this.classList.add("active");
                         });
@@ -1080,58 +1080,56 @@ if ($id_kampus) {
                         }
                     });
 
-                  // HRD & city/province/country logic
-const compNotExist = Number(d.company_not_exist) === 1 ? 1 : 0;
-const isVerified = d.status === "verified"; // tapi d.status undefined
+                    // HRD & city/province/country logic
+                    const compNotExist = Number(d.company_not_exist) === 1 ? 1 : 0;
+                    const isVerified = d.status === "verified"; // tapi d.status undefined
 
+                    // Populate HRD & location
+                    safeSet("input[name='hrd_email']", d.hrd_email);
+                    safeSet("input[name='hrd_name']", d.hrd_name);
+                    safeSet("input[name='hrd_whatsapp']", d.hrd_whatsapp);
 
-// Populate HRD & location
-safeSet("input[name='hrd_email']", d.hrd_email);
-safeSet("input[name='hrd_name']", d.hrd_name);
-safeSet("input[name='hrd_whatsapp']", d.hrd_whatsapp);
+                    const cityVal = normalizeValue(d.city);
+                    const provVal = normalizeValue(d.province);
+                    const countryVal = normalizeValue(d.country);
 
-const cityVal = normalizeValue(d.city);
-const provVal = normalizeValue(d.province);
-const countryVal = normalizeValue(d.country);
+                    if (cityVal) setRadioChecked("city", cityVal);
+                    if (provVal) setRadioChecked("province", provVal);
+                    if (countryVal) setRadioChecked("country", countryVal);
 
-if (cityVal) setRadioChecked("city", cityVal);
-if (provVal) setRadioChecked("province", provVal);
-if (countryVal) setRadioChecked("country", countryVal);
+                    const cityOther = form.querySelector("input[name='city_other']");
+                    const provOther = form.querySelector("input[name='province_other']");
 
-const cityOther = form.querySelector("input[name='city_other']");
-const provOther = form.querySelector("input[name='province_other']");
+                    const editable = compNotExist === 1 || !isVerified;
 
-const editable = compNotExist === 1 || !isVerified;
+                    // ===== HRD =====
+                    ["hrd_email", "hrd_name", "hrd_whatsapp"].forEach(name => {
+                        const el = form.querySelector(`input[name='${name}']`);
+                        if (el) {
+                            el.readOnly = !editable;
+                            el.style.backgroundColor = editable ? "" : "#e9ecef";
+                        }
+                    });
 
-// ===== HRD =====
-["hrd_email", "hrd_name", "hrd_whatsapp"].forEach(name => {
-    const el = form.querySelector(`input[name='${name}']`);
-    if (el) {
-        el.readOnly = !editable;
-        el.style.backgroundColor = editable ? "" : "#e9ecef";
-    }
-});
+                    // ===== RADIO CITY / PROVINCE / COUNTRY =====
+                    ["city", "province", "country"].forEach(name => {
+                        form.querySelectorAll(`input[name='${name}']`).forEach(radio => {
+                            radio.disabled = !editable;
+                        });
+                    });
 
-// ===== RADIO CITY / PROVINCE / COUNTRY =====
-["city", "province", "country"].forEach(name => {
-    form.querySelectorAll(`input[name='${name}']`).forEach(radio => {
-        radio.disabled = !editable;
-    });
-});
+                    // ===== OTHER INPUT =====
+                    if (cityOther) {
+                        cityOther.style.display = cityVal === "other" ? "block" : "none";
+                        cityOther.readOnly = !editable;
+                        cityOther.style.backgroundColor = editable ? "" : "#e9ecef";
+                    }
 
-// ===== OTHER INPUT =====
-if (cityOther) {
-    cityOther.style.display = cityVal === "other" ? "block" : "none";
-    cityOther.readOnly = !editable;
-    cityOther.style.backgroundColor = editable ? "" : "#e9ecef";
-}
-
-if (provOther) {
-    provOther.style.display = provVal === "other" ? "block" : "none";
-    provOther.readOnly = !editable;
-    provOther.style.backgroundColor = editable ? "" : "#e9ecef";
-}
-
+                    if (provOther) {
+                        provOther.style.display = provVal === "other" ? "block" : "none";
+                        provOther.readOnly = !editable;
+                        provOther.style.backgroundColor = editable ? "" : "#e9ecef";
+                    }
 
                     // Student contact & dates
                     safeSet("input[name='email']", d.email);
@@ -1176,7 +1174,10 @@ if (provOther) {
 
             dropzone.addEventListener("click", () => fileInput.click());
             fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
-            dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("dragover"); });
+            dropzone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropzone.classList.add("dragover");
+            });
             dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
             dropzone.addEventListener("drop", (e) => {
                 e.preventDefault();
@@ -1186,7 +1187,10 @@ if (provOther) {
 
             function handleFile(file) {
                 if (!file) return;
-                if (file.type !== "application/pdf") { alert("Only PDF files are allowed."); return; }
+                if (file.type !== "application/pdf") {
+                    alert("Only PDF files are allowed.");
+                    return;
+                }
                 const dt = new DataTransfer();
                 dt.items.add(file);
                 fileInput.files = dt.files;
@@ -1207,7 +1211,10 @@ if (provOther) {
                 const timer = setInterval(() => {
                     width += 10;
                     bar.style.width = width + "%";
-                    if (width >= 100) { clearInterval(timer); bar.parentElement.style.display = "none"; }
+                    if (width >= 100) {
+                        clearInterval(timer);
+                        bar.parentElement.style.display = "none";
+                    }
                 }, 80);
             }
 
@@ -1217,10 +1224,17 @@ if (provOther) {
 
                 const startVal = new Date(form.querySelector("input[name='start_date']").value);
                 const endVal = new Date(form.querySelector("input[name='end_date']").value);
-                if (startVal >= endVal) return Swal.fire({ icon: "error", title: "Invalid Dates", text: "End date must be after start date." });
+                if (startVal >= endVal) return Swal.fire({
+                    icon: "error",
+                    title: "Invalid Dates",
+                    text: "End date must be after start date."
+                });
 
                 const compNotExist = Number(form.querySelector("input[name='company_not_exist']").value);
-                const isEmpty = selector => { const el = form.querySelector(selector); return !el || el.value.trim() === ""; };
+                const isEmpty = selector => {
+                    const el = form.querySelector(selector);
+                    return !el || el.value.trim() === "";
+                };
                 const getChecked = name => form.querySelector(`input[name='${name}']:checked`);
                 const errors = [];
 
@@ -1244,15 +1258,26 @@ if (provOther) {
                     if (!getChecked("country")) errors.push("Country is required.");
                 }
 
-                if (errors.length > 0) return Swal.fire({ icon: "error", title: "Incomplete Form", html: `<ul style="text-align:left;">${errors.map(e => `<li>${e}</li>`).join("")}</ul>` });
+                if (errors.length > 0) return Swal.fire({
+                    icon: "error",
+                    title: "Incomplete Form",
+                    html: `<ul style="text-align:left;">${errors.map(e => `<li>${e}</li>`).join("")}</ul>`
+                });
 
                 const formData = new FormData(form);
                 formData.append("nim", nim);
 
                 try {
-                    const uploadRes = await fetch("upload_company_reply.php", { method: "POST", body: formData });
+                    const uploadRes = await fetch("upload_company_reply.php", {
+                        method: "POST",
+                        body: formData
+                    });
                     const uploadData = await uploadRes.json();
-                    if (!uploadData.success) return Swal.fire({ icon: "error", title: "Upload Failed", text: uploadData.message || "Unable to upload file." });
+                    if (!uploadData.success) return Swal.fire({
+                        icon: "error",
+                        title: "Upload Failed",
+                        text: uploadData.message || "Unable to upload file."
+                    });
 
                     const payload = {
                         nim,
@@ -1274,18 +1299,32 @@ if (provOther) {
 
                     const res = await fetch(`${API_BASE}/accepted-by-company/submit/${form.querySelector("[name='id_letter']").value}`, {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
                         body: JSON.stringify(payload)
                     });
                     const data = await res.json();
                     if (data.success) {
-                        Swal.fire({ icon: "success", title: "Success", text: data.message || "Internship claim submitted successfully!" }).then(() => window.location.href = "approval_status.php");
+                        Swal.fire({
+                            icon: "success",
+                            title: "Success",
+                            text: data.message || "Internship claim submitted successfully!"
+                        }).then(() => window.location.href = "approval_status.php");
                     } else {
-                        Swal.fire({ icon: "error", title: "Error", text: data.error || data.message || "Something went wrong" });
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: data.error || data.message || "Something went wrong"
+                        });
                     }
                 } catch (err) {
                     console.error("Submission error:", err);
-                    Swal.fire({ icon: "error", title: "Upload Failed", text: "Unable to send data to the server." });
+                    Swal.fire({
+                        icon: "error",
+                        title: "Upload Failed",
+                        text: "Unable to send data to the server."
+                    });
                 }
             });
         });

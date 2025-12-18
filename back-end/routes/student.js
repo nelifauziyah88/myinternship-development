@@ -415,6 +415,8 @@ router.get("/approval-status/:nim", async (req, res) => {
   SELECT 
     il.id_letter,
     il.nim,
+    il.start_date,
+    il.end_date,
     il.koor_approval,
     il.cdc_approval,
     il.status,
@@ -424,7 +426,6 @@ router.get("/approval-status/:nim", async (req, res) => {
     il.updated_at,
     il.language,
 
-    -- Ambil alasan dari koor (REJECTED terakhir)
     (
       SELECT comment 
       FROM internship_letter_history h 
@@ -435,7 +436,6 @@ router.get("/approval-status/:nim", async (req, res) => {
       LIMIT 1
     ) AS koor_reason,
 
-    -- Ambil alasan dari cdc (REJECTED terakhir)
     (
       SELECT comment 
       FROM internship_letter_history h 
@@ -769,6 +769,67 @@ router.post("/rejected-by-company/:id", async (req, res) => {
   }
 });
 
+// Change Internship Period
+router.post("/change-internship-period/:id", async (req, res) => {
+  try {
+    const id_letter = req.params.id;
+    const { start_date, end_date } = req.body;
+
+    // Validasi input
+    if (!start_date || !end_date) {
+      return res.status(400).json({
+        success: false,
+        message: "Start date and end date are required",
+      });
+    }
+
+    // Ambil status surat
+    const [rows] = await db.query(
+      `SELECT status FROM internship_letter WHERE id_letter = ? LIMIT 1`,
+      [id_letter]
+    );
+
+    if (!rows.length) {
+      return res.status(404).json({
+        success: false,
+        message: "Internship letter not found",
+      });
+    }
+
+    const status = rows[0].status;
+
+    if (status !== "ACCEPTED" && status !== "COMPLETE") {
+      return res.status(403).json({
+        success: false,
+        message: "Internship period can only be changed after approval",
+      });
+    }
+
+    // Update tanggal & reset CDC
+    await db.query(
+      `UPDATE internship_letter
+       SET start_date = ?,
+           end_date = ?,
+           cdc_approval = 'WAITING',
+           status = 'WAITING',
+           updated_at = NOW()
+       WHERE id_letter = ?`,
+      [start_date, end_date, id_letter]
+    );
+
+    return res.json({
+      success: true,
+      message: "Internship period updated. Waiting for CDC approval.",
+    });
+
+  } catch (err) {
+    console.error("Change internship period error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
 
 // Helper untuk format ke YYYY-MM-DD tanpa timezone offset
 function formatDate(dateValue) {
