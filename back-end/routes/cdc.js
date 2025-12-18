@@ -107,39 +107,35 @@ router.get("/cdc/submissions", async (req, res) => {
   }
 });
 
-// CDC approval (Accept/Reject)
+// CDC approval
 router.post("/cdc/approval", async (req, res) => {
   try {
     const { id_letter, status, user_id, user_name, comment, letter_number } = req.body;
-
     const s = status.toUpperCase();
+
     if (!["ACCEPTED", "REJECTED"].includes(s)) {
       return res.status(400).json({ success: false, message: "Status invalid." });
     }
 
-    // Ambil data submission
     const [rows] = await db.query(
-      `SELECT 
-          id_letter,
-          koor_approval,
-          cdc_approval,
-          letter_number
+      `SELECT koor_approval, cdc_approval
        FROM internship_letter
        WHERE id_letter = ?
        LIMIT 1`,
       [id_letter]
     );
 
-    if (!rows.length)
+    if (!rows.length) {
       return res.status(404).json({ success: false, message: "Submission not found." });
+    }
 
     const row = rows[0];
 
-    if (row.koor_approval.toUpperCase() !== "ACCEPTED") {
+    if (row.koor_approval !== "ACCEPTED") {
       return res.status(403).json({ success: false, message: "Koor belum approve." });
     }
 
-    if (row.cdc_approval.toUpperCase() !== "WAITING") {
+    if (row.cdc_approval !== "WAITING") {
       return res.status(400).json({
         success: false,
         message: "Submission tidak dalam status WAITING."
@@ -151,79 +147,53 @@ router.post("/cdc/approval", async (req, res) => {
         return res.status(400).json({ success: false, message: "Nomor surat wajib." });
       }
 
-      // Cek duplikasi nomor surat
       const [dupRows] = await db.query(
-        `SELECT id_letter FROM internship_letter 
+        `SELECT id_letter FROM internship_letter
          WHERE letter_number = ? AND id_letter != ?`,
         [letter_number, id_letter]
       );
 
-      if (dupRows.length > 0) {
+      if (dupRows.length) {
         return res.status(400).json({
           success: false,
-          message: `Letter number "${letter_number}" is already used in another submission.`
+          message: `Letter number "${letter_number}" sudah digunakan.`
         });
       }
 
       await db.query(
         `UPDATE internship_letter
-         SET cdc_approval='ACCEPTED',
-             status='ACCEPTED',
-             letter_number=?,
-             updated_at=NOW()
-         WHERE id_letter=?`,
+         SET cdc_approval = 'ACCEPTED',
+             status = 'ACCEPTED',
+             letter_number = ?,
+             updated_at = NOW()
+         WHERE id_letter = ?`,
         [letter_number, id_letter]
       );
+
+      await checkAndSetPublishedDate(id_letter);
     }
 
     if (s === "REJECTED") {
       await db.query(
         `UPDATE internship_letter
-         SET cdc_approval='REJECTED',
-             status='REJECTED',
-             updated_at=NOW()
-         WHERE id_letter=?`,
+         SET cdc_approval = 'REJECTED',
+             status = 'REJECTED',
+             updated_at = NOW()
+         WHERE id_letter = ?`,
         [id_letter]
       );
     }
 
     await db.query(
-      `INSERT INTO internship_letter_history 
+      `INSERT INTO internship_letter_history
        (id_letter, approved_by, user_id, user_name, status_approval, timestamp, comment)
        VALUES (?, 'CDC ADMINISTRATOR', ?, ?, ?, NOW(), ?)`,
       [id_letter, user_id, user_name, s, comment]
     );
 
     res.json({ success: true, message: `Submission ${s.toLowerCase()} oleh CDC.` });
-
   } catch (err) {
-    console.error("CDC error:", err);
-    res.status(500).json({ success: false, message: "Server error: " + err.message });
-  }
-});
-
-// Get latest rejected reason by CDC for a letter
-router.get("/cdc/reason/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-    const [rows] = await db.query(
-      `SELECT comment, timestamp, approved_by, user_name, user_id
-       FROM internship_letter_history
-       WHERE id_letter = ? AND status_approval = 'REJECTED' AND approved_by = 'CDC ADMINISTRATOR'
-       ORDER BY timestamp DESC LIMIT 1`,
-      [id]
-    );
-    if (!rows.length)
-      return res
-        .status(404)
-        .json({ success: false, message: "Reason not found." });
-    res.json({
-      success: true,
-      comment: rows[0].comment,
-      meta: { user_name: rows[0].user_name, timestamp: rows[0].timestamp },
-    });
-  } catch (err) {
-    console.error("[CDC] reason fetch error:", err);
+    console.error("CDC approval error:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });

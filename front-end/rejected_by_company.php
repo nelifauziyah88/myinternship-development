@@ -550,187 +550,162 @@ if ($id_kampus) {
   </div>
 
   <script>
-    const apiBase = "http://localhost:8000/api";
-    const id = new URLSearchParams(window.location.search).get("id");
+  const apiBase = "http://localhost:8000/api";
+  const id = new URLSearchParams(window.location.search).get("id");
 
-    const responseReceived = document.getElementById("responseReceived");
-    const within14Section = document.getElementById("within14Section");
-    const responseWithin14Days = document.getElementById("responseWithin14Days");
-    const uploadSection = document.getElementById("uploadSection");
-    const fileInput = document.getElementById("fileInput");
-    const submitBtn = document.getElementById("submitBtn");
-    const internshipForm = document.getElementById("internshipForm");
-    const uploadBox = document.getElementById("uploadBox");
-    const removeFileBtn = document.getElementById("removeFileBtn");
+  const responseReceived = document.getElementById("responseReceived");
+  const within14Section = document.getElementById("within14Section");
+  const responseWithin14Days = document.getElementById("responseWithin14Days");
+  const uploadSection = document.getElementById("uploadSection");
+  const fileInput = document.getElementById("fileInput");
+  const submitBtn = document.getElementById("submitBtn");
+  const internshipForm = document.getElementById("internshipForm");
+  const uploadBox = document.getElementById("uploadBox");
+  const removeFileBtn = document.getElementById("removeFileBtn");
 
+  document.querySelector("#within14Section label").textContent =
+    "Have 14 days or more passed since you submitted your internship application letter?";
 
+  submitBtn.disabled = true;
+  submitBtn.classList.add("disabled-btn");
 
-    document.querySelector("#within14Section label").textContent =
-      "Have 14 days or more passed since you submitted your internship application letter?";
+  responseReceived.addEventListener("change", () => {
+      responseWithin14Days.value = "";
+  submitBtn.disabled = true;
+  submitBtn.classList.add("disabled-btn");
+    if (responseReceived.value === "yes") {
+      uploadSection.style.display = "block";
+      within14Section.style.display = "none";
+      submitBtn.disabled = false;
+      submitBtn.classList.remove("disabled-btn");
+    } else if (responseReceived.value === "no") {
+      uploadSection.style.display = "none";
+      within14Section.style.display = "block";
+      fileInput.value = "";
+      submitBtn.disabled = true;
+      submitBtn.classList.add("disabled-btn");
+    } else {
+      uploadSection.style.display = "none";
+      within14Section.style.display = "none";
+      submitBtn.disabled = true;
+      submitBtn.classList.add("disabled-btn");
+    }
+  });
 
-    submitBtn.disabled = true;
-    submitBtn.classList.add("disabled-btn");
+  responseWithin14Days.addEventListener("change", () => {
+    const value = responseWithin14Days.value;
 
-    responseReceived.addEventListener("change", () => {
-      if (responseReceived.value === "yes") {
-        uploadSection.style.display = "block";
-        within14Section.style.display = "none";
+    if (value === "yes") {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove("disabled-btn");
+    } else if (value === "no") {
+      submitBtn.disabled = true;
+      submitBtn.classList.add("disabled-btn");
+      Swal.fire({
+        icon: "warning",
+        title: "Please wait",
+        text: "You must wait 14 days for the company to respond to your internship claim.",
+      });
+    } else {
+      submitBtn.disabled = true;
+      submitBtn.classList.add("disabled-btn");
+    }
+  });
 
-        submitBtn.disabled = false;
-        submitBtn.classList.remove("disabled-btn");
+  fileInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      uploadBox.innerHTML = `
+        <i class="fa fa-file-alt"></i>
+        <div class="upload-title">${file.name}</div>
+        <div class="upload-subtitle">Click to change file</div>`;
+      removeFileBtn.style.display = "block";
+    }
+  });
 
-      } else if (responseReceived.value === "no") {
-        uploadSection.style.display = "none";
-        within14Section.style.display = "block";
-        fileInput.value = "";
+  removeFileBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    fileInput.value = "";
+    uploadBox.innerHTML = `
+      <i class="fa fa-cloud-upload-alt"></i>
+      <div class="upload-title">Browse Files</div>
+      <div class="upload-subtitle">Drag and drop files here</div>`;
+    removeFileBtn.style.display = "none";
+  });
 
-        submitBtn.disabled = true;
-        submitBtn.classList.add("disabled-btn");
+  internshipForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (submitBtn.disabled) return;
 
-      } else {
-        uploadSection.style.display = "none";
-        within14Section.style.display = "none";
+    if (responseReceived.value === "yes" && fileInput.files.length === 0) {
+      return Swal.fire({
+        icon: "warning",
+        title: "File Required",
+        text: "You must provide proof of rejection of the internship by the company.",
+      });
+    }
 
-        submitBtn.disabled = true;
-        submitBtn.classList.add("disabled-btn");
+    let filePath = "-";
+
+    try {
+      if (fileInput.files.length > 0) {
+        const fd = new FormData();
+        fd.append("attachment", fileInput.files[0]);
+
+        const uploadRes = await fetch("upload_company_reply.php", {
+          method: "POST",
+          body: fd,
+        });
+
+        const uploadJson = await uploadRes.json();
+
+        if (!uploadJson.success) {
+          return Swal.fire({
+            icon: "error",
+            title: "Upload Failed",
+            text: uploadJson.message,
+          });
+        }
+
+        filePath = uploadJson.path;
       }
-    });
 
+      const res = await fetch(`${apiBase}/student/rejected-by-company/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          acceptance_status: "REJECTED",
+          company_reply_letter: filePath,
+        }),
+      });
 
-    // Handle dropdown pertanyaan 14 hari
-    responseWithin14Days.addEventListener("change", () => {
-      const value = responseWithin14Days.value;
+      const json = await res.json();
 
-      if (value === "yes") {
-        // Sudah lewat 14 hari, tombol bisa diklik
-        submitBtn.disabled = false;
-        submitBtn.classList.remove("disabled-btn");
-      } else if (value === "no") {
-        // Belum lewat 14 hari, tampilkan pesan & disable tombol
-        submitBtn.disabled = true;
-        submitBtn.classList.add("disabled-btn");
+      if (json.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Submitted",
+          text: "Company rejection recorded.",
+        }).then(() => window.location.href = "approval_status.php");
+      } else {
+
         Swal.fire({
           icon: "warning",
           title: "Please wait",
-          text: "You must wait 14 days for the company to respond to your internship claim.",
-        });
-      } else {
-        submitBtn.disabled = true;
-        submitBtn.classList.add("disabled-btn");
-      }
-    });
-
-    // File preview
-    fileInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-
-      if (file) {
-        uploadBox.innerHTML = `
-      <i class="fa fa-file-alt"></i>
-      <div class="upload-title">${file.name}</div>
-      <div class="upload-subtitle">Click to change file</div>
-    `;
-
-        removeFileBtn.style.display = "block";
-      }
-    });
-
-    // Remove file 
-    removeFileBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-
-      // reset input
-      fileInput.value = "";
-
-      // reset tampilan
-      uploadBox.innerHTML = `
-    <i class="fa fa-cloud-upload-alt"></i>
-    <div class="upload-title">Browse Files</div>
-    <div class="upload-subtitle">Drag and drop files here</div>
-  `;
-
-      removeFileBtn.style.display = "none";
-    });
-
-    // Submit form
-    internshipForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      if (submitBtn.disabled) return;
-
-      // CEK: Jika pilih YES tapi tidak ada file 
-      if (responseReceived.value === "yes" && fileInput.files.length === 0) {
-        return Swal.fire({
-          icon: "warning",
-          title: "File Required",
-          text: "You must provide proof of rejection of the internship by the company."
+          text: json.message || "System has detected that the letter is less than 14 days old.",
         });
       }
 
-      const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
-      let filePath = "-";
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Server Error",
+        text: "Server unreachable.",
+      });
+    }
+  });
+</script>
 
-      try {
-        if (file) {
-          const fd = new FormData();
-          fd.append("attachment", file);
-
-          const uploadRes = await fetch("upload_company_reply.php", {
-            method: "POST",
-            body: fd,
-          });
-
-          const uploadJson = await uploadRes.json();
-
-          if (!uploadJson.success) {
-            return Swal.fire({
-              icon: "error",
-              title: "Upload Failed",
-              text: uploadJson.message,
-            });
-          }
-
-          filePath = uploadJson.path;
-        }
-
-        const res = await fetch(`${apiBase}/student/rejected-by-company/${id}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            acceptance_status: "REJECTED",
-            company_reply_letter: filePath,
-          }),
-        });
-
-        const json = await res.json();
-
-        if (json.success) {
-          Swal.fire({
-            icon: "success",
-            title: "Submitted",
-            text: "Company rejection recorded.",
-          }).then(() => window.location.href = "approval_status.php");
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "Failed",
-            text: json.message || "Unknown error",
-          });
-        }
-
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Server Error",
-          text: "Server unreachable.",
-        });
-      }
-    });
-
-
-
-  </script>
 
 </body>
 

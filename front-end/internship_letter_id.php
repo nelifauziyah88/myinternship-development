@@ -21,7 +21,7 @@ $fmt = new IntlDateFormatter('id_ID', IntlDateFormatter::LONG, IntlDateFormatter
 
 $start_date = $fmt->format(new DateTime($letter['start_date']));
 $end_date = $fmt->format(new DateTime($letter['end_date']));
-$dateStr = $fmt->format(new DateTime()); // tanggal hari ini
+$dateStr = $fmt->format(new DateTime($letter['published_date']));
 $periode = $start_date . ' - ' . $end_date;
 
 $letterNumber = $letter['letter_number'] ?? '___';

@@ -113,6 +113,7 @@ router.get("/form-submission/:nim", async (req, res) => {
     );
     const program = psRows.length ? psRows[0] : null;
     const department = program ? program.jurusan || null : null;
+    const program_study = program ? program.study_program || null : null;
 
     // ambil lecturer
     let coordinator = null;
@@ -128,11 +129,11 @@ router.get("/form-submission/:nim", async (req, res) => {
       student: {
         nim: student.nim,
         name: student.name,
-        program_study: student.program_study,
         id_kampus: student.id_kampus,
         email: student.email || null,
       },
       department,
+      program_study,
       coordinator,
     });
   } catch (err) {
@@ -501,10 +502,12 @@ router.get("/internship_letter/:id", async (req, res) => {
         indo: {
           start_date: formatDateIndo(letter.start_date),
           end_date: formatDateIndo(letter.end_date),
+          published_date: formatDateIndo(letter.published_date),
         },
         eng: {
           start_date: formatDateEng(letter.start_date),
           end_date: formatDateEng(letter.end_date),
+          published_date: formatDateEng(letter.published_date),
         },
       },
     });
@@ -686,38 +689,86 @@ router.post("/rejected-by-company/:id", async (req, res) => {
     if (acceptance_status !== "REJECTED") {
       return res.status(400).json({
         success: false,
+        type: "warning",
         message: "Invalid acceptance status",
       });
     }
 
-    const filePath = company_reply_letter || "-";
-
-    const [result] = await db.query(
-      `UPDATE internship_letter 
-       SET acceptance_status = ?, company_reply_letter = ? 
-       WHERE id_letter = ?`,
-      [acceptance_status, filePath, id]
+    const [rows] = await db.query(
+      `SELECT published_date FROM internship_letter WHERE id_letter = ? LIMIT 1`,
+      [id]
     );
 
-    if (result.affectedRows === 0) {
+    if (!rows.length) {
       return res.status(404).json({
         success: false,
+        type: "warning",
         message: "Letter not found",
       });
     }
 
+    const publishedDate = rows[0].published_date;
+    const filePath = company_reply_letter || "-";
+
+    if (filePath !== "-") {
+      await db.query(
+        `UPDATE internship_letter
+         SET acceptance_status = 'REJECTED',
+             company_reply_letter = ?
+         WHERE id_letter = ?`,
+        [filePath, id]
+      );
+
+      return res.json({
+        success: true,
+        message: "Company rejection recorded.",
+      });
+    }
+
+    if (!publishedDate) {
+      return res.status(403).json({
+        success: false,
+        type: "warning",
+        message:
+          "You must wait 14 days for the company to respond to your internship claim.",
+      });
+    }
+
+    const now = new Date();
+    const pubDate = new Date(publishedDate);
+    const diffDays = Math.floor((now - pubDate) / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 14) {
+      return res.status(403).json({
+        success: false,
+        type: "warning",
+        message:
+          "System has detected that the letter is less than 14 days old.",
+      });
+    }
+
+    await db.query(
+      `UPDATE internship_letter
+       SET acceptance_status = 'REJECTED',
+           company_reply_letter = '-'
+       WHERE id_letter = ?`,
+      [id]
+    );
+
     res.json({
       success: true,
-      message: "Company rejection recorded",
+      message: "Company rejection recorded.",
     });
   } catch (error) {
     console.error("Error in /rejected-by-company:", error);
     res.status(500).json({
       success: false,
+      type: "warning",
       message: "Server error",
     });
   }
 });
+
 
 // Helper untuk format ke YYYY-MM-DD tanpa timezone offset
 function formatDate(dateValue) {

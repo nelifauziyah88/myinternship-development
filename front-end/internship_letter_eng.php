@@ -21,7 +21,7 @@ $fmtEng = new IntlDateFormatter('en_US', IntlDateFormatter::LONG, IntlDateFormat
 
 $start_date = $fmtEng->format(new DateTime($letter['start_date']));
 $end_date = $fmtEng->format(new DateTime($letter['end_date']));
-$dateStr = $fmtEng->format(new DateTime());
+$dateStr = $fmtEng->format(new DateTime($letter['published_date']));
 $periode = $start_date . ' - ' . $end_date;
 
 $letterNumber = $letter['letter_number'] ?? '___';
