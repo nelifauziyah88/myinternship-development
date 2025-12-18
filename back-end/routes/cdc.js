@@ -198,6 +198,32 @@ router.post("/cdc/approval", async (req, res) => {
   }
 });
 
+// Get latest rejected reason by CDC for a letter
+router.get("/cdc/reason/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const [rows] = await db.query(
+      `SELECT comment, timestamp, approved_by, user_name, user_id
+       FROM internship_letter_history
+       WHERE id_letter = ? AND status_approval = 'REJECTED' AND approved_by = 'CDC ADMINISTRATOR'
+       ORDER BY timestamp DESC LIMIT 1`,
+      [id]
+    );
+    if (!rows.length)
+      return res
+        .status(404)
+        .json({ success: false, message: "Reason not found." });
+    res.json({
+      success: true,
+      comment: rows[0].comment,
+      meta: { user_name: rows[0].user_name, timestamp: rows[0].timestamp },
+    });
+  } catch (err) {
+    console.error("[CDC] reason fetch error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // Edit reason
 router.post("/cdc/history/:id/edit", async (req, res) => {
   try {
