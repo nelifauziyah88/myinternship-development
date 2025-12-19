@@ -1194,7 +1194,7 @@ if ($id_kampus) {
                         Swal.fire("Success!", json.message, "success");
                         loadSubmissions();
                     } else {
-                        Swal.fire("Error", json.message, "error");
+                        Swal.fire("Warning", json.message, "warning");
                     }
                 } catch (err) {
                     console.error("Error sending approval:", err);
