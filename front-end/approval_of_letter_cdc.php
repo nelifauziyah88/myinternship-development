@@ -83,7 +83,7 @@ if ($id_kampus) {
                 "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
                 urls: ['./assets/css/fonts.min.css']
             },
-            active: function () {
+            active: function() {
                 sessionStorage.fonts = true;
             }
         });
@@ -193,6 +193,56 @@ if ($id_kampus) {
 
         .same-width {
             max-width: 243px;
+        }
+
+        .letter-popover {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 12px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1050;
+            min-width: 250px;
+        }
+
+        .popover-arrow {
+            position: absolute;
+            top: -7px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid white;
+        }
+
+        .popover-arrow::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -9px;
+            width: 0;
+            height: 0;
+            border-left: 9px solid transparent;
+            border-right: 9px solid transparent;
+            border-bottom: 9px solid #ddd;
+        }
+
+        .letter-number-clickable {
+            color: #007bff;
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: 500;
+        }
+
+        .letter-number-clickable:hover {
+            color: #0056b3;
         }
     </style>
 
@@ -533,8 +583,8 @@ if ($id_kampus) {
                     <div class="col-md-12">
                         <div class="card full-height">
                             <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-hover" id="approvalTable">
+                                <div class="table-responsive" style="overflow-x: auto;">
+                                    <table class="table table-bordered table-hover" id="approvalTable" style="min-width: 1400px;">
                                         <thead>
                                             <tr class="text-center">
                                                 <th style="width: 50px;">No</th>
@@ -546,8 +596,9 @@ if ($id_kampus) {
                                                 <th style="width: 270px;">Name</th>
                                                 <th style="width: 150px;">Approval Coordinator</th>
                                                 <th style="width: 150px;">Approval CDC</th>
+                                                <th style="width: 100px;">Letter Number</th>
                                                 <th style="width: 150px;">Result</th>
-                                                <th style="width: 180px;">Action</th>
+                                                <th style="width: 150px;">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody id="tableBody">
@@ -602,7 +653,7 @@ if ($id_kampus) {
             let allSubmissions = [];
             let sortAscending = true;
 
-            document.addEventListener("DOMContentLoaded", function () {
+            document.addEventListener("DOMContentLoaded", function() {
                 loadDepartments();
                 loadStudyPrograms();
                 loadSubmissions();
@@ -753,6 +804,7 @@ if ($id_kampus) {
                 const date = formatDate(item.created_at);
                 const koorHtml = buildKoordinatorBadge(item);
                 const cdcHtml = buildCDCApprovalHtml(item);
+                const letterNumberHtml = buildLetterNumberHtml(item);
                 const resultHtml = buildResultBadge(item);
 
                 return `
@@ -763,10 +815,11 @@ if ($id_kampus) {
             <td>${item.student_name}</td>
             <td class="text-center">${koorHtml}</td>
             <td class="text-center">${cdcHtml}</td>
+            <td class="text-center">${letterNumberHtml}</td>
             <td class="text-center">${resultHtml}</td>
-            <td>
+            <td class="text-center align-middle">
                 <button class="btn btn-info btn-sm" onclick="viewDetail(${item.id_letter})">
-                    <i class="fa fa-eye"></i> Detail Submission
+                    <i class="fa fa-eye"></i> Details
                 </button>
             </td>
         </tr>
@@ -854,6 +907,170 @@ if ($id_kampus) {
                 return `-`;
             }
 
+            function buildLetterNumberHtml(item) {
+                if (item.koor_approval !== "ACCEPTED") {
+                    return `-`;
+                }
+
+                function extractFrontNumber(fullNumber) {
+                    if (!fullNumber || fullNumber === '-') return '-';
+                    if (fullNumber.includes('/')) {
+                        return fullNumber.split('/')[0];
+                    }
+                    return fullNumber;
+                }
+
+                if (item.cdc_approval === "ACCEPTED" || item.cdc_approval === "REJECTED") {
+                    const displayNumber = extractFrontNumber(item.letter_number);
+                    return `<span style="color: #000;">${displayNumber}</span>`;
+                }
+
+                if (item.cdc_approval === "WAITING") {
+                    const hasLetterNumber = item.letter_number && item.letter_number.trim() !== '';
+
+                    if (hasLetterNumber) {
+                        const displayNumber = extractFrontNumber(item.letter_number);
+                        return `<span style="color: #000;">${displayNumber}</span>`;
+                    }
+
+                    return `
+            <div class="position-relative d-inline-block" style="min-width: 80px;">
+                <span 
+                    id="letter-display-${item.id_letter}" 
+                    class="letter-number-clickable"
+                    onclick="openLetterPopover(${item.id_letter}, event)"
+                >-</span>
+                
+                <!-- Popover -->
+                <div 
+                    id="popover-${item.id_letter}" 
+                    class="letter-popover" 
+                    style="display: none;"
+                >
+                    <div class="popover-arrow"></div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="font-size: 12px; margin-bottom: 5px; display: block; font-weight: 600; color: #333;">
+                            Letter Number
+                        </label>
+                        <div style="display: flex; gap: 5px; align-items: center;">
+                            <input 
+                                type="text" 
+                                id="letter-input-${item.id_letter}" 
+                                class="form-control form-control-sm" 
+                                placeholder="e.g. 15"
+                                style="width: 70px; font-size: 13px;"
+                                inputmode="numeric"
+                                onkeypress="if(event.key==='Enter') saveLetterNumber(${item.id_letter})"
+                            />
+                            <span style="font-size: 11px; color: #6c757d;">${getLetterSuffix()}</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                        <button 
+                            class="btn btn-sm btn-secondary" 
+                            onclick="closeLetterPopover(${item.id_letter})"
+                            style="font-size: 11px; padding: 4px 10px;"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            class="btn btn-sm btn-primary" 
+                            onclick="saveLetterNumber(${item.id_letter})"
+                            style="font-size: 11px; padding: 4px 10px;"
+                        >
+                            Save
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+                }
+
+                return `-`;
+            }
+
+            function getLetterSuffix() {
+                const roman = monthToRoman(new Date().getMonth());
+                const year = new Date().getFullYear();
+                return `/WDIII.PL29/${roman}/${year}`;
+            }
+
+            function openLetterPopover(id, event) {
+                event.stopPropagation();
+
+                document.querySelectorAll('.letter-popover').forEach(pop => {
+                    pop.style.display = 'none';
+                });
+
+                const popover = document.getElementById(`popover-${id}`);
+                popover.style.display = 'block';
+
+                setTimeout(() => {
+                    document.getElementById(`letter-input-${id}`)?.focus();
+                }, 50);
+            }
+
+            function closeLetterPopover(id) {
+                document.getElementById(`popover-${id}`).style.display = 'none';
+            }
+
+            async function saveLetterNumber(id) {
+                const inputEl = document.getElementById(`letter-input-${id}`);
+                const value = inputEl?.value.trim();
+
+                if (!value) {
+                    alert("Letter number is required");
+                    inputEl?.focus();
+                    return;
+                }
+
+                if (!/^\d+$/.test(value)) {
+                    alert("Only digits allowed");
+                    inputEl?.focus();
+                    return;
+                }
+
+                const fullNumber = `${value}${getLetterSuffix()}`;
+
+                try {
+                    const res = await fetch(`${apiBase}/cdc/update-letter-number`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            id_letter: id,
+                            letter_number: fullNumber
+                        })
+                    });
+
+                    const json = await res.json();
+
+                    if (json.success) {
+                        closeLetterPopover(id);
+
+                        const displayEl = document.getElementById(`letter-display-${id}`);
+                        displayEl.textContent = value;
+                        displayEl.style.color = '#000';
+                        displayEl.classList.remove('letter-number-clickable');
+                        displayEl.onclick = null;
+                    } else {
+                        alert(json.message);
+                    }
+                } catch (err) {
+                    console.error("Error saving letter number:", err);
+                    alert("Failed to save: " + err.message);
+                }
+            }
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.position-relative')) {
+                    document.querySelectorAll('.letter-popover').forEach(pop => {
+                        pop.style.display = 'none';
+                    });
+                }
+            });
+
             function buildResultBadge(item) {
                 const acceptance = item.acceptance_status;
 
@@ -914,15 +1131,17 @@ if ($id_kampus) {
             // Perubahan pada handleApproval
             async function handleApproval(id, status) {
                 let comment = null;
+
                 if (status === "REJECTED") {
-                    const { value: reason, isConfirmed } = await Swal.fire({
+                    const {
+                        value: reason,
+                        isConfirmed
+                    } = await Swal.fire({
                         title: "Why are you rejecting?",
                         text: "Please provide your reason for rejecting this submission.",
                         input: "textarea",
                         inputPlaceholder: "Write the reason here...",
-                        inputAttributes: { 'aria-label': 'Reason for rejection' },
                         showCancelButton: true,
-                        cancelButtonText: "Cancel",
                         confirmButtonText: "Submit",
                         preConfirm: (value) => {
                             if (!value || !value.trim()) {
@@ -937,62 +1156,6 @@ if ($id_kampus) {
                     comment = reason;
                 }
 
-                // Jika status ACCEPTED -> munculkan swal input nomor surat (khusus CDC)
-                if (status === "ACCEPTED") {
-                    const roman = monthToRoman(new Date().getMonth());
-                    const year = new Date().getFullYear();
-                    const suffix = `/WDIII.PL29/${roman}/${year}`;
-
-                    const { isConfirmed, value: inputNumber } = await Swal.fire({
-                        title: "Enter letter number for this internship letter",
-                        html:
-                            `<div style="display:flex;gap:8px;align-items:center;justify-content:center">
-          <input id="swal-input-number" class="swal2-input" placeholder="e.g. 15" style="max-width:120px" inputmode="numeric" />
-          <div style="font-size:0.95rem;padding-left:4px;color:#6c757d">${suffix}</div>
-        </div>`,
-                        showCancelButton: true,
-                        cancelButtonText: "Cancel",
-                        confirmButtonText: "Accept",
-                        reverseButton: false,
-                        focusConfirm: false,
-                        preConfirm: () => {
-                            const val = document.getElementById('swal-input-number')?.value || "";
-                            if (!val || !val.trim()) {
-                                Swal.showValidationMessage("Number is required.");
-                                return false;
-                            }
-                            if (!/^\d+$/.test(val.trim())) {
-                                Swal.showValidationMessage("Only digits allowed.");
-                                return false;
-                            }
-                            return val.trim();
-                        }
-                    });
-
-                    if (!isConfirmed) {
-                        return;
-                    }
-
-                    // build full letter number
-                    const fullLetterNumber = `${inputNumber}${suffix}`;
-
-                    // konfirmasi akhir sebelum kirim
-                    const confirm = await Swal.fire({
-                        title: "Confirm?",
-                        text: `You are about to mark this submission as ACCEPTED and assign letter number: ${fullLetterNumber}`,
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonText: "Yes, confirm"
-                    });
-
-                    if (!confirm.isConfirmed) return;
-
-                    // send ke API (kirim letter_number)
-                    await sendApprovalToAPI(id, status, comment, fullLetterNumber);
-                    return;
-                }
-
-                // Untuk status selain ACCEPTED/REJECTED (atau jika ACCEPTED handled di atas)
                 const confirm = await Swal.fire({
                     title: "Confirm?",
                     text: `You are about to mark this submission as ${status}`,
@@ -1007,7 +1170,7 @@ if ($id_kampus) {
             }
 
             // sendApprovalToAPI menerima optional letter_number
-            async function sendApprovalToAPI(id, status, comment = "-", letter_number = null) {
+            async function sendApprovalToAPI(id, status, comment = "-") {
                 try {
                     const payload = {
                         id_letter: id,
@@ -1016,11 +1179,12 @@ if ($id_kampus) {
                         user_name: currentUserName,
                         comment
                     };
-                    if (letter_number) payload.letter_number = letter_number;
 
                     const res = await fetch(`${apiBase}/cdc/approval`, {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
                         body: JSON.stringify(payload)
                     });
 
@@ -1037,7 +1201,6 @@ if ($id_kampus) {
                     Swal.fire("Error", err.message, "error");
                 }
             }
-
             async function viewReason(id_letter) {
                 try {
                     const res = await fetch(`${apiBase}/cdc/reason/${id_letter}`);
@@ -1185,15 +1348,15 @@ if ($id_kampus) {
                             data: {
                                 'token': _token
                             },
-                            success: function () {
-                                setTimeout(function () {
+                            success: function() {
+                                setTimeout(function() {
                                     localStorage.removeItem('first');
                                     localStorage.removeItem('first_chime');
                                     localStorage.removeItem('next_chime');
                                     window.location.href = 'role_login.php';
                                 }, 200);
                             },
-                            error: function () {
+                            error: function() {
                                 Swal.fire('Error', 'Logout failed, please try again.', 'error');
                             }
                         });
@@ -1586,10 +1749,11 @@ if ($id_kampus) {
 
             // Export to Excel (CDC)
             async function exportToExcel() {
-                const { value: formValues } = await Swal.fire({
+                const {
+                    value: formValues
+                } = await Swal.fire({
                     title: 'Select Internship Period',
-                    html:
-                        '<label for="swal-start" style="display:block;text-align:left;margin-bottom:6px">Start date</label>' +
+                    html: '<label for="swal-start" style="display:block;text-align:left;margin-bottom:6px">Start date</label>' +
                         '<input id="swal-start" type="date" class="swal2-input" style="margin:0 auto;">' +
                         '<label for="swal-end" style="display:block;text-align:left;margin-top:8px;margin-bottom:6px">End date</label>' +
                         '<input id="swal-end" type="date" class="swal2-input" style="margin:0 auto;">',
@@ -1614,12 +1778,18 @@ if ($id_kampus) {
                         if (new Date(start) > new Date(end))
                             return Swal.showValidationMessage('Start date must be before or equal to End date');
 
-                        return { start, end };
+                        return {
+                            start,
+                            end
+                        };
                     }
                 });
 
                 if (!formValues) return;
-                const { start, end } = formValues;
+                const {
+                    start,
+                    end
+                } = formValues;
 
                 Swal.fire({
                     title: 'Fetching data...',
@@ -1632,7 +1802,11 @@ if ($id_kampus) {
 
                 if (!data || data.length === 0) {
                     Swal.close();
-                    Swal.fire({ icon: "info", title: "No Data Found", text: "No internship records found." });
+                    Swal.fire({
+                        icon: "info",
+                        title: "No Data Found",
+                        text: "No internship records found."
+                    });
                     return;
                 }
 
@@ -1671,41 +1845,153 @@ if ($id_kampus) {
                     const ws = XLSX.utils.aoa_to_sheet(excelData);
 
                     // Column Widths
-                    ws['!cols'] = [
-                        { wch: 5 }, { wch: 15 }, { wch: 25 }, { wch: 35 }, { wch: 20 }, { wch: 10 },
-                        { wch: 15 }, { wch: 25 }, { wch: 50 }, { wch: 15 },
-                        { wch: 60 }, { wch: 14 }, { wch: 14 },
-                        { wch: 30 }, { wch: 20 }
+                    ws['!cols'] = [{
+                            wch: 5
+                        }, {
+                            wch: 15
+                        }, {
+                            wch: 25
+                        }, {
+                            wch: 35
+                        }, {
+                            wch: 20
+                        }, {
+                            wch: 10
+                        },
+                        {
+                            wch: 15
+                        }, {
+                            wch: 25
+                        }, {
+                            wch: 50
+                        }, {
+                            wch: 15
+                        },
+                        {
+                            wch: 60
+                        }, {
+                            wch: 14
+                        }, {
+                            wch: 14
+                        },
+                        {
+                            wch: 30
+                        }, {
+                            wch: 20
+                        }
                     ];
 
                     // Merge
-                    ws['!merges'] = [
-                        { s: { r: 0, c: 0 }, e: { r: 0, c: 14 } },
-                        { s: { r: 1, c: 0 }, e: { r: 1, c: 14 } },
-                        { s: { r: 2, c: 0 }, e: { r: 2, c: 14 } }
+                    ws['!merges'] = [{
+                            s: {
+                                r: 0,
+                                c: 0
+                            },
+                            e: {
+                                r: 0,
+                                c: 14
+                            }
+                        },
+                        {
+                            s: {
+                                r: 1,
+                                c: 0
+                            },
+                            e: {
+                                r: 1,
+                                c: 14
+                            }
+                        },
+                        {
+                            s: {
+                                r: 2,
+                                c: 0
+                            },
+                            e: {
+                                r: 2,
+                                c: 14
+                            }
+                        }
                     ];
 
                     // Styles
                     const border = {
-                        top: { style: 'thin' }, bottom: { style: 'thin' },
-                        left: { style: 'thin' }, right: { style: 'thin' }
+                        top: {
+                            style: 'thin'
+                        },
+                        bottom: {
+                            style: 'thin'
+                        },
+                        left: {
+                            style: 'thin'
+                        },
+                        right: {
+                            style: 'thin'
+                        }
                     };
 
-                    ws['A1'].s = { font: { name: 'Times New Roman', sz: 16, bold: true }, alignment: { horizontal: 'center' } };
-                    ws['A2'].s = { alignment: { horizontal: 'center' } };
-                    ws['A3'].s = { alignment: { horizontal: 'center' } };
+                    ws['A1'].s = {
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 16,
+                            bold: true
+                        },
+                        alignment: {
+                            horizontal: 'center'
+                        }
+                    };
+                    ws['A2'].s = {
+                        alignment: {
+                            horizontal: 'center'
+                        }
+                    };
+                    ws['A3'].s = {
+                        alignment: {
+                            horizontal: 'center'
+                        }
+                    };
 
                     const headerStyleWrap = {
-                        font: { name: 'Times New Roman', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
-                        fill: { fgColor: { rgb: '4472C4' } },
-                        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 11,
+                            bold: true,
+                            color: {
+                                rgb: 'FFFFFF'
+                            }
+                        },
+                        fill: {
+                            fgColor: {
+                                rgb: '4472C4'
+                            }
+                        },
+                        alignment: {
+                            horizontal: 'center',
+                            vertical: 'center',
+                            wrapText: true
+                        },
                         border
                     };
 
                     const headerStyleNoWrap = {
-                        font: { name: 'Times New Roman', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
-                        fill: { fgColor: { rgb: '4472C4' } },
-                        alignment: { horizontal: 'center', vertical: 'center', wrapText: false },
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 11,
+                            bold: true,
+                            color: {
+                                rgb: 'FFFFFF'
+                            }
+                        },
+                        fill: {
+                            fgColor: {
+                                rgb: '4472C4'
+                            }
+                        },
+                        alignment: {
+                            horizontal: 'center',
+                            vertical: 'center',
+                            wrapText: false
+                        },
                         border
                     };
 
@@ -1729,7 +2015,10 @@ if ($id_kampus) {
                             const isCenter = (index === 0 || index === 1);
 
                             cell.s = {
-                                font: { name: 'Times New Roman', sz: 11 },
+                                font: {
+                                    name: 'Times New Roman',
+                                    sz: 11
+                                },
                                 alignment: {
                                     horizontal: isCenter ? 'center' : 'left',
                                     vertical: 'top',
@@ -1743,10 +2032,18 @@ if ($id_kampus) {
                     XLSX.utils.book_append_sheet(wb, ws, 'Internship Report');
                     XLSX.writeFile(wb, `Internship_${start}_to_${end}.xlsx`);
 
-                    Swal.fire({ icon: "success", title: "Success", text: "Excel downloaded successfully!" });
+                    Swal.fire({
+                        icon: "success",
+                        title: "Success",
+                        text: "Excel downloaded successfully!"
+                    });
 
                 } catch (err) {
-                    Swal.fire({ icon: "error", title: "Error", text: err.message });
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: err.message
+                    });
                 }
             }
 
@@ -1766,7 +2063,11 @@ if ($id_kampus) {
                     return json.data;
 
                 } catch (err) {
-                    Swal.fire({ icon: "error", title: "Error", text: err.message });
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: err.message
+                    });
                     return null;
                 }
             }

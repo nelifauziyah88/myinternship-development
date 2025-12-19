@@ -90,6 +90,7 @@ router.get("/cdc/submissions", async (req, res) => {
         il.status,
         il.koor_approval,
         il.cdc_approval,
+        il.letter_number,
         il.company_reply_letter,
         il.acceptance_status,
         il.created_at,
@@ -110,11 +111,13 @@ router.get("/cdc/submissions", async (req, res) => {
 // CDC approval
 router.post("/cdc/approval", async (req, res) => {
   try {
-    const { id_letter, status, user_id, user_name, comment, letter_number } = req.body;
+    const { id_letter, status, user_id, user_name, comment } = req.body;
     const s = status.toUpperCase();
 
     if (!["ACCEPTED", "REJECTED"].includes(s)) {
-      return res.status(400).json({ success: false, message: "Status invalid." });
+      return res
+        .status(400)
+        .json({ success: false, message: "Status invalid." });
     }
 
     const [rows] = await db.query(
@@ -126,49 +129,50 @@ router.post("/cdc/approval", async (req, res) => {
     );
 
     if (!rows.length) {
-      return res.status(404).json({ success: false, message: "Submission not found." });
+      return res
+        .status(404)
+        .json({ success: false, message: "Submission not found." });
     }
 
     const row = rows[0];
 
     if (row.koor_approval !== "ACCEPTED") {
-      return res.status(403).json({ success: false, message: "Koor belum approve." });
+      return res
+        .status(403)
+        .json({ success: false, message: "Koor belum approve." });
     }
 
     if (row.cdc_approval !== "WAITING") {
       return res.status(400).json({
         success: false,
-        message: "Submission tidak dalam status WAITING."
+        message: "Submission tidak dalam status WAITING.",
       });
     }
 
     if (s === "ACCEPTED") {
-      if (!letter_number) {
-        return res.status(400).json({ success: false, message: "Nomor surat wajib." });
-      }
-
-      const [dupRows] = await db.query(
-        `SELECT id_letter FROM internship_letter
-         WHERE letter_number = ? AND id_letter != ?`,
-        [letter_number, id_letter]
+      const [checkLetter] = await db.query(
+        `SELECT letter_number FROM internship_letter WHERE id_letter = ?`,
+        [id_letter]
       );
 
-      if (dupRows.length) {
+      if (
+        !checkLetter[0].letter_number ||
+        checkLetter[0].letter_number.trim() === ""
+      ) {
         return res.status(400).json({
           success: false,
-          message: `Letter number "${letter_number}" sudah digunakan.`
+          message: "Please fill letter number first before approving",
         });
       }
 
       await db.query(
         `UPDATE internship_letter
-         SET cdc_approval = 'ACCEPTED',
-             status = 'ACCEPTED',
-             letter_number = ?,
-             published_date = NOW(),
-             updated_at = NOW()
-         WHERE id_letter = ?`,
-        [letter_number, id_letter]
+     SET cdc_approval = 'ACCEPTED',
+         status = 'ACCEPTED',
+         published_date = NOW(),
+         updated_at = NOW()
+     WHERE id_letter = ?`,
+        [id_letter]
       );
 
       await checkAndSetPublishedDate(id_letter);
@@ -192,9 +196,74 @@ router.post("/cdc/approval", async (req, res) => {
       [id_letter, user_id, user_name, s, comment]
     );
 
-    res.json({ success: true, message: `Submission ${s.toLowerCase()} oleh CDC.` });
+    res.json({
+      success: true,
+      message: `Submission ${s.toLowerCase()} oleh CDC.`,
+    });
   } catch (err) {
     console.error("CDC approval error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Update letter number (CDC)
+router.post("/cdc/update-letter-number", async (req, res) => {
+  try {
+    const { id_letter, letter_number } = req.body;
+
+    if (!letter_number || !letter_number.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Letter number is required",
+      });
+    }
+
+    const [rows] = await db.query(
+      `SELECT cdc_approval FROM internship_letter WHERE id_letter = ?`,
+      [id_letter]
+    );
+
+    if (!rows.length) {
+      return res.status(404).json({
+        success: false,
+        message: "Submission not found",
+      });
+    }
+
+    if (rows[0].cdc_approval !== "WAITING") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot update letter number after approval/rejection",
+      });
+    }
+
+    const [dupRows] = await db.query(
+      `SELECT id_letter FROM internship_letter
+       WHERE letter_number = ? AND id_letter != ?`,
+      [letter_number, id_letter]
+    );
+
+    if (dupRows.length) {
+      return res.status(400).json({
+        success: false,
+        message: `Letter number "${letter_number}" already used`,
+      });
+    }
+
+    await db.query(
+      `UPDATE internship_letter
+       SET letter_number = ?, updated_at = NOW()
+       WHERE id_letter = ?`,
+      [letter_number, id_letter]
+    );
+
+    res.json({
+      success: true,
+      message: "Letter number updated successfully",
+      letter_number: letter_number,
+    });
+  } catch (err) {
+    console.error("Update letter number error:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -287,6 +356,7 @@ router.get("/cdc/submissions-filtered", async (req, res) => {
         il.status,
         il.koor_approval,
         il.cdc_approval,
+        il.letter_number,
         il.company_reply_letter,
         il.acceptance_status,
         il.created_at,
@@ -574,7 +644,7 @@ router.get("/cdc/company-reply/:id_letter", async (req, res) => {
 router.get("/dashboard/statistics", async (req, res) => {
   try {
     const { department, year } = req.query;
-    const useYearFilter = year && year !== 'all';
+    const useYearFilter = year && year !== "all";
     const currentYear = useYearFilter ? year : null;
     const id_kampus = 1;
 
@@ -862,12 +932,10 @@ router.get("/cdc/export-internship", async (req, res) => {
     const id_kampus = 1;
 
     if (!start_date || !end_date) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "start_date and end_date are required (YYYY-MM-DD)",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "start_date and end_date are required (YYYY-MM-DD)",
+      });
     }
 
     const s = new Date(start_date);
@@ -933,12 +1001,10 @@ router.get("/cdc/export-internship", async (req, res) => {
     const [rows] = await db.query(query, params);
 
     if (!rows.length) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: `No internship data found in given date range`,
-        });
+      return res.status(404).json({
+        success: false,
+        message: `No internship data found in given date range`,
+      });
     }
 
     res.json({
