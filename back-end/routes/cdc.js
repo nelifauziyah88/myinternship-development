@@ -161,7 +161,7 @@ router.post("/cdc/approval", async (req, res) => {
       ) {
         return res.status(400).json({
           success: false,
-          message: "Please fill letter number first before approving",
+          message: "Please fill internship letter number first before approving",
         });
       }
 

@@ -950,7 +950,7 @@ if ($id_kampus) {
                     <div class="popover-arrow"></div>
                     <div style="margin-bottom: 10px;">
                         <label style="font-size: 12px; margin-bottom: 5px; display: block; font-weight: 600; color: #333;">
-                            Letter Number
+                            Enter Internship Letter Number
                         </label>
                         <div style="display: flex; gap: 5px; align-items: center;">
                             <input 
