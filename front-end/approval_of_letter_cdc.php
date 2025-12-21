@@ -237,7 +237,6 @@ if ($id_kampus) {
         .letter-number-clickable {
             color: #007bff;
             cursor: pointer;
-            text-decoration: underline;
             font-weight: 500;
         }
 
