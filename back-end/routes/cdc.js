@@ -184,6 +184,7 @@ router.post("/cdc/approval", async (req, res) => {
         `UPDATE internship_letter
          SET cdc_approval = 'REJECTED',
              status = 'REJECTED',
+             letter_number = NULL,
              updated_at = NOW()
          WHERE id_letter = ?`,
         [id_letter]
