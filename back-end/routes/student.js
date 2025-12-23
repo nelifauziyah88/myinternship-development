@@ -112,7 +112,7 @@ router.get("/form-submission/:nim", async (req, res) => {
       [student.program_study, student.id_kampus]
     );
     const program = psRows.length ? psRows[0] : null;
-    const department = program ? program.jurusan || null : null;
+    const department = program ? program.major || null : null;
     const program_study = program ? program.study_program || null : null;
 
     // ambil lecturer
