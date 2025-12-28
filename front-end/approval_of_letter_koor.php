@@ -70,7 +70,7 @@ if ($id_kampus) {
                 "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
                 urls: ['./assets/css/fonts.min.css']
             },
-            active: function () {
+            active: function() {
                 sessionStorage.fonts = true;
             }
         });
@@ -81,7 +81,7 @@ if ($id_kampus) {
 
     <script src='./core/component/jquery.min.js'></script>
     <script>
-        $(function () { });
+        $(function() {});
     </script>
     <script defer src='./core/component/sweetalert2.min.js'></script>
     <script defer src='./core/component/soloalert.js'></script>
@@ -717,8 +717,7 @@ if ($id_kampus) {
             <span class="badge rejected">Rejected</span>
             <div class="text-muted" style="font-size:12px;margin-top:2px;">${formatTime(item.updated_at)}</div>
           </div>`;
-                        }
-                        else {
+                        } else {
                             cdcHtml = `-`;
                         }
 
@@ -830,7 +829,7 @@ if ($id_kampus) {
         <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style/dist/xlsx.min.js"></script>
 
         <script>
-            $(document).ready(function () {
+            $(document).ready(function() {
                 clock_run();
                 show_calendar();
             });
@@ -869,7 +868,7 @@ if ($id_kampus) {
                 }
 
                 // Update clock every second
-                setInterval(function () {
+                setInterval(function() {
                     let d = new Date();
                     let day = en_day[d.getDay()];
                     let date = d.getDate();
@@ -915,12 +914,12 @@ if ($id_kampus) {
                     url: 'index.php?request=validation_get',
                     type: 'GET',
 
-                    success: function (response, xhr, status, error) {
+                    success: function(response, xhr, status, error) {
                         console.log('Getting form notification');
                         $('body').append(response);
                     },
 
-                    error: function (xhr, status, error) {
+                    error: function(xhr, status, error) {
                         console.log('Failed Getting form notification');
                     }
                 });
@@ -947,8 +946,8 @@ if ($id_kampus) {
                             data: {
                                 'token': _token
                             },
-                            success: function () {
-                                setTimeout(function () {
+                            success: function() {
+                                setTimeout(function() {
                                     // Clear localStorage
                                     localStorage.removeItem('first');
                                     localStorage.removeItem('first_chime');
@@ -956,7 +955,7 @@ if ($id_kampus) {
                                     window.location.href = 'role_login.php';
                                 }, 200);
                             },
-                            error: function () {
+                            error: function() {
                                 Swal.fire('Error', 'Logout failed, please try again.', 'error');
                             }
                         });
@@ -981,7 +980,7 @@ if ($id_kampus) {
                 icon_spinner.className = '';
                 icon_spinner.className = spinner;
 
-                setTimeout(function () {
+                setTimeout(function() {
                     icon_spinner.className = '';
                     icon_spinner.className = icon_old;
                 }, 2000);
@@ -1035,23 +1034,103 @@ if ($id_kampus) {
             function renderTable(data) {
                 const body = document.getElementById("tableBody");
 
-                // Handle empty data
                 if (!data || data.length === 0) {
                     body.innerHTML = "<tr><td colspan='8' class='text-center text-muted'>No data found.</td></tr>";
                     return;
                 }
 
+                const sortedData = data.sort((a, b) => {
+                    const koorA = a.koor_approval?.toUpperCase() || '';
+                    const cdcA = a.cdc_approval?.toUpperCase() || '';
+                    const resultA = a.acceptance_status?.toUpperCase() || '';
+
+                    const koorB = b.koor_approval?.toUpperCase() || '';
+                    const cdcB = b.cdc_approval?.toUpperCase() || '';
+                    const resultB = b.acceptance_status?.toUpperCase() || '';
+
+                    // Priority 1: Koor WAITING + CDC WAITING (Butuh action koordinator)
+                    const isWaitingA = (koorA === 'WAITING' && cdcA === 'WAITING');
+                    const isWaitingB = (koorB === 'WAITING' && cdcB === 'WAITING');
+
+                    if (isWaitingA && !isWaitingB) return -1;
+                    if (!isWaitingA && isWaitingB) return 1;
+                    if (isWaitingA && isWaitingB) {
+                        return new Date(a.created_at) - new Date(b.created_at);
+                    }
+
+                    // Priority 2: Koor ACC + CDC WAITING (Menunggu CDC approve)
+                    const isCDCWaitingA = (koorA === 'ACCEPTED' && cdcA === 'WAITING');
+                    const isCDCWaitingB = (koorB === 'ACCEPTED' && cdcB === 'WAITING');
+
+                    if (isCDCWaitingA && !isCDCWaitingB) return -1;
+                    if (!isCDCWaitingA && isCDCWaitingB) return 1;
+                    if (isCDCWaitingA && isCDCWaitingB) {
+                        return new Date(a.created_at) - new Date(b.created_at);
+                    }
+
+                    // Priority 3: Koor ACC + CDC ACC + Result ACC (COMPLETED - ACCEPTED)
+                    const isAccAccAccA = (koorA === 'ACCEPTED' && cdcA === 'ACCEPTED' && resultA === 'ACCEPTED');
+                    const isAccAccAccB = (koorB === 'ACCEPTED' && cdcB === 'ACCEPTED' && resultB === 'ACCEPTED');
+
+                    if (isAccAccAccA && !isAccAccAccB) return -1;
+                    if (!isAccAccAccA && isAccAccAccB) return 1;
+                    if (isAccAccAccA && isAccAccAccB) {
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    }
+
+                    // Priority 4: Koor ACC + CDC ACC + Result - (WAITING FOR COMPANY REPLY)
+                    const isAccAccEmptyA = (koorA === 'ACCEPTED' && cdcA === 'ACCEPTED' && (!resultA || resultA === '-'));
+                    const isAccAccEmptyB = (koorB === 'ACCEPTED' && cdcB === 'ACCEPTED' && (!resultB || resultB === '-'));
+
+                    if (isAccAccEmptyA && !isAccAccEmptyB) return -1;
+                    if (!isAccAccEmptyA && isAccAccEmptyB) return 1;
+                    if (isAccAccEmptyA && isAccAccEmptyB) {
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    }
+
+                    // Priority 5: Koor ACC + CDC ACC + Result REJECT (COMPLETED - REJECTED BY COMPANY)
+                    const isAccAccRejA = (koorA === 'ACCEPTED' && cdcA === 'ACCEPTED' && resultA === 'REJECTED');
+                    const isAccAccRejB = (koorB === 'ACCEPTED' && cdcB === 'ACCEPTED' && resultB === 'REJECTED');
+
+                    if (isAccAccRejA && !isAccAccRejB) return -1;
+                    if (!isAccAccRejA && isAccAccRejB) return 1;
+                    if (isAccAccRejA && isAccAccRejB) {
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    }
+
+                    // Priority 6: Koor ACC + CDC REJECT
+                    const isAccRejA = (koorA === 'ACCEPTED' && cdcA === 'REJECTED');
+                    const isAccRejB = (koorB === 'ACCEPTED' && cdcB === 'REJECTED');
+
+                    if (isAccRejA && !isAccRejB) return -1;
+                    if (!isAccRejA && isAccRejB) return 1;
+                    if (isAccRejA && isAccRejB) {
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    }
+
+                    // Priority 7: Koor REJECT + CDC REJECT
+                    const isRejRejA = (koorA === 'REJECTED' && cdcA === 'REJECTED');
+                    const isRejRejB = (koorB === 'REJECTED' && cdcB === 'REJECTED');
+
+                    if (isRejRejA && !isRejRejB) return -1;
+                    if (!isRejRejA && isRejRejB) return 1;
+                    if (isRejRejA && isRejRejB) {
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    }
+
+                    // Default: urutkan berdasarkan tanggal (terbaru di atas)
+                    return new Date(b.created_at) - new Date(a.created_at);
+                });
+
                 body.innerHTML = "";
 
-                // Helper function to format timestamp
                 const formatTime = (t) => {
                     if (!t) return "-";
                     const d = new Date(t);
                     return d.toLocaleDateString("en-GB");
                 };
 
-                // Loop through each submission
-                data.forEach((item, index) => {
+                sortedData.forEach((item, index) => {
                     const date = new Date(item.created_at).toLocaleDateString("en-GB");
 
                     // BUILD COORDINATOR APPROVAL COLUMN
@@ -1564,9 +1643,7 @@ if ($id_kampus) {
                                 popup: 'animated fadeIn'
                             }
                         });
-                    }
-
-                    else if (data.acceptance_status === 'REJECTED' && data.isOverdue) {
+                    } else if (data.acceptance_status === 'REJECTED' && data.isOverdue) {
                         Swal.fire({
                             title: "Company Reply - REJECTED",
                             html: `
@@ -1586,8 +1663,7 @@ if ($id_kampus) {
                             icon: 'warning',
                             confirmButtonText: 'Close'
                         });
-                    }
-                    else {
+                    } else {
                         Swal.fire({
                             title: "No Reply File Yet",
                             html: `
@@ -1624,10 +1700,11 @@ if ($id_kampus) {
 
             // Export Excel (Koor)
             async function exportToExcel() {
-                const { value: formValues } = await Swal.fire({
+                const {
+                    value: formValues
+                } = await Swal.fire({
                     title: 'Select Internship Period',
-                    html:
-                        '<label for="swal-start" style="display:block;text-align:left;margin-bottom:6px">Start date</label>' +
+                    html: '<label for="swal-start" style="display:block;text-align:left;margin-bottom:6px">Start date</label>' +
                         '<input id="swal-start" type="date" class="swal2-input" style="margin:0 auto;">' +
                         '<label for="swal-end" style="display:block;text-align:left;margin-top:8px;margin-bottom:6px">End date</label>' +
                         '<input id="swal-end" type="date" class="swal2-input" style="margin:0 auto;">',
@@ -1651,13 +1728,19 @@ if ($id_kampus) {
                         if (!end) return Swal.showValidationMessage('End date is required');
                         if (new Date(start) > new Date(end)) return Swal.showValidationMessage('Start date must be before or equal to End date');
 
-                        return { start, end };
+                        return {
+                            start,
+                            end
+                        };
                     }
                 });
 
                 if (!formValues) return;
 
-                const { start, end } = formValues;
+                const {
+                    start,
+                    end
+                } = formValues;
 
                 Swal.fire({
                     title: 'Fetching data...',
@@ -1670,7 +1753,11 @@ if ($id_kampus) {
 
                 if (!data || data.length === 0) {
                     Swal.close();
-                    Swal.fire({ icon: "info", title: "No Data Found", text: "No internship records found." });
+                    Swal.fire({
+                        icon: "info",
+                        title: "No Data Found",
+                        text: "No internship records found."
+                    });
                     return;
                 }
 
@@ -1702,36 +1789,131 @@ if ($id_kampus) {
 
                     const ws = XLSX.utils.aoa_to_sheet(excelData);
 
-                    ws['!cols'] = [
-                        { wch: 5 }, { wch: 15 }, { wch: 25 }, { wch: 35 }, { wch: 20 }, { wch: 10 },
-                        { wch: 40 }, { wch: 18 }, { wch: 60 }, { wch: 14 }, { wch: 14 },
-                        { wch: 30 }, { wch: 20 }
+                    ws['!cols'] = [{
+                            wch: 5
+                        }, {
+                            wch: 15
+                        }, {
+                            wch: 25
+                        }, {
+                            wch: 35
+                        }, {
+                            wch: 20
+                        }, {
+                            wch: 10
+                        },
+                        {
+                            wch: 40
+                        }, {
+                            wch: 18
+                        }, {
+                            wch: 60
+                        }, {
+                            wch: 14
+                        }, {
+                            wch: 14
+                        },
+                        {
+                            wch: 30
+                        }, {
+                            wch: 20
+                        }
                     ];
 
-                    ws['!merges'] = [
-                        { s: { r: 0, c: 0 }, e: { r: 0, c: 12 } },
-                        { s: { r: 1, c: 0 }, e: { r: 1, c: 12 } },
-                        { s: { r: 2, c: 0 }, e: { r: 2, c: 12 } }
+                    ws['!merges'] = [{
+                            s: {
+                                r: 0,
+                                c: 0
+                            },
+                            e: {
+                                r: 0,
+                                c: 12
+                            }
+                        },
+                        {
+                            s: {
+                                r: 1,
+                                c: 0
+                            },
+                            e: {
+                                r: 1,
+                                c: 12
+                            }
+                        },
+                        {
+                            s: {
+                                r: 2,
+                                c: 0
+                            },
+                            e: {
+                                r: 2,
+                                c: 12
+                            }
+                        }
                     ];
 
                     const border = {
-                        top: { style: 'thin' }, bottom: { style: 'thin' },
-                        left: { style: 'thin' }, right: { style: 'thin' }
+                        top: {
+                            style: 'thin'
+                        },
+                        bottom: {
+                            style: 'thin'
+                        },
+                        left: {
+                            style: 'thin'
+                        },
+                        right: {
+                            style: 'thin'
+                        }
                     };
 
                     const headerStyle = {
-                        font: { name: 'Times New Roman', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
-                        fill: { fgColor: { rgb: '4472C4' } },
-                        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 11,
+                            bold: true,
+                            color: {
+                                rgb: 'FFFFFF'
+                            }
+                        },
+                        fill: {
+                            fgColor: {
+                                rgb: '4472C4'
+                            }
+                        },
+                        alignment: {
+                            horizontal: 'center',
+                            vertical: 'center',
+                            wrapText: true
+                        },
                         border
                     };
 
-                    ws['A1'].s = { font: { name: 'Times New Roman', sz: 16, bold: true }, alignment: { horizontal: 'center' } };
-                    ws['A2'].s = { alignment: { horizontal: 'center' } };
-                    ws['A3'].s = { alignment: { horizontal: 'center' } };
+                    ws['A1'].s = {
+                        font: {
+                            name: 'Times New Roman',
+                            sz: 16,
+                            bold: true
+                        },
+                        alignment: {
+                            horizontal: 'center'
+                        }
+                    };
+                    ws['A2'].s = {
+                        alignment: {
+                            horizontal: 'center'
+                        }
+                    };
+                    ws['A3'].s = {
+                        alignment: {
+                            horizontal: 'center'
+                        }
+                    };
 
                     const headerCols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
-                    headerCols.forEach(col => { if (ws[col + '5']) ws[col + '5'].s = headerStyle; });
+                    headerCols.forEach(col => {
+                        if (ws[col + '5']) ws[col + '5'].s = headerStyle;
+                    });
 
                     const dataRowStart = 6;
                     for (let r = dataRowStart; r < dataRowStart + data.length; r++) {
@@ -1739,7 +1921,10 @@ if ($id_kampus) {
                             const cell = ws[col + r];
                             if (!cell) return;
                             cell.s = {
-                                font: { name: 'Times New Roman', sz: 11 },
+                                font: {
+                                    name: 'Times New Roman',
+                                    sz: 11
+                                },
                                 alignment: {
                                     horizontal: index <= 1 ? 'center' : 'left',
                                     vertical: 'top',
@@ -1753,10 +1938,18 @@ if ($id_kampus) {
                     XLSX.utils.book_append_sheet(wb, ws, 'Internship Report');
                     XLSX.writeFile(wb, `Internship_${start}_to_${end}.xlsx`);
 
-                    Swal.fire({ icon: "success", title: "Success", text: "Excel downloaded successfully!" });
+                    Swal.fire({
+                        icon: "success",
+                        title: "Success",
+                        text: "Excel downloaded successfully!"
+                    });
 
                 } catch (err) {
-                    Swal.fire({ icon: "error", title: "Error", text: err.message });
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: err.message
+                    });
                 }
             }
 
@@ -1776,11 +1969,14 @@ if ($id_kampus) {
                     return json.data;
 
                 } catch (err) {
-                    Swal.fire({ icon: "error", title: "Error", text: err.message });
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: err.message
+                    });
                     return null;
                 }
             }
-
         </script>
 
 </body>

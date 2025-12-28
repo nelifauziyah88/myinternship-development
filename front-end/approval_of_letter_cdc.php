@@ -793,8 +793,108 @@ if ($id_kampus) {
 
             function renderTable(data) {
                 const body = document.getElementById("tableBody");
+
+                // Handle empty data
+                if (!data || data.length === 0) {
+                    body.innerHTML = "<tr><td colspan='9' class='text-center text-muted'>No data found.</td></tr>";
+                    return;
+                }
+
+                // SORTING BERDASARKAN PRIORITAS YANG BENAR
+                const sortedData = data.sort((a, b) => {
+                    const koorA = a.koor_approval?.toUpperCase() || '';
+                    const cdcA = a.cdc_approval?.toUpperCase() || '';
+                    const resultA = a.acceptance_status?.toUpperCase() || '';
+
+                    const koorB = b.koor_approval?.toUpperCase() || '';
+                    const cdcB = b.cdc_approval?.toUpperCase() || '';
+                    const resultB = b.acceptance_status?.toUpperCase() || '';
+
+                    // Priority 1: Koor WAITING + CDC WAITING
+                    const isWaitingA = (koorA === 'WAITING' && cdcA === 'WAITING');
+                    const isWaitingB = (koorB === 'WAITING' && cdcB === 'WAITING');
+
+                    if (isWaitingA && !isWaitingB) return -1;
+                    if (!isWaitingA && isWaitingB) return 1;
+                    if (isWaitingA && isWaitingB) {
+                        // Yang LAMA di atas (FIFO)
+                        return new Date(a.created_at) - new Date(b.created_at);
+                    }
+
+                    // Priority 2: Koor ACC + CDC WAITING (CDC harus action)
+                    const isCDCWaitingA = (koorA === 'ACCEPTED' && cdcA === 'WAITING');
+                    const isCDCWaitingB = (koorB === 'ACCEPTED' && cdcB === 'WAITING');
+
+                    if (isCDCWaitingA && !isCDCWaitingB) return -1;
+                    if (!isCDCWaitingA && isCDCWaitingB) return 1;
+                    if (isCDCWaitingA && isCDCWaitingB) {
+                        // Yang LAMA di atas (FIFO)
+                        return new Date(a.created_at) - new Date(b.created_at);
+                    }
+
+                    // Priority 3: Koor ACC + CDC ACC + Result ACC (COMPLETED - ACCEPTED)
+                    const isAccAccAccA = (koorA === 'ACCEPTED' && cdcA === 'ACCEPTED' && resultA === 'ACCEPTED');
+                    const isAccAccAccB = (koorB === 'ACCEPTED' && cdcB === 'ACCEPTED' && resultB === 'ACCEPTED');
+
+                    if (isAccAccAccA && !isAccAccAccB) return -1;
+                    if (!isAccAccAccA && isAccAccAccB) return 1;
+                    if (isAccAccAccA && isAccAccAccB) {
+                        // Yang BARU di atas (terbaru muncul paling atas)
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    }
+
+                    // Priority 4: Koor ACC + CDC ACC + Result - (WAITING FOR COMPANY REPLY)
+                    const isAccAccEmptyA = (koorA === 'ACCEPTED' && cdcA === 'ACCEPTED' && (!resultA || resultA === '-'));
+                    const isAccAccEmptyB = (koorB === 'ACCEPTED' && cdcB === 'ACCEPTED' && (!resultB || resultB === '-'));
+
+                    if (isAccAccEmptyA && !isAccAccEmptyB) return -1;
+                    if (!isAccAccEmptyA && isAccAccEmptyB) return 1;
+                    if (isAccAccEmptyA && isAccAccEmptyB) {
+                        // Yang BARU di atas
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    }
+
+                    // Priority 5: Koor ACC + CDC ACC + Result REJECT (COMPLETED - REJECTED BY COMPANY)
+                    const isAccAccRejA = (koorA === 'ACCEPTED' && cdcA === 'ACCEPTED' && resultA === 'REJECTED');
+                    const isAccAccRejB = (koorB === 'ACCEPTED' && cdcB === 'ACCEPTED' && resultB === 'REJECTED');
+
+                    if (isAccAccRejA && !isAccAccRejB) return -1;
+                    if (!isAccAccRejA && isAccAccRejB) return 1;
+                    if (isAccAccRejA && isAccAccRejB) {
+                        // Yang BARU di atas
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    }
+
+                    // Priority 6: Koor ACC + CDC REJECT
+                    const isAccRejA = (koorA === 'ACCEPTED' && cdcA === 'REJECTED');
+                    const isAccRejB = (koorB === 'ACCEPTED' && cdcB === 'REJECTED');
+
+                    if (isAccRejA && !isAccRejB) return -1;
+                    if (!isAccRejA && isAccRejB) return 1;
+                    if (isAccRejA && isAccRejB) {
+                        // Yang BARU di atas
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    }
+
+                    // Priority 7: Koor REJECT + CDC REJECT
+                    const isRejRejA = (koorA === 'REJECTED' && cdcA === 'REJECTED');
+                    const isRejRejB = (koorB === 'REJECTED' && cdcB === 'REJECTED');
+
+                    if (isRejRejA && !isRejRejB) return -1;
+                    if (!isRejRejA && isRejRejB) return 1;
+                    if (isRejRejA && isRejRejB) {
+                        // Yang BARU di atas
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    }
+
+                    // Default: urutkan berdasarkan tanggal (terbaru di atas)
+                    return new Date(b.created_at) - new Date(a.created_at);
+                });
+
                 body.innerHTML = "";
-                data.forEach((item, i) => {
+
+                // Loop through each sorted submission
+                sortedData.forEach((item, i) => {
                     body.innerHTML += buildTableRow(item, i);
                 });
             }
