@@ -91,24 +91,36 @@ The **MyInternship** system consists of **four user roles**, each with different
 |  4  | **NFR-4** | The internship letter template must be easily updatable in case of format changes from CDC Polibatam.               |
 |  5  | **NFR-5** | The system must be accessible through modern web browsers on laptops/PCs without requiring additional installation. |
 
-## 💬 User Stories (Highlights)
+## Technology Stack
 
-* 🧑‍🎓 Student :
+The **MyInternship** system is developed using the following technologies:
 
-→ As a student, I want to submit internship requests and track their approval status so I can know when I’m officially accepted for internship.
+- **Frontend**: PHP Native
+- **Backend**: Express.js  
+- **Database**: MySQL  
+- **API Communication**: RESTful API (HTTP)  
+- **Development Tools**:
+  - Laragon (Local web server)
+  - Visual Studio Code (Code editor)
+  - Postman (API testing)
+  - GitHub (Version control)
 
-* 👩‍🏫 Lecturer :
+## Installation & Setup
 
-→ As a lecturer, I want to review and approve internship letters so that I can ensure only valid requests are processed.
+### Prerequisites
+- Laragon
+- Node.js
+- MySQL
+- Visual Studio Code
 
-* 👩‍💼 CDC Administrator :
-
-→ As a CDC admin, I want to monitor system statistics and update templates easily to maintain compliance with institutional policies.
-
-* 🏢 Supervisor :
-
-→ As a company supervisor, I want to receive reminder emails when internships end so I can provide timely feedback.
+### Backend Setup (Express.js)
+```bash
+npm init -y
+npm install express mysql2 cors body-parser bcrypt nodemon
+npm run dev
+```
 
 ## 📄 License
 This project is developed exclusively for academic purposes under the Proyek Berbasis Pembelajaran (PBL) course.
+
 All rights reserved © 2025 by the MyInternship Development Team.
