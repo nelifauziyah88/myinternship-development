@@ -1,24 +1,44 @@
-## 🧾 MyInternship – Internship Management Platform
-This is the official repository for **MyInternship**, a web-based internship management platform developed as part of the **Proyek Berbasis Pembelajaran (PBL)** course in the **Informatics Engineering Study Program**, Department of **Informatics Engineering, Politeknik Negeri Batam**.
+## MyInternship 
+**MyInternship** is a web-based product developed as part of the *Project-Based Learning (PBL)* course in the **Informatics Engineering Study Program**, **Department of Informatics Engineering**, **Politeknik Negeri Batam**.
 
-## 🎥 Presentation Videos
+This application is an internship management system designed to support the internship process in a structured and integrated manner. It covers key activities such as internship application submission, internship period monitoring, and management of related data and supporting documents.
 
-📽️ ATS Presentation : https://youtu.be/QhbR4lpu0RY?si=mBZ-k5C5j6Zb4YNK
+With MyInternhip, the internship administration process is expected to become more **efficient**, **transparent**, and **easily accessible for both students and internship administrators**.
 
-## 📁 Documentation
-📂 ATS Documents: https://drive.google.com/drive/folders/1R-mpiyn2CpPsmP47JGADr7pnYWEK73bB?usp=sharing
+## Project Documentation Videos
 
-## 💼 About the Project
-MyInternship is a web platform designed to assist **students**, **lecturers**, and **CDC (Career Development Center) administrators** in managing internship submissions, approvals, and monitoring processes.
-The system aims to **digitize and streamline** the internship administration workflow, reducing manual errors, processing time, and paperwork.
+- 📽️ ATS Presentation: https://youtu.be/QhbR4lpu0RY?si=mBZ-k5C5j6Zb4YNK
+- 📽️ AAS Presentation: https://youtu.be/yV21wmum1r8
+- 🖥️ Application Demo Video : https://youtu.be/fZsyO1OJvqE?si=cX-QIflStPOsVFTW
 
-Key modules include :
+## Documentation
+- 📂 ATS Documents: https://drive.google.com/drive/folders/1R-mpiyn2CpPsmP47JGADr7pnYWEK73bB?usp=sharing
+- 📂 AAS Documents: https://drive.google.com/file/d/1WJQrQQJ520FouY071hLgDfBYT1p6hkeO/view?usp=drive_link
 
-* Student dashboard for registration, submission, and tracking internship letters.
+## About the Project
+**MyInternship** is a web-based internship management platform developed to address common issues in the internship administration process at the Career Development Center (CDC).
 
-* Lecturer dashboard for reviewing and approving student internship requests.
+### Problems Identified
+- Internship application processes are still handled manually  
+- No automatic reminder system for company supervisors  
+- Internship data is not visualized in charts or dashboards  
+- Coordinator service performance lacks transparency  
+- Internship data cannot be exported to Excel  
 
-* CDC Administrator panel for overall management, report visualization, and system configuration.
+### Solutions Offered
+- Online internship application system  
+- Automatic email reminder feature  
+- Internship acceptance and rejection data visualization  
+- Coordinator service performance charts  
+- Internship data export to Excel  
+
+### Purpose of the Solution
+- Speed up and simplify the internship application process  
+- Improve internship administration and management  
+- Support evaluation and transparency at the CDC  
+- Enable efficient data processing and reporting  
+
+Through **MyInternship**, internship administration becomes more efficient, transparent, and well-organized for students, lecturers, and CDC administrators.
 
 ## 👥 Project Developers
 Developed by students of Politeknik Negeri Batam:
@@ -33,55 +53,36 @@ Developed by students of Politeknik Negeri Batam:
 
 #### Supervised by: **Siti Noor Chayati, S.T., M.Sc**
 
-## ✅ Key Features
+## 👥 User Roles
 
-🔐 Login & Role-Based Access
+The **MyInternship** system consists of **four user roles**, each with different access levels and responsibilities:
 
-Access dashboards based on user roles (Student, Lecturer, CDC Administrator).
+- **Student**
+- **Lecturer**
+- **CDC Administrator**
+- **Company Supervisor**
 
-📊 Service Waiting Time Chart
+## Functional Requirements – MyInternship Web Application
+| No | Code     | Actor                                 | Description                                                                 |
+| :-:| :------- | :------------------------------------ | :-------------------------------------------------------------------------- |
+| 1  | **FR-1** | All Users                             | Log in to the system                                                         |
+| 2  | **FR-2** | Student, Lecturer & CDC Administrator | View service waiting time chart                                              |
+| 3  | **FR-3** | Student, Lecturer & CDC Administrator | View percentage of internship applications accepted or rejected by companies |
+| 4  | **FR-4** | Lecturer & CDC Administrator          | View detailed student internship application letters                         |
+| 5  | **FR-5** | Lecturer & CDC Administrator          | Approve or reject internship application letters                             |
+| 6  | **FR-6** | Lecturer & CDC Administrator          | View list of student internship application letters                          |
+| 7  | **FR-7** | Lecturer & CDC Administrator          | View detailed internship response from companies                             |
+| 8  | **FR-8** | Lecturer & CDC Administrator          | Export internship data of active students to Excel                           |
+| 9  | **FR-9** | Student                               | Register an account in the MyInternship system                               |
+| 10 | **FR-10**| Student                               | Submit an internship application letter                                     |
+| 11 | **FR-11**| Student                               | View internship application status                                          |
+| 12 | **FR-12**| Student                               | Download internship letter approved by Internship Coordinator and CDC Admin |
+| 13 | **FR-13**| Student                               | View internship application history                                         |
+| 14 | **FR-14**| Student                               | Confirm acceptance or rejection of internship application letter             |
+| 15 | **FR-15**| Student                               | Modify internship application period                                        |
+| 16 | **FR-16**| Supervisor                            | Receive automatic reminder email                                            |
 
-→ Visualize average time between submission and approval.
-
-📈 Internship Acceptance Rate Statistics
-
-→ Monitor company acceptance/rejection trends.
-
-📄 Internship Letter Management
-
-→ Generate, view, and approve internship letters digitally.
-
-🧾 Automatic Letter Generation
-
-→ System automatically produces internship letters within 2 seconds.
-
-📬 Email Reminder System
-
-→ Supervisors receive automated email reminders for feedback submission.
-
-📜 Submission History & Status Tracking
-
-→ Students can view all submissions, track approval status, and download approved letters.
-
-## 📋 Functional Requirements – Web MyInternship
-|  No | Code      | Actor                                 | Description                                                                  |
-| :-: | :-------- | :------------------------------------ | :--------------------------------------------------------------------------- |
-|  1  | **FR-1**  | All Users                             | Log in to the system                                                         |
-|  2  | **FR-2**  | Student, Lecturer & CDC Administrator | View service waiting time chart                                              |
-|  3  | **FR-3**  | Student, Lecturer & CDC Administrator | View percentage of internship applications accepted or rejected by companies |
-|  4  | **FR-4**  | Lecturer & CDC Administrator          | View details of student internship application letters                       |
-|  5  | **FR-5**  | Lecturer & CDC Administrator          | Approve or reject internship application letters                             |
-|  6  | **FR-6**  | Lecturer & CDC Administrator          | View list of student internship applications                                 |
-|  7  | **FR-7**  | Lecturer & CDC Administrator          | View details of company internship responses                                 |
-|  8  | **FR-8**  | Student                               | Register in the MyInternship system                                          |
-|  9  | **FR-9**  | Student                               | Submit internship application letter                                         |
-|  10 | **FR-10** | Student                               | View internship application status                                           |
-|  11 | **FR-11** | Student                               | Download internship letter approved by Internship Coordinator and CDC Admin  |
-|  12 | **FR-12** | Student                               | View internship submission history                                           |
-|  13 | **FR-13** | Student                               | Confirm acceptance or rejection of internship letter                         |
-|  14 | **FR-14** | Supervisor                            | Receive reminder email after internship completion                           |
-
-## 📋 Non - Functional Requirements – Web MyInternship
+## Non - Functional Requirements – Web MyInternship
 |  No | Code      | Description                                                                                                         |
 | :-: | :-------- | :------------------------------------------------------------------------------------------------------------------ |
 |  1  | **NFR-1** | The system must be able to automatically generate internship letters within ≤ 2 seconds per document.               |
