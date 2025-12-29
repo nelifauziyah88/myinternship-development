@@ -13,7 +13,7 @@ With MyInternhip, the internship administration process is expected to become mo
 
 ## Documentation
 - 📂 ATS Documents: https://drive.google.com/drive/folders/1R-mpiyn2CpPsmP47JGADr7pnYWEK73bB?usp=sharing
-- 📂 AAS Documents: https://drive.google.com/file/d/1WJQrQQJ520FouY071hLgDfBYT1p6hkeO/view?usp=drive_link
+- 📂 AAS Documents: https://drive.google.com/drive/folders/10Cw1QCvciIxYw26wjdsE4dE7RrVqfu6c?usp=drive_link
 
 ## About the Project
 **MyInternship** is a web-based internship management platform developed to address common issues in the internship administration process at the Career Development Center (CDC).
